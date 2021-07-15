@@ -1,0 +1,1 @@
+["840B7CEA49D1", "WIFI:S:HitronA49D0-EasyConnect;T:WPA;P:3DD4EHitron;;"]
