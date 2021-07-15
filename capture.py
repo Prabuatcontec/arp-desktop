@@ -37,12 +37,12 @@ class PageOne(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        frame_eb_data = tk.Frame(self, width=100, height=100)
+        frame_eb_data = tk.Frame(self, width=100, height=40)
         frame_eb_data.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-        frame_but_right = tk.Frame(self, width=240, height=60)
-        frame_but_right.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
-        lab_eb_data = tk.Label(frame_eb_data, background='#DDD4EF', textvariable=controller.page1_label)
-        lab_eb_data.grid(row=0, column=0)
+        # frame_but_right = tk.Frame(self, width=240, height=60)
+        # frame_but_right.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
+        #lab_eb_data = tk.Label(frame_eb_data, background='#DDD4EF', textvariable=controller.page1_label)
+        #lab_eb_data.grid(row=0, column=0)
         self.category = tk.StringVar()
         somechoices = []
         for value in Connection().getCustomer():
@@ -55,8 +55,10 @@ class PageOne(tk.Frame):
         popupMenu.grid(row=3, column=1)
         self.category.trace('w', self.change_dropdown)
 
-        b_ebdata = tk.Button(frame_but_right, text="Page 2", width=10, height=2, command=lambda: controller.show_frame(PageTwo))
-        b_ebdata.grid(row=0, column=0)
+        # b_ebdata = tk.Button(frame_but_right, text="Page 2", width=10, height=2, command=lambda: controller.show_frame(PageTwo))
+        # b_ebdata.grid(row=0, column=0)
+        frame_eb_data = tk.Frame(self, width=50, height=50)
+        frame_eb_data.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
         self.progress = Progressbar(frame_eb_data, orient=HORIZONTAL,length=100,  mode='indeterminate')
     
     def change_dropdown(self,*args):
@@ -117,6 +119,25 @@ class PageTwo(tk.Frame):
         self.thread = threading.Thread(target=self.videoLoop, args=())
         self.thread.start()
         self.panel = None
+
+        threading.Thread(target=self.maintenance, daemon=True).start()
+        threading.Thread(target=self.postingData, daemon=True).start()
+
+    def maintenance(self):
+        """ Background thread doing various maintenance tasks """
+        readText = ImageProcess()
+        while True:
+            # do things...
+            readText.readData()
+            
+
+    def postingData(self):
+        """ Background thread doing various maintenance tasks """
+        readText = ImageProcess()
+        while True:
+            # do things...
+            readText.postToDeepblu()
+
     # # Added this function to update the page1_label StringVar.
     def update_p2_label(self):
         self.controller.page1_label.set(self.entry_nombre_fld.get())
@@ -248,9 +269,6 @@ class Arp(tk.Tk):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
-        
-        
-        
         self.frames = {}
         for F in (PageOne, PageTwo):
             frame = F(container, self)
@@ -281,21 +299,7 @@ def detect_special_characer(pass_string):
     return(res)
  
  
-def maintenance():
-    """ Background thread doing various maintenance tasks """
-    readText = ImageProcess()
-    while True:
-        # do things...
-        readText.readData()
-        time.sleep(MAINTENANCE_INTERVAL)
 
-def postingData():
-    """ Background thread doing various maintenance tasks """
-    readText = ImageProcess()
-    while True:
-        # do things...
-        readText.postToDeepblu()
-        time.sleep(MAINTENANCE_INTERVAL)
 
 
 if __name__ == "__main__":
@@ -305,6 +309,5 @@ if __name__ == "__main__":
     # app = App(root)
     MAINTENANCE_INTERVAL = .1
 
-    # threading.Thread(target=maintenance, daemon=True).start()
-    # threading.Thread(target=postingData, daemon=True).start()
+    
     # root.mainloop()
