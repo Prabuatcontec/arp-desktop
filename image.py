@@ -28,21 +28,22 @@ class ImageProcess(object):
     def readData(self):
         
         with open("static/uploads/_serial.txt", 'r') as t:
-            num_lines = sum(1 for line in open("static/uploads/_serial.txt"))
-
-            if(num_lines == ''):
-                num_lines = 0
-
-            if(num_lines==0):
-                self.updateFile("0","_serialrowcount")
-                self.updateFile("0","_processing")
-
             for i,line in enumerate(t):
-                self.updateFile("1","_processing")
+                file = open("static/uploads/_serialrowcount.txt", "r")
+                r = file.read()
+                file.close()
                 line = self.trimValue(line)
-                self.processImage(line)
-                if(int(num_lines -1) == int(i)):
-                    self.resetProcess()
+                if(int(len(str(line))) > 8):
+                    print(str(r)+"=="+str(i)+"=="+str(len(str(line))))
+                if((int(r) <= int(i) or int(i)==0) and int(len(str(line))) > 8):
+                    print(i)
+                    print(line)
+                    self.updateFile("1","_processing")
+                    self.processImage(line)
+                    if(int(r) == int(i)):
+                        self.resetProcess()
+                HoldStatus("").writeFile(str(i), "_serialrowcount")
+                
                     
 
             return 1
@@ -69,7 +70,7 @@ class ImageProcess(object):
                 image = cv2.imread("static/processingImg/boxER_"+line[0]+".jpg")
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 text = pytesseract.image_to_string(Image.fromarray(gray))
-                
+                print("".join(text.split()).encode('utf8'))
                 validation = open("static/uploads/_validation.txt", 'r').read()
                 strVal = str(validation)
                 models = json.loads(strVal)
@@ -80,9 +81,11 @@ class ImageProcess(object):
                     if sub_index >-1:
                         text = ""
                         self.processValidation(key, value, line, imName)
+                        print(1111)
                         angleSame = 1
                         break
                 if(angleSame ==0):
+                    print(2222)
                     lo = [180,165,150,135,120,105,90,75,60,45]
                     for x in lo:
                         img = self.rotate_bound(image, x)
@@ -112,7 +115,7 @@ class ImageProcess(object):
             if(valid != '0'):
                 valid = ModelValidation().validate(
                     jsonArray["data"], self.Reverse(line))
-
+            print("=====================")
             print(valid)
                     
             if valid == '0':

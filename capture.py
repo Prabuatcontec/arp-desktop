@@ -36,8 +36,8 @@ logger = structlog.get_logger(__name__)
 class PageOne(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-
-        frame_eb_data = tk.Frame(self, width=100, height=40)
+        
+        frame_eb_data = tk.Frame(self, width=1000, height=40)
         frame_eb_data.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
         # frame_but_right = tk.Frame(self, width=240, height=60)
         # frame_but_right.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
@@ -57,12 +57,19 @@ class PageOne(tk.Frame):
 
         # b_ebdata = tk.Button(frame_but_right, text="Page 2", width=10, height=2, command=lambda: controller.show_frame(PageTwo))
         # b_ebdata.grid(row=0, column=0)
-        frame_eb_data = tk.Frame(self, width=50, height=50)
+        frame_eb_data = tk.Frame(self, width=1000, height=50)
         frame_eb_data.grid(row=0, column=2, sticky='nsew', padx=5, pady=5)
         self.progress = Progressbar(frame_eb_data, orient=HORIZONTAL,length=100,  mode='indeterminate')
     
     def change_dropdown(self,*args):
         print( self.category.get() )
+        HoldStatus("").writeFile("\n", "_serial")
+        HoldStatus("").writeFile("", "_lastScan")
+        HoldStatus("").writeFile("0", "_lastScanCount")
+        HoldStatus("").writeFile("2", "_scan")
+        HoldStatus("").writeFile("0", "_serialpostCount")
+        HoldStatus("").writeFile("", "_goodData")
+        HoldStatus("").writeFile("0", "_processing")
         dict = {}
         self.progress.grid(row=1,column=0)
         self.progress.start()
@@ -72,6 +79,26 @@ class PageOne(tk.Frame):
         self.progress.stop()
         self.progress.grid_forget()
         HoldStatus("").writeFile(json.dumps(dict),"_validation")
+        threading.Thread(target=self.maintenance, daemon=True).start()
+        threading.Thread(target=self.postingData, daemon=True).start()
+
+    def maintenance(self):
+        """ Background thread doing various maintenance tasks """
+        readText = ImageProcess()
+        while True:
+            # do things...
+            time.sleep(.1)
+            readText.readData()
+            
+            
+
+    def postingData(self):
+        """ Background thread doing various maintenance tasks """
+        readText = ImageProcess()
+        while True:
+            # do things...
+            time.sleep(.1)
+            readText.postToDeepblu()
 
         
 
@@ -81,9 +108,9 @@ class PageTwo(tk.Frame):
         tk.Frame.__init__(self, parent)
         # Added the self.controller so the method below can use it.
         self.controller = controller
-        frame_buttons = tk.Frame(self, width=455, bg="#DDD4EF", colormap="new")
+        frame_buttons = tk.Frame(self, width=1000, bg="#DDD4EF", colormap="new")
         frame_buttons.grid(row=0, column=0, padx=5, pady=5, sticky='e')
-        frame_up_left = tk.Frame(self, width=485, height=260, bg="#89E3FA", colormap="new")
+        frame_up_left = tk.Frame(self, width=1000, height=2000, bg="#89E3FA", colormap="new")
         frame_up_left.grid(row=1, column=0, sticky='w', padx=5, pady=5)
 
         b_data = tk.Label(frame_buttons, text='Example GUI', font='TrebuchetMS 30 bold', background="#DDD4EF")
@@ -93,22 +120,15 @@ class PageTwo(tk.Frame):
         b6 = tk.Button(frame_buttons, text='Page 1', command=lambda: controller.show_frame(PageOne))
         b6.grid(row=0, column=3, padx=5, pady=5, sticky='e')
 
-        self.entry_nombre_fld = tk.Entry(frame_up_left, width=40)
+        self.entry_nombre_fld = tk.Entry(frame_up_left, width=1000)
         self.entry_nombre_fld.grid(row=1, column=1, columnspan=3, sticky='w')
         label_2 = tk.Label(frame_up_left, text="Name:", font=("bold", 14))
         label_2.grid(row=1, column=0, sticky='e')
 
-        HoldStatus("").writeFile("", "_serial")
-        HoldStatus("").writeFile("", "_lastScan")
-        HoldStatus("").writeFile("0", "_lastScanCount")
-        HoldStatus("").writeFile("2", "_scan")
-        HoldStatus("").writeFile("0", "_serialrowcount")
-        HoldStatus("").writeFile("0", "_serialpostCount")
-        HoldStatus("").writeFile("", "_goodData")
-        HoldStatus("").writeFile("0", "_processing")
+       
 
-        frame_video = tk.Frame(self, width=455, height=260, bg="#DDD4EF", colormap="new")
-        frame_video.grid(row=0, column=4, padx=5, pady=5, sticky='e')
+        frame_video = tk.Frame(self, width=1000, height=2000, bg="#DDD4EF", colormap="new")
+        frame_video.grid(row=0, column=4, padx=50, pady=50, sticky='e')
         
         self.stopEvent = None
         self.frame = frame_video
@@ -120,23 +140,9 @@ class PageTwo(tk.Frame):
         self.thread.start()
         self.panel = None
 
-        threading.Thread(target=self.maintenance, daemon=True).start()
-        threading.Thread(target=self.postingData, daemon=True).start()
+        
 
-    def maintenance(self):
-        """ Background thread doing various maintenance tasks """
-        readText = ImageProcess()
-        while True:
-            # do things...
-            readText.readData()
-            
-
-    def postingData(self):
-        """ Background thread doing various maintenance tasks """
-        readText = ImageProcess()
-        while True:
-            # do things...
-            readText.postToDeepblu()
+    
 
     # # Added this function to update the page1_label StringVar.
     def update_p2_label(self):
@@ -155,7 +161,7 @@ class PageTwo(tk.Frame):
             # have a maximum width of 300 pixels
             self.frame = self.vs.read()
             #self.frame = cv2.imread("sddddd.png")
-            self.frame = imutils.resize(self.frame, width=900)
+            self.frame = imutils.resize(self.frame, width=1000, height=1500)
     
             # OpenCV represents images in BGR order; however PIL
             # represents images in RGB order, so we need to swap
@@ -175,52 +181,22 @@ class PageTwo(tk.Frame):
                 self.panel.configure(image=image)
                 self.panel.image = image
 
-            # gmt = time.gmtime()
-            # ts = calendar.timegm(gmt)
-
-            # cv2.imwrite("static/calibration/boxER_%s.jpg" % fillenameImage, self.frame)
-            # image =  cv2.imread("static/calibration/boxER_%s.jpg" % fillenameImage)
-
-
-            #image =  cv2.imread("static/uploads/2.png")
-
-            #image = self.frame
-            image =  cv2.imread("static/uploads/1789.png")
-            image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
-            
-            
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-
-            _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-            cnt = contours
-            s = 1
-            for c in cnt:
-                if(cv2.contourArea(c)  > 1000000):
-                    s = s + 1
-                    x,y,w,h = cv2.boundingRect(c)
-                    cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
-            
-            if s != 1:
-                image = image[y:y+h,x:x+w]
+                image = self.frame
+                #image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                # text = pytesseract.image_to_string(Image.fromarray(gray))
-                # print("".join(text.split()).encode('utf8'))
+                thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
-                
+                _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                cnt = contours
+                s = 1
+                for c in cnt:
+                    if(cv2.contourArea(c)  > 1000000):
+                        s = s + 1
+                        x,y,w,h = cv2.boundingRect(c)
+                        cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
+                if s > 1:
+                    image = image[y:y+h,x:x+w]
                 barcodes = pyzbar.decode(image)
-                
-                serials = []
-
-                for barcode in barcodes:
-                    barcodeData = barcode.data.decode("utf-8")
-                    if(detect_special_characer(barcodeData) == True):
-                        serials.append(barcodeData)
-
-                print(serials)
-                
-                img = self.frame
-                barcodes = pyzbar.decode(img)
 
                 
                 serials = []
@@ -241,20 +217,21 @@ class PageTwo(tk.Frame):
                 if len(serials) > 0:
                     lastScan = HoldStatus("").readFile("_lastScan")
                     lastSerialCount = HoldStatus("").readFile("_lastScanCount")
-                    if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)]))):
+                    
+                    if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
                         s = 1
                     # if(int(lastSerialCount) > int(len(serials))):
                     #     s = 2
-
+                    
                     if s == 0:
                         print(serials)
                         HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
                         HoldStatus("").writeFile(str(len(serials)), "_lastScanCount")
                         serials.append(fillenameImage)
-                        cv2.imwrite("static/processingImg/boxER_%s.jpg" % fillenameImage, self.frame)
+                        cv2.imwrite("static/processingImg/boxER_%s.jpg" % fillenameImage, image)
                         file1 = open("static/uploads/_serial.txt", "a")
-                        file1.write(json.dumps([ele for ele in reversed(serials)]))
-                        file1.write("\n")
+                        file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
+                        file1.close()
                     
                 
 
