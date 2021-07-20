@@ -174,78 +174,87 @@ class PageTwo(tk.Frame):
             else:
                 self.panel.configure(image=image)
                 self.panel.image = image
+
+            # gmt = time.gmtime()
+            # ts = calendar.timegm(gmt)
+
+            # cv2.imwrite("static/calibration/boxER_%s.jpg" % fillenameImage, self.frame)
+            # image =  cv2.imread("static/calibration/boxER_%s.jpg" % fillenameImage)
+
+
+            #image =  cv2.imread("static/uploads/2.png")
+
+            #image = self.frame
+            image =  cv2.imread("static/uploads/1789.png")
+            image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
             
-            img = self.frame
-            barcodes = pyzbar.decode(img)
-
             
-            serials = []
-   
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
-            for barcode in barcodes:
-                barcodeData = barcode.data.decode("utf-8")
-                if(detect_special_characer(barcodeData) == True):
-                    serials.append(barcodeData)
-            # ground_truth_mask = img
+            _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+            cnt = contours
+            s = 1
+            for c in cnt:
+                if(cv2.contourArea(c)  > 1000000):
+                    s = s + 1
+                    x,y,w,h = cv2.boundingRect(c)
+                    cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
+            
+            if s != 1:
+                image = image[y:y+h,x:x+w]
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                # text = pytesseract.image_to_string(Image.fromarray(gray))
+                # print("".join(text.split()).encode('utf8'))
 
-            # # Find list of barcode regions (rotated rectangle) within image
-            # barcode_regions, debug_img = find_barcodes(img)
-            # barcode_regions_mask = np.zeros(img.shape, np.uint8)
-            # barcode_images = None
-            # result = []
-            # serials = []
-            # key_value ={} 
-            # # Decode barcode regions
-            # for barcode_region in barcode_regions:
                 
-            #     # Decode barcode image
-            #     barcode_img = barcode_region.extract_from(img)
-            #     barcode_mask = barcode_region.get_mask(img)
-            #     debug_img = barcode_region.draw(debug_img)
-
-            #     # Combine masks from multiple detected regions
-            #     barcode_regions_mask += barcode_mask
-
-            #     # Decode barcode
-            #     barcodes = pyzbar.decode(barcode_img)
-            #     print(barcodes)
+                barcodes = pyzbar.decode(image)
                 
-            #     for barcode in barcodes:
-            #         (x, y, w, h) = barcode.rect
-            #         barcodeData = barcode.data.decode("utf-8")
-            #         if(detect_special_characer(barcodeData) == True):
-            #             key_value[int(y)] = barcodeData
-            #     # Keep result for logging
-            #     data = ", ".join([d.data.decode("utf-8") for d in barcodes])
-            #     result.append({"data": data, "region": barcode_region.json()})
+                serials = []
 
-            # s = 0
-            # for i in sorted (key_value.keys()) :
-            #     serials.append(key_value[i])
+                for barcode in barcodes:
+                    barcodeData = barcode.data.decode("utf-8")
+                    if(detect_special_characer(barcodeData) == True):
+                        serials.append(barcodeData)
 
-            s = 0
-            gmt = time.gmtime()
-            ts = calendar.timegm(gmt)
-            
-            fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                print(serials)
+                
+                img = self.frame
+                barcodes = pyzbar.decode(img)
 
-            if len(serials) > 0:
-                lastScan = HoldStatus("").readFile("_lastScan")
-                lastSerialCount = HoldStatus("").readFile("_lastScanCount")
-                if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)]))):
-                    s = 1
-                # if(int(lastSerialCount) > int(len(serials))):
-                #     s = 2
+                
+                serials = []
+    
 
-                if s == 0:
-                    print(serials)
-                    HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
-                    HoldStatus("").writeFile(str(len(serials)), "_lastScanCount")
-                    serials.append(fillenameImage)
-                    cv2.imwrite("static/processingImg/boxER_%s.jpg" % fillenameImage, self.frame)
-                    file1 = open("static/uploads/_serial.txt", "a")
-                    file1.write(json.dumps([ele for ele in reversed(serials)]))
-                    file1.write("\n")
+                for barcode in barcodes:
+                    barcodeData = barcode.data.decode("utf-8")
+                    if(detect_special_characer(barcodeData) == True):
+                        serials.append(barcodeData)
+                
+
+                s = 0
+                gmt = time.gmtime()
+                ts = calendar.timegm(gmt)
+                
+                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+
+                if len(serials) > 0:
+                    lastScan = HoldStatus("").readFile("_lastScan")
+                    lastSerialCount = HoldStatus("").readFile("_lastScanCount")
+                    if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)]))):
+                        s = 1
+                    # if(int(lastSerialCount) > int(len(serials))):
+                    #     s = 2
+
+                    if s == 0:
+                        print(serials)
+                        HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
+                        HoldStatus("").writeFile(str(len(serials)), "_lastScanCount")
+                        serials.append(fillenameImage)
+                        cv2.imwrite("static/processingImg/boxER_%s.jpg" % fillenameImage, self.frame)
+                        file1 = open("static/uploads/_serial.txt", "a")
+                        file1.write(json.dumps([ele for ele in reversed(serials)]))
+                        file1.write("\n")
                     
                 
 
