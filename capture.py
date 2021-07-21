@@ -144,7 +144,7 @@ class PageTwo(tk.Frame):
         self.vs .set(cv2.CAP_PROP_FRAME_WIDTH, 3072)
         self.vs .set(cv2.CAP_PROP_FRAME_HEIGHT, 2304)
         
-        #self.stopEvent = threading.Event()
+        self.stopEvent = threading.Event()
         self.thread = threading.Thread(target=self.videoLoop, args=())
         self.thread.start()
         self.panel = None
@@ -158,10 +158,6 @@ class PageTwo(tk.Frame):
     def videoLoop(self):
         stats = []
         start = timer()
-        customer = open("static/uploads/_customer.txt").readline().strip("\n")
-        if(customer != ""):
-            self.stopEvent = None
-        else: self.stopEvent = threading.Event()
 		# DISCLAIMER:
 		# I'm not a GUI developer, nor do I even pretend to be. This
 		# try/except statement is a pretty ugly hack to get around
@@ -179,7 +175,12 @@ class PageTwo(tk.Frame):
             # OpenCV represents images in BGR order; however PIL
             # represents images in RGB order, so we need to swap
             # the channels, then convert to PIL and ImageTk format
-            image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+            customer = open("static/uploads/_customer.txt").readline().strip("\n")
+            
+            if(customer != ""):
+                image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+            else:
+                image = cv2.imread("static/uploads/customer1.jpg")
             image = Image.fromarray(image)
             image = ImageTk.PhotoImage(image)
     

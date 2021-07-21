@@ -35,7 +35,7 @@ class ImageProcess(object):
                 line = self.trimValue(line)
                 # if(int(len(str(line))) > 8):
                 #     print(str(r)+"=="+str(i)+"=="+str(len(str(line))))
-                if((int(r) <= int(i) or int(i)==0) and int(len(str(line))) > 8):
+                if((int(str(r)) <= int(i) or int(i)==0) and int(len(str(line))) > 8):
                     print(i)
                     print(line)
                     self.updateFile("1","_processing")
