@@ -21,6 +21,7 @@ from pyzbar import pyzbar
 import random
 import re
 
+
 ds_factor = 0.6
 
 os.environ['OMP_THREAD_LIMIT'] = '2'
@@ -28,21 +29,27 @@ class ImageProcess(object):
     def readData(self):
         
         with open("static/uploads/_serial.txt", 'r') as t:
+            line_count = 0
+                
+            
+
             for i,line in enumerate(t):
                 file = open("static/uploads/_serialrowcount.txt", "r")
                 r = file.read()
                 file.close()
                 line = self.trimValue(line)
                 # if(int(len(str(line))) > 8):
-                #     print(str(r)+"=="+str(i)+"=="+str(len(str(line))))
-                if((int(str(r)) <= int(i) or int(i)==0) and int(len(str(line))) > 8):
-                    print(i)
-                    print(line)
+                #     print(str(r)+"=="+str(line_count)+"=="+str(len(str(line))))
+                    
+                if((int(str(r)) <= int(line_count) or int(line_count)==0) and int(len(str(line))) > 8):
+                    # print(i)
+                    # print(line)
                     self.updateFile("1","_processing")
                     self.processImage(line)
-                    if(int(r) == int(i)):
+                    if(int(str(r)) - int(i) == 1):
                         self.resetProcess()
-                HoldStatus("").writeFile(str(i), "_serialrowcount")
+                HoldStatus("").writeFile(str(line_count), "_serialrowcount")
+                line_count += 1
                 
                     
 
@@ -81,7 +88,6 @@ class ImageProcess(object):
                     if sub_index >-1:
                         text = ""
                         self.processValidation(key, value, line, imName)
-                        print(1111)
                         angleSame = 1
                         break
                 if(angleSame ==0):
@@ -115,7 +121,6 @@ class ImageProcess(object):
             if(valid != '0'):
                 valid = ModelValidation().validate(
                     jsonArray["data"], self.Reverse(line))
-            print("=====================")
             print(valid)
                     
             if valid == '0':

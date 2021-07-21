@@ -204,6 +204,7 @@ class PageTwo(tk.Frame):
                 cnt = contours
                 s = 1
                 for c in cnt:
+                    #print(cv2.contourArea(c))
                     if(cv2.contourArea(c)  > 1000000):
                         s = s + 1
                         x,y,w,h = cv2.boundingRect(c)
