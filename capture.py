@@ -140,9 +140,9 @@ class PageTwo(tk.Frame):
 
         
         #self.vs = VideoStream(0)
-        self.vs  = cv2.VideoCapture(0)
-        self.vs .set(cv2.CAP_PROP_FRAME_WIDTH, 3072)
-        self.vs .set(cv2.CAP_PROP_FRAME_HEIGHT, 2304)
+        self.vs  = cv2.VideoCapture(2)
+        self.vs .set(cv2.CAP_PROP_FRAME_WIDTH, 2500)
+        self.vs .set(cv2.CAP_PROP_FRAME_HEIGHT, 1600)
         
         self.stopEvent = threading.Event()
         self.thread = threading.Thread(target=self.videoLoop, args=())
@@ -181,6 +181,7 @@ class PageTwo(tk.Frame):
                 image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
             else:
                 image = cv2.imread("static/uploads/customer1.jpg")
+                cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
             image = Image.fromarray(image)
             image = ImageTk.PhotoImage(image)
     
@@ -196,21 +197,21 @@ class PageTwo(tk.Frame):
                 self.panel.image = image
 
                 image = self.frame
-                #image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
-                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+                image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
+                # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                # thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
-                contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-                cnt = contours
-                s = 1
-                for c in cnt:
-                    #print(cv2.contourArea(c))
-                    if(cv2.contourArea(c)  > 1000000):
-                        s = s + 1
-                        x,y,w,h = cv2.boundingRect(c)
-                        cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
-                if s > 1:
-                    image = image[y:y+h,x:x+w]
+                # contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                # cnt = contours
+                # s = 1
+                # for c in cnt:
+                #     #print(cv2.contourArea(c))
+                #     if(cv2.contourArea(c)  > 1000000):
+                #         s = s + 1
+                #         x,y,w,h = cv2.boundingRect(c)
+                #         cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
+                # if s > 1:
+                #     image = image[y:y+h,x:x+w]
 
                 barcodes = pyzbar.decode(image)
 
@@ -233,14 +234,13 @@ class PageTwo(tk.Frame):
                 if len(serials) > 0:
                     lastScan = HoldStatus("").readFile("_lastScan")
                     lastSerialCount = HoldStatus("").readFile("_lastScanCount")
-                    
                     if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
                         s = 1
                     # if(int(lastSerialCount) > int(len(serials))):
                     #     s = 2
                     
                     if s == 0:
-                        #print(serials)
+                        print(serials)
                         HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
                         HoldStatus("").writeFile(str(len(serials)), "_lastScanCount")
                         serials.append(fillenameImage)

@@ -35,12 +35,13 @@ class ModelValidation(object):
 
         
     def validate(self, datas, serials):
-        if(len(datas) != len(serials)):
+       
+        if(len(datas) == len(serials)):
             return '1'
         for c in range(len(serials)):
             for data in datas:
                 if str(c)  == data['sort']:
-                    #print(str(data['min']) +"======"+str(data['max'])+"======"+ data['regularExp']+"======"+serials[c].strip())
+                    print(str(data['min']) +"======"+str(data['max'])+"======"+ data['regularExp']+"======"+serials[c].strip())
                     result = self.checkminmax(data['min'], data['max'], data['regularExp'],serials[c].strip())
                     if result != '0':
                         return '1'
