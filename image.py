@@ -26,6 +26,9 @@ ds_factor = 0.6
 
 os.environ['OMP_THREAD_LIMIT'] = '2'
 class ImageProcess(object):
+    def __init__(self):
+        self.validation = open("static/uploads/_validation.txt", 'r').read()
+
     def readData(self):
         
         with open("static/uploads/_serial.txt", 'r') as t:
@@ -73,12 +76,14 @@ class ImageProcess(object):
 
     def processImage(self, line):
         if os.path.isfile("static/processingImg/boxER_"+line[0]+".jpg"):
+                
                 imName = line[0]
                 image = cv2.imread("static/processingImg/boxER_"+line[0]+".jpg")
+                os.unlink("static/processingImg/boxER_"+line[0]+".jpg")
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 text = pytesseract.image_to_string(Image.fromarray(gray))
-                print("".join(text.split()).encode('utf8'))
-                validation = open("static/uploads/_validation.txt", 'r').read()
+                #print("".join(text.split()).encode('utf8'))
+                validation = self.validation
                 strVal = str(validation)
                 models = json.loads(strVal)
                 angleSame = 0
@@ -97,7 +102,7 @@ class ImageProcess(object):
                         img = self.rotate_bound(image, x)
                         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                         text = pytesseract.image_to_string(Image.fromarray(gray))
-                        #print("".join(text.split()).encode('utf8'))
+                        print("".join(text.split()).encode('utf8'))
                         
                         for key, value in models.items():
                             sub_index = str("".join(text.split())).find(key.replace('"', ""))
@@ -161,7 +166,7 @@ class ImageProcess(object):
                         file1.write(str(dict))
                         HoldStatus("").writeFile("1", "_scan")
                         data=json.dumps(dict)
-                        shutil.copy("static/processingImg/boxER_"+imName+".jpg","static/s3Bucket/boxER_"+imName+".jpg")
+                        #shutil.copy("static/processingImg/boxER_"+imName+".jpg","static/s3Bucket/boxER_"+imName+".jpg")
                         self.resetProcess()
                         
             else:
