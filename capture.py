@@ -1,3 +1,4 @@
+from config import Config
 from timeit import default_timer as timer
 from tkinter.constants import HORIZONTAL
 
@@ -140,9 +141,9 @@ class PageTwo(tk.Frame):
 
         
         #self.vs = VideoStream(0)
-        self.vs  = cv2.VideoCapture(2)
-        self.vs .set(cv2.CAP_PROP_FRAME_WIDTH, 2500)
-        self.vs .set(cv2.CAP_PROP_FRAME_HEIGHT, 1600)
+        self.vs  = cv2.VideoCapture(Config.CAMERA_NO)
+        self.vs .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
+        self.vs .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
         
         self.stopEvent = threading.Event()
         self.thread = threading.Thread(target=self.videoLoop, args=())
@@ -197,7 +198,7 @@ class PageTwo(tk.Frame):
                 self.panel.image = image
 
                 image = self.frame
-                image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
+                #image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
                 # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 # thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
