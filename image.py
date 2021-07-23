@@ -75,11 +75,11 @@ class ImageProcess(object):
         return [ele for ele in reversed(lst)]
 
     def processImage(self, line):
-        if os.path.isfile("static/processingImg/boxER_"+line[0]+".jpg"):
+        if os.path.isfile("static/processingImg/boxER_"+line[0]+".png"):
                 
                 imName = line[0]
-                image = cv2.imread("static/processingImg/boxER_"+line[0]+".jpg")
-                os.unlink("static/processingImg/boxER_"+line[0]+".jpg")
+                image = cv2.imread("static/processingImg/boxER_"+line[0]+".png")
+                os.unlink("static/processingImg/boxER_"+line[0]+".png")
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 text = pytesseract.image_to_string(Image.fromarray(gray))
                 #print("".join(text.split()).encode('utf8'))
@@ -96,6 +96,7 @@ class ImageProcess(object):
                         angleSame = 1
                         break
                 if(angleSame ==0):
+                    print(2222)
                     lo = [180,135,90,45]
                     for x in lo:
                         img = self.rotate_bound(image, x)
@@ -117,6 +118,7 @@ class ImageProcess(object):
             valid = str(value).replace("'",'"')
             jsonArray =json.loads(str(valid))
             count = 0
+            
             valid = ModelValidation().validate(
                 jsonArray["data"], line)
             
@@ -164,7 +166,7 @@ class ImageProcess(object):
                         file1.write(str(dict))
                         HoldStatus("").writeFile("1", "_scan")
                         data=json.dumps(dict)
-                        #shutil.copy("static/processingImg/boxER_"+imName+".jpg","static/s3Bucket/boxER_"+imName+".jpg")
+                        #shutil.copy("static/processingImg/boxER_"+imName+".png","static/s3Bucket/boxER_"+imName+".png")
                         self.resetProcess()
                         
             else:
@@ -172,7 +174,7 @@ class ImageProcess(object):
 
     def resetProcess(self):
         for file in os.scandir("static/processingImg"):
-           if file.name.endswith(".jpg"):
+           if file.name.endswith(".png"):
                os.unlink(file.path)
         HoldStatus("").writeFile("0", "_processing")
         HoldStatus("").writeFile("0", "_serialrowcount")
@@ -196,7 +198,7 @@ class ImageProcess(object):
 
 
     def processImage_gus(self):
-        images = glob.glob('static/processingImg/*.jpg')
+        images = glob.glob('static/processingImg/*.png')
         for image_file in images:
             
             if os.path.isfile(image_file):
@@ -393,21 +395,21 @@ class ImageProcess(object):
         # These are the x and y coordinates                                              
         object_points_3D[:,:2] = np.mgrid[0:nY, 0:nX].T.reshape(-1, 2) 
         print(3339999999999999)
-        images = glob.glob('static/calibration/*.jpg')
+        images = glob.glob('static/calibration/*.png')
         
         for image_file in images:
             image = cv2.imread(image_file)
 
         #image = self.Zoom(image,2)
         img1 = image
-        #image = cv2.imread('1622798624-214896_undistorted.jpg')
+        #image = cv2.imread('1622798624-214896_undistorted.png')
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        ret, jpeg = cv2.imencode('.jpg', image)
+        ret, jpeg = cv2.imencode('.png', image)
 
         # Find the corners on the chessboard
         success, corners = cv2.findChessboardCorners(gray, (nY, nX), None)
         
-        images = glob.glob('static/calibration/*.jpg')
+        images = glob.glob('static/calibration/*.png')
 
         print(9999999999999)    
           # Go through each chessboard image, one by one
@@ -466,7 +468,7 @@ class ImageProcess(object):
         # Undistort the image 
         
 
-        # Create the output file name by removing the '.jpg' part
+        # Create the output file name by removing the '.png' part
         
 
         calib_result_pickle = {}

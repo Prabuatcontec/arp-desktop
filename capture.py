@@ -1,7 +1,7 @@
 from config import Config
 from timeit import default_timer as timer
 from tkinter.constants import HORIZONTAL
-import os, shutil
+
 import cv2
 import numpy as np
 import structlog
@@ -92,7 +92,7 @@ class PageOne(tk.Frame):
         readText = ImageProcess()
         while True:
             # do things...
-            time.sleep(.1)
+            time.sleep(1)
             readText.readData()
             
             
@@ -102,7 +102,7 @@ class PageOne(tk.Frame):
         readText = ImageProcess()
         while True:
             # do things...
-            time.sleep(.1)
+            time.sleep(1)
             readText.postToDeepblu()
 
         
@@ -144,7 +144,7 @@ class PageTwo(tk.Frame):
         self.vs  = cv2.VideoCapture(Config.CAMERA_NO)
         self.vs .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
         self.vs .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
-        
+        self.vs.set(cv2.CAP_PROP_AUTOFOCUS, 0)        
         self.stopEvent = threading.Event()
         self.thread = threading.Thread(target=self.videoLoop, args=())
         self.thread.start()
@@ -183,14 +183,8 @@ class PageTwo(tk.Frame):
             else:
                 image = cv2.imread("static/uploads/customer1.jpg")
                 cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
-            gmt = time.gmtime()
-            ts = calendar.timegm(gmt)
-            #image = cv2.imread("static/uploads/6.jpg")
-            fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-            cv2.imwrite("static/processingImg/1111boxER_%s.jpg" % fillenameImage, image)
             image = Image.fromarray(image)
             image = ImageTk.PhotoImage(image)
-            
     
             # if the panel is not None, we need to initialize it
             if self.panel is None:
@@ -203,11 +197,8 @@ class PageTwo(tk.Frame):
                 self.panel.configure(image=image)
                 self.panel.image = image
 
-                image = cv2.imread("static/processingImg/1111boxER_%s.jpg" % fillenameImage)
-                #image = cv2.resize(image, (1800, 1400 ), interpolation=cv2.INTER_CUBIC)
-                if os.path.isfile("static/processingImg/1111boxER_"+fillenameImage+".jpg"):
-                    os.unlink("static/processingImg/1111boxER_"+fillenameImage+".jpg")
-                
+                image = self.frame
+                #image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
                 # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 # thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
@@ -236,22 +227,25 @@ class PageTwo(tk.Frame):
                 
 
                 s = 0
+                gmt = time.gmtime()
+                ts = calendar.timegm(gmt)
                 
+                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
 
                 if len(serials) > 0:
                     lastScan = HoldStatus("").readFile("_lastScan")
                     lastSerialCount = HoldStatus("").readFile("_lastScanCount")
                     if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
                         s = 1
-                    # if(int(lastSerialCount) > int(len(serials))):
-                    #     s = 2
+                    if(int(lastSerialCount) > int(len(serials))):
+                        s = 1
                     
                     if s == 0:
                         print(serials)
                         HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
                         HoldStatus("").writeFile(str(len(serials)), "_lastScanCount")
                         serials.append(fillenameImage)
-                        cv2.imwrite("static/processingImg/boxER_%s.jpg" % fillenameImage, image)
+                        cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
                         file1 = open("static/uploads/_serial.txt", "a")
                         file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
                         file1.close()
