@@ -1,7 +1,7 @@
 from config import Config
 from timeit import default_timer as timer
 from tkinter.constants import HORIZONTAL
-
+import os, shutil
 import cv2
 import numpy as np
 import structlog
@@ -183,8 +183,14 @@ class PageTwo(tk.Frame):
             else:
                 image = cv2.imread("static/uploads/customer1.jpg")
                 cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
+            gmt = time.gmtime()
+            ts = calendar.timegm(gmt)
+            #image = cv2.imread("static/uploads/6.jpg")
+            fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+            cv2.imwrite("static/processingImg/1111boxER_%s.jpg" % fillenameImage, image)
             image = Image.fromarray(image)
             image = ImageTk.PhotoImage(image)
+            
     
             # if the panel is not None, we need to initialize it
             if self.panel is None:
@@ -197,8 +203,11 @@ class PageTwo(tk.Frame):
                 self.panel.configure(image=image)
                 self.panel.image = image
 
-                image = self.frame
-                #image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
+                image = cv2.imread("static/processingImg/1111boxER_%s.jpg" % fillenameImage)
+                #image = cv2.resize(image, (1800, 1400 ), interpolation=cv2.INTER_CUBIC)
+                if os.path.isfile("static/processingImg/1111boxER_"+fillenameImage+".jpg"):
+                    os.unlink("static/processingImg/1111boxER_"+fillenameImage+".jpg")
+                
                 # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 # thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
@@ -227,10 +236,7 @@ class PageTwo(tk.Frame):
                 
 
                 s = 0
-                gmt = time.gmtime()
-                ts = calendar.timegm(gmt)
                 
-                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
 
                 if len(serials) > 0:
                     lastScan = HoldStatus("").readFile("_lastScan")

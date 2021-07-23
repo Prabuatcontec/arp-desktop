@@ -96,8 +96,7 @@ class ImageProcess(object):
                         angleSame = 1
                         break
                 if(angleSame ==0):
-                    print(2222)
-                    lo = [180,165,150,135,120,105,90,75,60,45]
+                    lo = [180,135,90,45]
                     for x in lo:
                         img = self.rotate_bound(image, x)
                         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -118,7 +117,6 @@ class ImageProcess(object):
             valid = str(value).replace("'",'"')
             jsonArray =json.loads(str(valid))
             count = 0
-            
             valid = ModelValidation().validate(
                 jsonArray["data"], line)
             
