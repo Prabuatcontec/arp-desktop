@@ -96,8 +96,7 @@ class ImageProcess(object):
                         angleSame = 1
                         break
                 if(angleSame ==0):
-                    print(2222)
-                    lo = [180,135,90,45]
+                    lo = [180,90]
                     for x in lo:
                         img = self.rotate_bound(image, x)
                         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
