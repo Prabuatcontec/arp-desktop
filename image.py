@@ -32,6 +32,8 @@ class ImageProcess(object):
     def readData(self):
         if os.path.isfile("static/uploads/_serial.txt"):
             os.rename("static/uploads/_serial.txt", "static/uploads/_serial_process.txt")
+            HoldStatus("").writeFile("", "_lastScan")
+            HoldStatus("").writeFile("0", "_lastScanCount")
             with open("static/uploads/_serial_process.txt", 'r') as t:
                 os.remove("static/uploads/_serial_process.txt")
                 for i,line in enumerate(t):
