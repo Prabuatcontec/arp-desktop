@@ -52,6 +52,7 @@ class PageOne(tk.Frame):
         #somechoices = ["1", "2", "C", "D"]
         self.category.set("Pick a category")
         open("static/uploads/_customer.txt", "w").write("")
+        open("static/uploads/_serial.txt", "w").write("")
 
         popupMenu = tk.OptionMenu(frame_eb_data, self.category, *somechoices)
         popupMenu.grid(row=1, column=1)
@@ -65,14 +66,12 @@ class PageOne(tk.Frame):
     
     def change_dropdown(self,*args):
         print( self.category.get() )
-        HoldStatus("").writeFile("\n", "_serial")
         HoldStatus("").writeFile("", "_lastScan")
         HoldStatus("").writeFile("0", "_lastScanCount")
         HoldStatus("").writeFile("2", "_scan")
         HoldStatus("").writeFile("0", "_serialpostCount")
         HoldStatus("").writeFile("", "_goodData")
         HoldStatus("").writeFile("0", "_processing")
-        HoldStatus("").writeFile("0", "_serialrowcount")
         
         dict = {}
         self.progress.grid(row=1,column=0)

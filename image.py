@@ -30,32 +30,14 @@ class ImageProcess(object):
         self.validation = open("static/uploads/_validation.txt", 'r').read()
 
     def readData(self):
-        
-        with open("static/uploads/_serial.txt", 'r') as t:
-            line_count = 0
-                
-            
-
-            for i,line in enumerate(t):
-                file = open("static/uploads/_serialrowcount.txt", "r")
-                r = file.read()
-                file.close()
-                line = self.trimValue(line)
-                # if(int(len(str(line))) > 8):
-                #     print(str(r)+"=="+str(line_count)+"=="+str(len(str(line))))
-                    
-                if((int(str(r)) <= int(line_count) or int(line_count)==0) and int(len(str(line))) > 8):
-                    # print(i)
-                    # print(line)
+        if os.path.isfile("static/uploads/_serial.txt"):
+            os.rename("static/uploads/_serial.txt", "static/uploads/_serial_process.txt")
+            with open("static/uploads/_serial_process.txt", 'r') as t:
+                os.remove("static/uploads/_serial_process.txt")
+                for i,line in enumerate(t):
+                    line = self.trimValue(line)
                     self.updateFile("1","_processing")
                     self.processImage(line)
-                    if(int(str(r)) - int(i) == 1):
-                        self.resetProcess()
-                HoldStatus("").writeFile(str(line_count), "_serialrowcount")
-                line_count += 1
-                
-                    
-
             return 1
 
     def trimValue(self, line):
@@ -176,8 +158,6 @@ class ImageProcess(object):
            if file.name.endswith(".png"):
                os.unlink(file.path)
         HoldStatus("").writeFile("0", "_processing")
-        HoldStatus("").writeFile("0", "_serialrowcount")
-        HoldStatus("").writeFile("", "_serial")
         HoldStatus("").writeFile("", "_lastScan")
         HoldStatus("").writeFile("0", "_lastScanCount")
 
@@ -260,8 +240,6 @@ class ImageProcess(object):
                             if file.name.startswith(splitImage[0]):
                                 os.unlink(file.path)
                         HoldStatus("").writeFile("0", "_processing")
-                        HoldStatus("").writeFile("0", "_serialrowcount")
-                        HoldStatus("").writeFile("", "_serial")
                         HoldStatus("").writeFile("", "_lastScan")
                         HoldStatus("").writeFile("0", "_lastScanCount")
 
@@ -337,8 +315,6 @@ class ImageProcess(object):
                                                 if file.name.startswith(splitImage[0]):
                                                     os.unlink(file.path)
                                             HoldStatus("").writeFile("0", "_processing")
-                                            HoldStatus("").writeFile("0", "_serialrowcount")
-                                            HoldStatus("").writeFile("", "_serial")
                                             HoldStatus("").writeFile("", "_lastScan")
                                             HoldStatus("").writeFile("0", "_lastScanCount")
                                             break
