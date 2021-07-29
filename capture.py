@@ -58,7 +58,11 @@ class PageThree(tk.Frame):
         frame_eb_data = tk.Frame(self, width=100, height=10)
         frame_eb_data.grid(row=0, column=1, sticky='nsew', padx=1, pady=1)
         lab_eb_data = tk.Label(frame_eb_data, background='#DDD4EF', textvariable=controller.page1_label)
-        lab_eb_data.grid(row=0, column=0)
+        lab_eb_data.grid(row=0, column=1)
+        frame_but_right = tk.Frame(self, width=240, height=60)
+        frame_but_right.grid(row=2, column=0, padx=1, pady=1, sticky='nsew')
+        b_ebdata = tk.Button(frame_but_right, text="Logout", width=10, height=2, command=lambda: controller.show_frame(PageOne))
+        b_ebdata.grid(row=2, column=1)
         self.category = tk.StringVar()
         somechoices = []
         for value in Connection().getCustomer():
@@ -178,7 +182,7 @@ class PageTwo(tk.Frame):
         if response.status_code != 200:
             self.controller.page2_label.set("Authentication Failed!")
         else:
-            self.controller.page1_label.set(self.entry_nombre_fld.get())
+            self.controller.page1_label.set(self.entry_nombre_fld.get().upper())
             open("static/uploads/_login.txt", "w").write(f"{self.entry_nombre_fld.get() }")
             self.controller.page3_label.set("Logout")
             self.controller.show_frame(PageThree)
