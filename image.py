@@ -20,6 +20,9 @@ import imutils
 from pyzbar import pyzbar
 import random
 import re
+from datetime import datetime 
+import calendar
+from timeit import default_timer as timer
 
 
 ds_factor = 0.6
@@ -32,8 +35,8 @@ class ImageProcess(object):
     def readData(self):
         if os.path.isfile("static/uploads/_serial.txt"):
             os.rename("static/uploads/_serial.txt", "static/uploads/_serial_process.txt")
-            HoldStatus("").writeFile("", "_lastScan")
-            HoldStatus("").writeFile("0", "_lastScanCount")
+            # HoldStatus("").writeFile("", "_lastScan")
+            # HoldStatus("").writeFile("0", "_lastScanCount")
             with open("static/uploads/_serial_process.txt", 'r') as t:
                 os.remove("static/uploads/_serial_process.txt")
                 for i,line in enumerate(t):
@@ -63,10 +66,10 @@ class ImageProcess(object):
                 
                 imName = line[0]
                 image = cv2.imread("static/processingImg/boxER_"+line[0]+".png")
-                os.unlink("static/processingImg/boxER_"+line[0]+".png")
+                #os.unlink("static/processingImg/boxER_"+line[0]+".png")
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 text = pytesseract.image_to_string(Image.fromarray(gray))
-                #print("".join(text.split()).encode('utf8'))
+                print("".join(text.split()).encode('utf8'))
                 validation = self.validation
                 strVal = str(validation)
                 models = json.loads(strVal)
@@ -109,6 +112,9 @@ class ImageProcess(object):
             if(valid != '0'):
                 valid = ModelValidation().validate(
                     jsonArray["data"], self.Reverse(line))
+            ts = calendar.timegm(time.gmtime())
+            print(line)
+            print(ts)
             print(valid)
                     
             if valid == '0':
@@ -149,7 +155,7 @@ class ImageProcess(object):
                         file1.write(str(dict))
                         HoldStatus("").writeFile("1", "_scan")
                         data=json.dumps(dict)
-                        #shutil.copy("static/processingImg/boxER_"+imName+".png","static/s3Bucket/boxER_"+imName+".png")
+                        shutil.copy("static/processingImg/boxER_"+imName+".png","static/s3Bucket/boxER_"+imName+".png")
                         self.resetProcess()
                         
             else:

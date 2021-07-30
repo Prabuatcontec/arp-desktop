@@ -60,7 +60,7 @@ class PageThree(tk.Frame):
         lab_eb_data = tk.Label(frame_eb_data, background='#DDD4EF', textvariable=controller.page1_label)
         lab_eb_data.grid(row=0, column=1)
         frame_but_right = tk.Frame(self, width=240, height=60)
-        frame_but_right.grid(row=2, column=0, padx=1, pady=1, sticky='nsew')
+        frame_but_right.grid(row=2, column=1, padx=1, pady=1, sticky='nsew')
         b_ebdata = tk.Button(frame_but_right, text="Logout", width=10, height=2, command=lambda: controller.show_frame(PageOne))
         b_ebdata.grid(row=2, column=1)
         self.category = tk.StringVar()
@@ -105,7 +105,7 @@ class PageThree(tk.Frame):
         readText = ImageProcess()
         while True:
             # do things...
-            time.sleep(1)
+            time.sleep(.5)
             readText.readData()
             
             
@@ -115,7 +115,7 @@ class PageThree(tk.Frame):
         readText = ImageProcess()
         while True:
             # do things...
-            time.sleep(1)
+            time.sleep(.5)
             readText.postToDeepblu()
 
         
@@ -223,6 +223,36 @@ class PageTwo(tk.Frame):
                 self.panel.image = image
 
                 image = self.frame
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                ddepth = cv2.cv.CV_32F if imutils.is_cv2() else cv2.CV_32F
+                gradX = cv2.Sobel(gray, ddepth=ddepth, dx=1, dy=0, ksize=-1)
+                gradY = cv2.Sobel(gray, ddepth=ddepth, dx=0, dy=1, ksize=-1)
+
+                # subtract the y-gradient from the x-gradient
+                gradient = cv2.subtract(gradX, gradY)
+                gradient = cv2.convertScaleAbs(gradient)
+
+                # blur and threshold the image
+                blurred = cv2.blur(gradient, (9, 9))
+                (_, thresh) = cv2.threshold(blurred, 225, 255, cv2.THRESH_BINARY)   
+
+                coords = np.column_stack(np.where(thresh > 0))
+                angle = cv2.minAreaRect(coords)[-1]
+                if angle < -45:
+                    angle = -(90 + angle)
+                # otherwise, just take the inverse of the angle to make
+                # it positive
+                else:
+                    angle = -angle
+
+                (h, w) = image.shape[:2]
+                center = (w // 2, h // 2)
+                M = cv2.getRotationMatrix2D(center, angle, 1.0)
+                
+
+                rotated = cv2.warpAffine(image, M, (w, h),
+                    flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+                image = rotated
                 #image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
                 # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 # thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
@@ -258,6 +288,7 @@ class PageTwo(tk.Frame):
                 fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
 
                 if len(serials) > 0:
+                    print(ts)
                     lastScan = HoldStatus("").readFile("_lastScan")
                     lastSerialCount = HoldStatus("").readFile("_lastScanCount")
                     if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
