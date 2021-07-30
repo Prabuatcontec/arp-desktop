@@ -293,8 +293,9 @@ class PageTwo(tk.Frame):
                     lastSerialCount = HoldStatus("").readFile("_lastScanCount")
                     if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
                         s = 1
-                    if(int(lastSerialCount) > int(len(serials))):
-                        s = 1
+
+                    # if(int(lastSerialCount) > int(len(serials))):
+                    #     s = 1
                     
                     if s == 0:
                         print(serials)
