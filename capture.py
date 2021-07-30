@@ -223,7 +223,23 @@ class PageTwo(tk.Frame):
                 self.panel.image = image
 
                 image = self.frame
+
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+
+                contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                cnt = contours
+                s = 1
+                for c in cnt:
+                    #print(cv2.contourArea(c))
+                    if(cv2.contourArea(c)  > 100000):
+                        s = s + 1
+                        x,y,w,h = cv2.boundingRect(c)
+                        cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
+                if s > 1:
+                    image = image[y:y+h,x:x+w]
+                #image = cv2.resize(image, (4000, 2160 ), interpolation=cv2.INTER_CUBIC)
+                # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 ddepth = cv2.cv.CV_32F if imutils.is_cv2() else cv2.CV_32F
                 gradX = cv2.Sobel(gray, ddepth=ddepth, dx=1, dy=0, ksize=-1)
                 gradY = cv2.Sobel(gray, ddepth=ddepth, dx=0, dy=1, ksize=-1)
