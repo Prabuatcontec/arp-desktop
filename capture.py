@@ -99,7 +99,6 @@ class PageThree(tk.Frame):
     def change_dropdown(self,*args):
         print( self.category.get() )
         HoldStatus("").writeFile("", "_lastScan")
-        HoldStatus("").writeFile("0", "_lastScanCount")
         HoldStatus("").writeFile("2", "_scan")
         HoldStatus("").writeFile("0", "_serialpostCount")
         HoldStatus("").writeFile("", "_goodData")
@@ -118,6 +117,7 @@ class PageThree(tk.Frame):
         self.progress.stop()
         self.progress.grid_forget()
         HoldStatus("").writeFile(json.dumps(dict),"_validation")
+        
         threading.Thread(target=self.maintenance, daemon=True).start()
         threading.Thread(target=self.postingData, daemon=True).start()
         open("static/uploads/_customer.txt", "w").write(f"{self.category.get() }")
@@ -128,9 +128,11 @@ class PageThree(tk.Frame):
         """ Background thread doing various maintenance tasks """
         readText = ImageProcess()
         while True:
-            # do things...
-            time.sleep(2)
+            l=threading.Lock()
+            l.acquire()
             readText.readData()
+            time.sleep(2)
+            l.release()
             
             
 
@@ -211,6 +213,8 @@ class PageTwo(tk.Frame):
             self.controller.page3_label.set("Logout")
             self.controller.show_frame(PageThree)
             
+    def rotate_bound(self, image, angle):
+        return imutils.rotate(image, -angle) 
 
     def videoLoop(self):
         stats = []
@@ -232,6 +236,7 @@ class PageTwo(tk.Frame):
             else:
                 image = cv2.imread("static/uploads/customer1.jpg")
                 cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
+
             image = Image.fromarray(image)
             image = ImageTk.PhotoImage(image)
     
@@ -247,109 +252,58 @@ class PageTwo(tk.Frame):
                 self.panel.image = image
 
                 image = self.frame
+                #image = cv2.resize(image, (4000, 2160 ), interpolation=cv2.INTER_CUBIC)
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                image = gray
 
-                # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                # thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+                thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
-                # contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-                # cnt = contours
-                # s = 1
-                # for c in cnt:
-                #     #print(cv2.contourArea(c))
-                #     if(cv2.contourArea(c)  > 100000):
-                #         s = s + 1
-                #         x,y,w,h = cv2.boundingRect(c)
-                #         cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
-                # if s > 1:
-                #     image = image[y:y+h,x:x+w]
-                image = cv2.resize(image, (4000, 2160 ), interpolation=cv2.INTER_CUBIC)
-                # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                # ddepth = cv2.cv.CV_32F if imutils.is_cv2() else cv2.CV_32F
-                # gradX = cv2.Sobel(gray, ddepth=ddepth, dx=1, dy=0, ksize=-1)
-                # gradY = cv2.Sobel(gray, ddepth=ddepth, dx=0, dy=1, ksize=-1)
+                _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                cnt = contours
+                s = 1
+                for c in cnt:
+                    if(cv2.contourArea(c)  > 100000):
+                        s = s + 1
 
-                # # subtract the y-gradient from the x-gradient
-                # gradient = cv2.subtract(gradX, gradY)
-                # gradient = cv2.convertScaleAbs(gradient)
+                if (s > 1):
+                    lo = [0, -5, 5, 10, -10, -15, 15, 20, -20]
+                    for x in lo:
+                        image1 = self.rotate_bound(image, x)
+                        barcodes = pyzbar.decode(image1)
+                        if len(barcodes) > 2:
+                            image = image1
+                            break
 
-                # # blur and threshold the image
-                # blurred = cv2.blur(gradient, (9, 9))
-                # (_, thresh) = cv2.threshold(blurred, 225, 255, cv2.THRESH_BINARY)   
+                        
+                    serials = []
 
-                # coords = np.column_stack(np.where(thresh > 0))
-                # angle = cv2.minAreaRect(coords)[-1]
-                # if angle < -45:
-                #     angle = -(90 + angle)
-                # # otherwise, just take the inverse of the angle to make
-                # # it positive
-                # else:
-                #     angle = -angle
 
-                # (h, w) = image.shape[:2]
-                # center = (w // 2, h // 2)
-                # M = cv2.getRotationMatrix2D(center, angle, 1.0)
-                
+                    for barcode in barcodes:
+                        barcodeData = barcode.data.decode("utf-8")
+                        if(detect_special_characer(barcodeData) == True):
+                            serials.append(barcodeData)
 
-                # rotated = cv2.warpAffine(image, M, (w, h),
-                #     flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
-                # image = rotated
-                #image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
-                # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                # thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-
-                # contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-                # cnt = contours
-                # s = 1
-                # for c in cnt:
-                #     #print(cv2.contourArea(c))
-                #     if(cv2.contourArea(c)  > 1000000):
-                #         s = s + 1
-                #         x,y,w,h = cv2.boundingRect(c)
-                #         cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
-                # if s > 1:
-                #     image = image[y:y+h,x:x+w]
-
-                barcodes = pyzbar.decode(image)
-
-                
-                serials = []
-    
-
-                for barcode in barcodes:
-                    barcodeData = barcode.data.decode("utf-8")
-                    if(detect_special_characer(barcodeData) == True):
-                        serials.append(barcodeData)
-                
-
-                s = 0
-                gmt = time.gmtime()
-                ts = calendar.timegm(gmt)
-                
-                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-
-                if len(serials) > 0:
-                    lastScan = HoldStatus("").readFile("_lastScan")
-                    lastSerialCount = HoldStatus("").readFile("_lastScanCount")
-                    if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
-                        s = 1
-
-                    # if(int(lastSerialCount) > int(len(serials))):
-                    #     s = 1
+                    s = 0
+                    gmt = time.gmtime()
+                    ts = calendar.timegm(gmt)
                     
-                    if s == 0:
-                        print("Scanned")
-                        print(serials)
-                        HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
-                        HoldStatus("").writeFile(str(len(serials)), "_lastScanCount")
-                        serials.append(fillenameImage)
-                        cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
-                        file1 = open("static/uploads/_serial.txt", "a")
-                        file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
-                        file1.close()
-                    
-                
+                    fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
 
-            # Jaccard_accuracy = intersection over union of the two binary masks
+                    if len(serials) > 0:
+                        lastScan = HoldStatus("").readFile("_lastScan")
+                        if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
+                            s = 1
+                        
+                        if s == 0:
+                            print("Scanned")
+                            print(serials)
+                            HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
+                            serials.append(fillenameImage)
+                            cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
+                            file1 = open("static/uploads/_serial.txt", "a")
+                            file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
+                            file1.close()
+
 
 class Arp(tk.Tk):
 

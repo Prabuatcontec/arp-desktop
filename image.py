@@ -35,8 +35,6 @@ class ImageProcess(object):
     def readData(self):
         if os.path.isfile("static/uploads/_serial.txt"):
             os.rename("static/uploads/_serial.txt", "static/uploads/_serial_process.txt")
-            # HoldStatus("").writeFile("", "_lastScan")
-            # HoldStatus("").writeFile("0", "_lastScanCount")
             with open("static/uploads/_serial_process.txt", 'r') as t:
                 os.remove("static/uploads/_serial_process.txt")
                 for i,line in enumerate(t):
@@ -81,8 +79,6 @@ class ImageProcess(object):
                     if sub_index >-1:
                         text = ""
                         self.processValidation(key, value, line, imName)
-                        print("9000000000000000000000000000000")
-                        print(90)
                         angleSame = 1
                         break
                 if(angleSame ==0):
@@ -92,8 +88,6 @@ class ImageProcess(object):
                         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                         text = open("static/uploads/_model.txt", 'r').read()
                         #print("".join(text.split()).encode('utf8'))
-                        print("1800000000000000000000000000000")
-                        print(180)
                         for key, value in models.items():
                             sub_index = str("".join(text.split())).find(key.replace('"', ""))
                             if sub_index >-1:
@@ -151,17 +145,18 @@ class ImageProcess(object):
                 if(p == 0):
                     mdict1 = {"model": str(jsonArray["model"])}
                     dict.update(mdict1)
-                    # r = open("static/uploads/_goodData.txt", "r")
-                    # if(r.find(str(dict)) != -1):
-                    #     self.resetProcess()
-                    # else:
-                    file1 = open("static/uploads/_goodData.txt", "a")
-                    file1.write("\n")
-                    file1.write(str(dict))
-                    HoldStatus("").writeFile("1", "_scan")
-                    data=json.dumps(dict)
-                    shutil.copy("static/processingImg/boxER_"+imName+".png","static/s3Bucket/boxER_"+imName+".png")
-                    self.resetProcess()
+                    r = open("static/uploads/_goodData.txt", "r")
+                    r = str(r.read())
+                    if(r.find(str(dict)) != -1):
+                        self.resetProcess()
+                    else:
+                        file1 = open("static/uploads/_goodData.txt", "a")
+                        file1.write("\n")
+                        file1.write(str(dict))
+                        HoldStatus("").writeFile("1", "_scan")
+                        data=json.dumps(dict)
+                        shutil.copy("static/processingImg/boxER_"+imName+".png","static/s3Bucket/boxER_"+imName+".png")
+                        self.resetProcess()
                         
             else:
                 HoldStatus("").writeFile("0", "_scan")
@@ -173,7 +168,6 @@ class ImageProcess(object):
                os.unlink(file.path)
         HoldStatus("").writeFile("0", "_processing")
         HoldStatus("").writeFile("", "_lastScan")
-        HoldStatus("").writeFile("0", "_lastScanCount")
 
     def postToDeepblu(self):
         with open("static/uploads/_goodData.txt", 'r') as t:
@@ -255,7 +249,6 @@ class ImageProcess(object):
                                 os.unlink(file.path)
                         HoldStatus("").writeFile("0", "_processing")
                         HoldStatus("").writeFile("", "_lastScan")
-                        HoldStatus("").writeFile("0", "_lastScanCount")
 
                     else:
 
@@ -330,7 +323,6 @@ class ImageProcess(object):
                                                     os.unlink(file.path)
                                             HoldStatus("").writeFile("0", "_processing")
                                             HoldStatus("").writeFile("", "_lastScan")
-                                            HoldStatus("").writeFile("0", "_lastScanCount")
                                             break
                                 else:
                                     HoldStatus("").writeFile("0", "_scan")
