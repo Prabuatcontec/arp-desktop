@@ -131,7 +131,6 @@ class PageThree(tk.Frame):
             l=threading.Lock()
             l.acquire()
             readText.readData()
-            time.sleep(2)
             l.release()
             
             
@@ -141,7 +140,7 @@ class PageThree(tk.Frame):
         readText = ImageProcess()
         while True:
             # do things...
-            time.sleep(2)
+            time.sleep(1)
             readText.postToDeepblu()
 
         
