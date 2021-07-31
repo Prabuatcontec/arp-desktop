@@ -68,8 +68,9 @@ class ImageProcess(object):
                 image = cv2.imread("static/processingImg/boxER_"+line[0]+".png")
                 #os.unlink("static/processingImg/boxER_"+line[0]+".png")
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                text = pytesseract.image_to_string(Image.fromarray(gray))
-                print("".join(text.split()).encode('utf8'))
+                # text = pytesseract.image_to_string(Image.fromarray(gray))
+                # print("".join(text.split()).encode('utf8'))
+                text = open("static/uploads/_model.txt", 'r').read()
                 validation = self.validation
                 strVal = str(validation)
                 models = json.loads(strVal)
@@ -80,6 +81,8 @@ class ImageProcess(object):
                     if sub_index >-1:
                         text = ""
                         self.processValidation(key, value, line, imName)
+                        print("9000000000000000000000000000000")
+                        print(90)
                         angleSame = 1
                         break
                 if(angleSame ==0):
@@ -87,9 +90,10 @@ class ImageProcess(object):
                     for x in lo:
                         img = self.rotate_bound(image, x)
                         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                        text = pytesseract.image_to_string(Image.fromarray(gray))
-                        print("".join(text.split()).encode('utf8'))
-                        
+                        text = open("static/uploads/_model.txt", 'r').read()
+                        #print("".join(text.split()).encode('utf8'))
+                        print("1800000000000000000000000000000")
+                        print(180)
                         for key, value in models.items():
                             sub_index = str("".join(text.split())).find(key.replace('"', ""))
                             if sub_index >-1:
@@ -115,53 +119,55 @@ class ImageProcess(object):
             ts = calendar.timegm(time.gmtime())
             print(line)
             print(ts)
+            print('valid')
             print(valid)
                     
             if valid == '0':
                 dict = {}
                 p = 0
                 for c in range(len(line)):
-                    r = open("static/uploads/_goodData.txt", "r")
+                    # r = open("static/uploads/_goodData.txt", "r")
                     newline = line[c].replace("\n","")
                     newline = newline.replace(" ","")
                     
-                    r = str(r.read())
-                    if(r.find(newline) != -1):
-                        p = 1
-                        break
+                    # r = str(r.read())
+                    # if(r.find(newline) != -1):
+                    #     p = 1
+                    #     break
                     if(c == 0):
                         mdict1 = {"serial": newline}
                         dict.update(mdict1)
                         oldSerial = newline
-                        if newline.strip() in r:
-                            p = 1
-                            break
+                        # if newline.strip() in r:
+                        #     p = 1
+                        #     break
                     else:
                         mdict1 = {str("address"+str(c)): newline}
                         dict.update(mdict1)
-                        if newline.strip() in r:
-                            p = 1
-                            break
+                        # if newline.strip() in r:
+                        #     p = 1
+                        #     break
 
                 if(p == 0):
                     mdict1 = {"model": str(jsonArray["model"])}
                     dict.update(mdict1)
-                    
-                    if(oldSerial in r):
-                        self.resetProcess()
-                    else:
-                        file1 = open("static/uploads/_goodData.txt", "a")
-                        file1.write("\n")
-                        file1.write(str(dict))
-                        HoldStatus("").writeFile("1", "_scan")
-                        data=json.dumps(dict)
-                        shutil.copy("static/processingImg/boxER_"+imName+".png","static/s3Bucket/boxER_"+imName+".png")
-                        self.resetProcess()
+                    # r = open("static/uploads/_goodData.txt", "r")
+                    # if(r.find(str(dict)) != -1):
+                    #     self.resetProcess()
+                    # else:
+                    file1 = open("static/uploads/_goodData.txt", "a")
+                    file1.write("\n")
+                    file1.write(str(dict))
+                    HoldStatus("").writeFile("1", "_scan")
+                    data=json.dumps(dict)
+                    shutil.copy("static/processingImg/boxER_"+imName+".png","static/s3Bucket/boxER_"+imName+".png")
+                    self.resetProcess()
                         
             else:
                 HoldStatus("").writeFile("0", "_scan")
 
     def resetProcess(self):
+        return 1
         for file in os.scandir("static/processingImg"):
            if file.name.endswith(".png"):
                os.unlink(file.path)

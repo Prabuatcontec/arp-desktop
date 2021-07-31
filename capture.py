@@ -60,7 +60,7 @@ class PageThree(tk.Frame):
         lab_eb_data = tk.Label(frame_eb_data, background='#DDD4EF', textvariable=controller.page1_label)
         lab_eb_data.grid(row=0, column=1)
         frame_but_right = tk.Frame(self, width=240, height=60)
-        frame_but_right.grid(row=2, column=1, padx=1, pady=1, sticky='nsew')
+        frame_but_right.grid(row=3, column=1, padx=1, pady=1, sticky='nsew')
         b_ebdata = tk.Button(frame_but_right, text="Logout", width=10, height=2, command=lambda: controller.show_frame(PageOne))
         b_ebdata.grid(row=2, column=1)
         self.category = tk.StringVar()
@@ -69,14 +69,32 @@ class PageThree(tk.Frame):
            somechoices.append(value[2])
 
         #somechoices = ["1", "2", "C", "D"]
-        self.category.set("Pick a category")
+        self.category.set("Pick a Customer")
         open("static/uploads/_customer.txt", "w").write("")
+        open("static/uploads/_model.txt", "w").write("")
         open("static/uploads/_serial.txt", "w").write("")
 
         popupMenu = tk.OptionMenu(frame_eb_data, self.category, *somechoices)
         popupMenu.grid(row=1, column=1)
+
         self.category.trace('w', self.change_dropdown)
+        self.model = tk.StringVar()
+       
+
+        somechoices = ["TC4400", "PH3004", "VIP250", "DMS2004", "NVG589"]
+        
+        
+        frame_but_right1 = tk.Frame(self, width=240, height=60)
+        frame_but_right1.grid(row=2, column=1, padx=1, pady=1, sticky='nsew')
+        popupMenu1 = tk.OptionMenu(frame_but_right1, self.model, *somechoices)
+        self.model.set("Pick a Model")
+        popupMenu1.grid(row=1, column=2)
+        self.model.trace('w', self.option_select)
         self.progress = Progressbar(frame_eb_data, orient=HORIZONTAL,length=100,  mode='indeterminate')
+
+    def option_select(self, *args):
+        print (self.model.get())
+        open("static/uploads/_model.txt", "w").write(f"{self.model.get()}")
 
     def change_dropdown(self,*args):
         print( self.category.get() )
@@ -90,22 +108,28 @@ class PageThree(tk.Frame):
         dict = {}
         self.progress.grid(row=2,column=0)
         self.progress.start()
+        # menu = self.model["menu"]
+        # menu.delete(0, "end")
         for value in Connection().getModels(self.category.get()):
            mdict1 = {value[1]:value[2]}
            dict.update(mdict1)
+        #    menu.add_command(label=value[1], 
+        #                      command=lambda value=value[1]: self.om_variable.set(value[1]))
         self.progress.stop()
         self.progress.grid_forget()
         HoldStatus("").writeFile(json.dumps(dict),"_validation")
         threading.Thread(target=self.maintenance, daemon=True).start()
         threading.Thread(target=self.postingData, daemon=True).start()
         open("static/uploads/_customer.txt", "w").write(f"{self.category.get() }")
+        
+      
 
     def maintenance(self):
         """ Background thread doing various maintenance tasks """
         readText = ImageProcess()
         while True:
             # do things...
-            time.sleep(.5)
+            time.sleep(2)
             readText.readData()
             
             
@@ -115,7 +139,7 @@ class PageThree(tk.Frame):
         readText = ImageProcess()
         while True:
             # do things...
-            time.sleep(.5)
+            time.sleep(2)
             readText.postToDeepblu()
 
         
@@ -224,51 +248,51 @@ class PageTwo(tk.Frame):
 
                 image = self.frame
 
-                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-
-                contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-                cnt = contours
-                s = 1
-                for c in cnt:
-                    #print(cv2.contourArea(c))
-                    if(cv2.contourArea(c)  > 100000):
-                        s = s + 1
-                        x,y,w,h = cv2.boundingRect(c)
-                        cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
-                if s > 1:
-                    image = image[y:y+h,x:x+w]
-                #image = cv2.resize(image, (4000, 2160 ), interpolation=cv2.INTER_CUBIC)
                 # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                ddepth = cv2.cv.CV_32F if imutils.is_cv2() else cv2.CV_32F
-                gradX = cv2.Sobel(gray, ddepth=ddepth, dx=1, dy=0, ksize=-1)
-                gradY = cv2.Sobel(gray, ddepth=ddepth, dx=0, dy=1, ksize=-1)
+                # thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
-                # subtract the y-gradient from the x-gradient
-                gradient = cv2.subtract(gradX, gradY)
-                gradient = cv2.convertScaleAbs(gradient)
+                # contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                # cnt = contours
+                # s = 1
+                # for c in cnt:
+                #     #print(cv2.contourArea(c))
+                #     if(cv2.contourArea(c)  > 100000):
+                #         s = s + 1
+                #         x,y,w,h = cv2.boundingRect(c)
+                #         cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 2)
+                # if s > 1:
+                #     image = image[y:y+h,x:x+w]
+                image = cv2.resize(image, (4000, 2160 ), interpolation=cv2.INTER_CUBIC)
+                # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                # ddepth = cv2.cv.CV_32F if imutils.is_cv2() else cv2.CV_32F
+                # gradX = cv2.Sobel(gray, ddepth=ddepth, dx=1, dy=0, ksize=-1)
+                # gradY = cv2.Sobel(gray, ddepth=ddepth, dx=0, dy=1, ksize=-1)
 
-                # blur and threshold the image
-                blurred = cv2.blur(gradient, (9, 9))
-                (_, thresh) = cv2.threshold(blurred, 225, 255, cv2.THRESH_BINARY)   
+                # # subtract the y-gradient from the x-gradient
+                # gradient = cv2.subtract(gradX, gradY)
+                # gradient = cv2.convertScaleAbs(gradient)
 
-                coords = np.column_stack(np.where(thresh > 0))
-                angle = cv2.minAreaRect(coords)[-1]
-                if angle < -45:
-                    angle = -(90 + angle)
-                # otherwise, just take the inverse of the angle to make
-                # it positive
-                else:
-                    angle = -angle
+                # # blur and threshold the image
+                # blurred = cv2.blur(gradient, (9, 9))
+                # (_, thresh) = cv2.threshold(blurred, 225, 255, cv2.THRESH_BINARY)   
 
-                (h, w) = image.shape[:2]
-                center = (w // 2, h // 2)
-                M = cv2.getRotationMatrix2D(center, angle, 1.0)
+                # coords = np.column_stack(np.where(thresh > 0))
+                # angle = cv2.minAreaRect(coords)[-1]
+                # if angle < -45:
+                #     angle = -(90 + angle)
+                # # otherwise, just take the inverse of the angle to make
+                # # it positive
+                # else:
+                #     angle = -angle
+
+                # (h, w) = image.shape[:2]
+                # center = (w // 2, h // 2)
+                # M = cv2.getRotationMatrix2D(center, angle, 1.0)
                 
 
-                rotated = cv2.warpAffine(image, M, (w, h),
-                    flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
-                image = rotated
+                # rotated = cv2.warpAffine(image, M, (w, h),
+                #     flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+                # image = rotated
                 #image = cv2.resize(image, (4000, 2000 ), interpolation=cv2.INTER_CUBIC)
                 # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 # thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
@@ -304,7 +328,6 @@ class PageTwo(tk.Frame):
                 fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
 
                 if len(serials) > 0:
-                    print(ts)
                     lastScan = HoldStatus("").readFile("_lastScan")
                     lastSerialCount = HoldStatus("").readFile("_lastScanCount")
                     if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
@@ -314,6 +337,7 @@ class PageTwo(tk.Frame):
                     #     s = 1
                     
                     if s == 0:
+                        print("Scanned")
                         print(serials)
                         HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
                         HoldStatus("").writeFile(str(len(serials)), "_lastScanCount")
