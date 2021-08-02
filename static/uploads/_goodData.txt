@@ -1,3 +1,3 @@
 
-{'serial': 'EVY639H09908', 'address1': '1911615057418126', 'address2': '12BF6043D20A', 'address3': 'D22000001083772', 'address4': '001A46A49838', 'address5': '001A46A49839', 'model': 'IPH3004HDM'}
-{'serial': 'EVW852H06122', 'address1': '1911632272171177', 'address2': '12BF614A7F2B', 'address3': 'D2200000448492C', 'address4': '001A46AEE420', 'address5': '001A46AEE421', 'model': 'IPH3004HDM'}
+{'serial': 'EVY817D06141', 'address1': '12BF00499AEB', 'address2': '1910004823787018', 'model': 'DMS2004UHD'}
+{'serial': 'EVLA31D06934', 'address1': '12BF01197E02', 'address2': '1910018447874135', 'model': 'DMS2004UHD'}

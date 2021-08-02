@@ -103,7 +103,8 @@ class PageThree(tk.Frame):
         HoldStatus("").writeFile("0", "_serialpostCount")
         HoldStatus("").writeFile("", "_goodData")
         HoldStatus("").writeFile("0", "_processing")
-        
+        open("static/uploads/_serial.txt", "w").write("")
+        open("static/uploads/_status.txt", "w").write("")
         dict = {}
         self.progress.grid(row=2,column=0)
         self.progress.start()
@@ -229,9 +230,16 @@ class PageTwo(tk.Frame):
             # represents images in RGB order, so we need to swap
             # the channels, then convert to PIL and ImageTk format
             customer = open("static/uploads/_customer.txt").readline().strip("\n")
+            status = open("static/uploads/_status.txt").readline().strip("\n")
             
             if(customer != ""):
                 image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+                if status == "Success":
+                    cv2.putText(image, "Status:"+status, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 100, 0), 8)
+                elif status == "":
+                    cv2.putText(image, "Status:Waiting", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 150, 0), 8)
+                else:
+                    cv2.putText(image, "Status:Failed", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 8)
             else:
                 image = cv2.imread("static/uploads/customer1.jpg")
                 cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)

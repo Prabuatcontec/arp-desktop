@@ -33,9 +33,15 @@ class ImageProcess(object):
         self.validation = open("static/uploads/_validation.txt", 'r').read()
 
     def readData(self):
+        status = open("static/uploads/_status.txt").readline().strip("\n")
+        changedTime = os.stat("static/uploads/_status.txt")[-2]
+        ts = calendar.timegm(time.gmtime())
+        if status== "Success" and (ts - changedTime)>4:
+            open("static/uploads/_status.txt", "w").write("")
         if os.path.isfile("static/uploads/_serial.txt"):
             os.rename("static/uploads/_serial.txt", "static/uploads/_serial_process.txt")
             with open("static/uploads/_serial_process.txt", 'r') as t:
+                
                 os.remove("static/uploads/_serial_process.txt")
                 for i,line in enumerate(t):
                     line = self.trimValue(line)
@@ -61,14 +67,13 @@ class ImageProcess(object):
 
     def processImage(self, line):
         if os.path.isfile("static/processingImg/boxER_"+line[0]+".png"):
-                
                 imName = line[0]
                 image = cv2.imread("static/processingImg/boxER_"+line[0]+".png")
                 #os.unlink("static/processingImg/boxER_"+line[0]+".png")
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                # text = pytesseract.image_to_string(Image.fromarray(gray))
-                # print("".join(text.split()).encode('utf8'))
-                text = open("static/uploads/_model.txt", 'r').read()
+                text = pytesseract.image_to_string(Image.fromarray(gray),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                print("".join(text.split()).encode('utf8'))
+                #text = open("static/uploads/_model.txt", 'r').read()
                 validation = self.validation
                 strVal = str(validation)
                 models = json.loads(strVal)
@@ -82,12 +87,13 @@ class ImageProcess(object):
                         angleSame = 1
                         break
                 if(angleSame ==0):
-                    lo = [180,90]
+                    lo = [180]
                     for x in lo:
+                        print (180)
                         img = self.rotate_bound(image, x)
                         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                        text = open("static/uploads/_model.txt", 'r').read()
-                        #print("".join(text.split()).encode('utf8'))
+                        text = pytesseract.image_to_string(Image.fromarray(gray),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                        print("".join(text.split()).encode('utf8'))
                         for key, value in models.items():
                             sub_index = str("".join(text.split())).find(key.replace('"', ""))
                             if sub_index >-1:
@@ -98,6 +104,7 @@ class ImageProcess(object):
                 
 
     def processValidation(self, key, value, line, imName):
+            
             model = key
             valid = str(value).replace("'",'"')
             jsonArray =json.loads(str(valid))
@@ -150,6 +157,7 @@ class ImageProcess(object):
                     if(r.find(str(dict)) != -1):
                         self.resetProcess()
                     else:
+                        open("static/uploads/_status.txt", "w").write("Success")
                         file1 = open("static/uploads/_goodData.txt", "a")
                         file1.write("\n")
                         file1.write(str(dict))
