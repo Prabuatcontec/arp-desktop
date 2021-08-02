@@ -152,6 +152,9 @@ class ImageProcess(object):
                 if(p == 0):
                     mdict1 = {"model": str(jsonArray["model"])}
                     dict.update(mdict1)
+                    customer = open("static/uploads/_customer.txt").readline().strip("\n")
+                    mdict1 = {"customer": str(customer)}
+                    dict.update(mdict1)
                     r = open("static/uploads/_goodData.txt", "r")
                     r = str(r.read())
                     if(r.find(str(dict)) != -1):
