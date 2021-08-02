@@ -1,3 +1,4 @@
 
-{'serial': 'EVY817D06141', 'address1': '12BF00499AEB', 'address2': '1910004823787018', 'model': 'DMS2004UHD'}
-{'serial': 'EVLA31D06934', 'address1': '12BF01197E02', 'address2': '1910018447874135', 'model': 'DMS2004UHD'}
+{'serial': 'M91445SI9774', 'address1': 'F80BBEC477C6', 'model': 'VIP2502', 'customer': 'FRONTIER'}
+{'serial': 'M91629SIG327', 'address1': 'FC51A4B8F50D', 'model': 'VIP2502', 'customer': 'FRONTIER'}
+{'serial': 'M91548SI5602', 'address1': '203D66FDD409', 'model': 'VIP2502', 'customer': 'FRONTIER'}
