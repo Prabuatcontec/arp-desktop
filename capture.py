@@ -86,9 +86,9 @@ class PageThree(tk.Frame):
         
         frame_but_right1 = tk.Frame(self, width=240, height=60)
         frame_but_right1.grid(row=2, column=1, padx=1, pady=1, sticky='nsew')
-        popupMenu1 = tk.OptionMenu(frame_but_right1, self.model, *somechoices)
-        self.model.set("Pick a Model")
-        popupMenu1.grid(row=1, column=2)
+        # popupMenu1 = tk.OptionMenu(frame_but_right1, self.model, *somechoices)
+        # self.model.set("Pick a Model")
+        # popupMenu1.grid(row=1, column=2)
         self.model.trace('w', self.option_select)
         self.progress = Progressbar(frame_eb_data, orient=HORIZONTAL,length=100,  mode='indeterminate')
 
@@ -298,11 +298,11 @@ class PageTwo(tk.Frame):
 
                     if len(serials) > 0:
                         lastScan = HoldStatus("").readFile("_lastScan")
-                        if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
-                            s = 1
+                        # if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
+                        #     s = 1
                         
                         if s == 0:
-                            print("Scanned")
+                            #print("Scanned")
                             print(serials)
                             HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
                             serials.append(fillenameImage)
