@@ -273,11 +273,13 @@ class PageTwo(tk.Frame):
                 # for c in cnt:
                 #     if(cv2.contourArea(c)  > 100000):
                 #         s = s + 1
+                image1 = image
                 s = 2
                 if (s > 1):
                     lo = [0, -5, 5]
                     for x in lo:
-                        image1 = self.rotate_bound(image, x)
+                        if (x != 0):
+                            image1 = self.rotate_bound(image, x)
                         barcodes = pyzbar.decode(image1)
                         if len(barcodes) > 2:
                             image = image1
