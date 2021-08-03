@@ -80,11 +80,11 @@ class ImageProcess(object):
                     
                     image = cv2.imread("static/processingImg/boxER_"+imName+".png")
                     #os.unlink("static/processingImg/boxER_"+line[0]+".png")
-                    #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                     ts = calendar.timegm(time.gmtime())
                     print(ts)
                     print("=============================================")
-                    text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                    text = pytesseract.image_to_string(Image.fromarray(gray),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                     #print("".join(text.split()).encode('utf8'))
                     #text = open("static/uploads/_model.txt", 'r').read()
                     validation = self.validation
@@ -105,8 +105,8 @@ class ImageProcess(object):
                         for x in lo:
                             print (x)
                             img = self.rotate_bound(image, x)
-                            # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                            text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                            text = pytesseract.image_to_string(Image.fromarray(gray),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                             #print("".join(text.split()).encode('utf8'))
                             r = 0
                             for key, value in models.items():
@@ -135,6 +135,7 @@ class ImageProcess(object):
             if(valid != '0'):
                 valid = ModelValidation().validate(
                     jsonArray["data"], self.Reverse(line))
+                self.Reverse(line)
             print(line)
             print('valid')
             print(valid)

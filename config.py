@@ -12,7 +12,7 @@ class Config(object):
     DEEPBLU_URL = 'https://deepbluapi.gocontec.com'
     DEEPBLU_KEY = 'QVVUT1JFQ0VJVkU6YXV0b0AxMjM='
     CAMERA_NO = 2
-    CAMERA_WIDTH = 2560
-    CAMERA_HEIGHT = 1440
+    CAMERA_WIDTH = 2750
+    CAMERA_HEIGHT = 2200
     #CAMERA_WIDTH = 2500
     #CAMERA_HEIGHT = 1900

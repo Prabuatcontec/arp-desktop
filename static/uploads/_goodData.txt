@@ -1,4 +1,8 @@
 
-{'serial': 'M91445SI9774', 'address1': 'F80BBEC477C6', 'model': 'VIP2502', 'customer': 'FRONTIER'}
-{'serial': 'M91629SIG327', 'address1': 'FC51A4B8F50D', 'model': 'VIP2502', 'customer': 'FRONTIER'}
-{'serial': 'M91548SI5602', 'address1': '203D66FDD409', 'model': 'VIP2502', 'customer': 'FRONTIER'}
+{'serial': 'CP2027HD3U3', 'address1': '889E68D885CC', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
+{'serial': 'CP2033HD34J', 'address1': '5C7D7D033AF8', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
+{'serial': 'CP2045HD0NV', 'address1': '484BD416689A', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
+{'serial': 'CP2103HD2FQ', 'address1': 'E4BFFAFDE61C', 'address2': 'BATC4400-AMV2B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
+{'serial': 'CP2033HD34D', 'address1': '5C7D7D033B08', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
+{'serial': 'CP2028HD0V6', 'address1': 'F4C1143D7D34', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
+{'serial': 'CP2033HD4A3', 'address1': '5C7D7D0327B4', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
