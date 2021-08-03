@@ -66,51 +66,60 @@ class ImageProcess(object):
         return [ele for ele in reversed(lst)]
 
     def processImage(self, line):
-        if os.path.isfile("static/processingImg/boxER_"+line[0]+".png"):
-                imName = line[0]
-                image = cv2.imread("static/processingImg/boxER_"+line[0]+".png")
-                #os.unlink("static/processingImg/boxER_"+line[0]+".png")
-                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                ts = calendar.timegm(time.gmtime())
-                print(ts)
-                print(line[0])
-                print("=============================================")
-                text = pytesseract.image_to_string(Image.fromarray(gray),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                #print("".join(text.split()).encode('utf8'))
-                #text = open("static/uploads/_model.txt", 'r').read()
-                validation = self.validation
-                strVal = str(validation)
-                models = json.loads(strVal)
-                angleSame = 0
-                line.pop(0)
-                for key, value in models.items():
-                    sub_index = str("".join(text.split())).find(key.replace('"', ""))
-                    if sub_index >-1:
-                        print(90)
-                        text = ""
-                        self.processValidation(key, value, line, imName)
-                        angleSame = 1
-                        break
-                if(angleSame ==0):
-                    lo = [180,-5,5,185,175]
-                    for x in lo:
-                        print (x)
-                        img = self.rotate_bound(image, x)
-                        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                        text = pytesseract.image_to_string(Image.fromarray(gray),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                        #print("".join(text.split()).encode('utf8'))
-                        r = 0
-                        for key, value in models.items():
-                            sub_index = str("".join(text.split())).find(key.replace('"', ""))
-                            if sub_index >-1:
-                                text = ""
-                                line = self.Reverse(line)
-                                self.processValidation(key, value, line, imName)
-                                r = 1
-                                break
-                        if r == 1:
+        
+        imName = line[0]
+        line.pop(0)
+        
+        r = open("static/uploads/_goodDataAvailable.txt", "r")
+        r = str(r.read())
+        rev = self.Reverse(line)
+        if(r.find(str(line)) !=-1 or r.find(str(rev)) != -1):
+            return 1
+        else:
+            if os.path.isfile("static/processingImg/boxER_"+imName+".png"):
+                    
+                    image = cv2.imread("static/processingImg/boxER_"+imName+".png")
+                    #os.unlink("static/processingImg/boxER_"+line[0]+".png")
+                    #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                    ts = calendar.timegm(time.gmtime())
+                    print(ts)
+                    print("=============================================")
+                    text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                    #print("".join(text.split()).encode('utf8'))
+                    #text = open("static/uploads/_model.txt", 'r').read()
+                    validation = self.validation
+                    strVal = str(validation)
+                    models = json.loads(strVal)
+                    angleSame = 0
+                    
+                    for key, value in models.items():
+                        sub_index = str("".join(text.split())).find(key.replace('"', ""))
+                        if sub_index >-1:
+                            print(90)
+                            text = ""
+                            self.processValidation(key, value, line, imName)
+                            angleSame = 1
                             break
-                
+                    if(angleSame ==0):
+                        lo = [180,-5,5,185,175]
+                        for x in lo:
+                            print (x)
+                            img = self.rotate_bound(image, x)
+                            # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                            text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                            #print("".join(text.split()).encode('utf8'))
+                            r = 0
+                            for key, value in models.items():
+                                sub_index = str("".join(text.split())).find(key.replace('"', ""))
+                                if sub_index >-1:
+                                    text = ""
+                                    line = self.Reverse(line)
+                                    self.processValidation(key, value, line, imName)
+                                    r = 1
+                                    break
+                            if r == 1:
+                                break
+                    
 
     def processValidation(self, key, value, line, imName):
             
@@ -134,50 +143,33 @@ class ImageProcess(object):
                 dict = {}
                 p = 0
                 for c in range(len(line)):
-                    # r = open("static/uploads/_goodData.txt", "r")
                     newline = line[c].replace("\n","")
                     newline = newline.replace(" ","")
                     
-                    # r = str(r.read())
-                    # if(r.find(newline) != -1):
-                    #     p = 1
-                    #     break
                     if(c == 0):
                         mdict1 = {"serial": newline}
                         dict.update(mdict1)
                         oldSerial = newline
-                        # if newline.strip() in r:
-                        #     p = 1
-                        #     break
                     else:
                         mdict1 = {str("address"+str(c)): newline}
                         dict.update(mdict1)
-                        # if newline.strip() in r:
-                        #     p = 1
-                        #     break
 
                 if(p == 0):
+                    open("static/uploads/_goodDataAvailable.txt", "a").write(str(line)+"\n")
                     mdict1 = {"model": str(jsonArray["model"])}
                     dict.update(mdict1)
                     customer = open("static/uploads/_customer.txt").readline().strip("\n")
                     mdict1 = {"customer": str(customer)}
                     dict.update(mdict1)
-                    r = open("static/uploads/_goodData.txt", "r")
-                    r = str(r.read())
-                    if(r.find(str(dict)) != -1):
-                        self.resetProcess()
-                    else:
-                        open("static/uploads/_status.txt", "w").write("Success")
-                        file1 = open("static/uploads/_goodData.txt", "a")
-                        file1.write("\n")
-                        file1.write(str(dict))
-                        HoldStatus("").writeFile("1", "_scan")
-                        data=json.dumps(dict)
-                        shutil.copy("static/processingImg/boxER_"+imName+".png","static/s3Bucket/boxER_"+imName+".png")
-                        self.resetProcess()
-                        
-            else:
-                HoldStatus("").writeFile("0", "_scan")
+                
+                    open("static/uploads/_status.txt", "w").write("Success")
+                    file1 = open("static/uploads/_goodData.txt", "a")
+                    file1.write("\n")
+                    file1.write(str(dict))
+                    HoldStatus("").writeFile("1", "_scan")
+                    data=json.dumps(dict)
+                    shutil.copy("static/processingImg/boxER_"+imName+".png","static/s3Bucket/boxER_"+imName+".png")
+                    self.resetProcess()
 
     def resetProcess(self):
         return 1
