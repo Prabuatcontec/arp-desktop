@@ -105,6 +105,8 @@ class PageThree(tk.Frame):
         HoldStatus("").writeFile("0", "_processing")
         open("static/uploads/_serial.txt", "w").write("")
         open("static/uploads/_status.txt", "w").write("")
+        open("static/uploads/_goodDataAvailable.txt", "w").write("")
+        
         dict = {}
         self.progress.grid(row=2,column=0)
         self.progress.start()
@@ -290,26 +292,25 @@ class PageTwo(tk.Frame):
                         if(detect_special_characer(barcodeData) == True):
                             serials.append(barcodeData)
 
-                    s = 0
+                    
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
                     
                     fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
 
                     if len(serials) > 0:
-                        lastScan = HoldStatus("").readFile("_lastScan")
                         # if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
                         #     s = 1
                         
-                        if s == 0:
-                            #print("Scanned")
-                            print(serials)
-                            HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
-                            serials.append(fillenameImage)
-                            cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
-                            file1 = open("static/uploads/_serial.txt", "a")
-                            file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
-                            file1.close()
+                    
+                        #print("Scanned")
+                        print(serials)
+                        serials.append(fillenameImage)
+                        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                        cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, gray)
+                        file1 = open("static/uploads/_serial.txt", "a")
+                        file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
+                        file1.close()
 
 
 class Arp(tk.Tk):
