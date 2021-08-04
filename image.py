@@ -31,6 +31,7 @@ os.environ['OMP_THREAD_LIMIT'] = '2'
 class ImageProcess(object):
     def __init__(self):
         self.validation = open("static/uploads/_validation.txt", 'r').read()
+        self.customer = open("static/uploads/_customer.txt").readline().strip("\n")
 
     def readData(self):
         status = open("static/uploads/_status.txt").readline().strip("\n")
@@ -45,7 +46,6 @@ class ImageProcess(object):
                 os.remove("static/uploads/_serial_process.txt")
                 for i,line in enumerate(t):
                     line = self.trimValue(line)
-                    self.updateFile("1","_processing")
                     self.processImage(line)
             return 1
 
@@ -95,7 +95,7 @@ class ImageProcess(object):
                     for key, value in models.items():
                         sub_index = str("".join(text.split())).find(key.replace('"', ""))
                         if sub_index >-1:
-                            print(90)
+                            #print(90)
                             text = ""
                             self.processValidation(key, value, line, imName)
                             angleSame = 1
@@ -103,7 +103,7 @@ class ImageProcess(object):
                     if(angleSame ==0):
                         lo = [180,-5,5,185,175]
                         for x in lo:
-                            print (x)
+                            #print (x)
                             img = self.rotate_bound(image, x)
                             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
                             text = pytesseract.image_to_string(Image.fromarray(gray),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
@@ -122,11 +122,8 @@ class ImageProcess(object):
                     
 
     def processValidation(self, key, value, line, imName):
-            
-            model = key
             valid = str(value).replace("'",'"')
             jsonArray =json.loads(str(valid))
-            count = 0
             
             valid = ModelValidation().validate(
                 jsonArray["data"], line)
@@ -136,9 +133,10 @@ class ImageProcess(object):
                 valid = ModelValidation().validate(
                     jsonArray["data"], self.Reverse(line))
                 self.Reverse(line)
-            print(line)
-            print('valid')
-            print(valid)
+
+                
+            #print('valid')
+            #print(valid)
                     
             if valid == '0':
                 dict = {}
@@ -159,26 +157,25 @@ class ImageProcess(object):
                     open("static/uploads/_goodDataAvailable.txt", "a").write(str(line)+"\n")
                     mdict1 = {"model": str(jsonArray["model"])}
                     dict.update(mdict1)
-                    customer = open("static/uploads/_customer.txt").readline().strip("\n")
-                    mdict1 = {"customer": str(customer)}
+                    mdict1 = {"customer": str(self.customer)}
                     dict.update(mdict1)
                 
                     open("static/uploads/_status.txt", "w").write("Success")
                     file1 = open("static/uploads/_goodData.txt", "a")
                     file1.write("\n")
                     file1.write(str(dict))
-                    HoldStatus("").writeFile("1", "_scan")
-                    data=json.dumps(dict)
-                    shutil.copy("static/processingImg/boxER_"+imName+".png","static/s3Bucket/boxER_"+imName+".png")
-                    self.resetProcess()
+                    # HoldStatus("").writeFile("1", "_scan")
+                    # data=json.dumps(dict)
+                    # shutil.copy("static/processingImg/boxER_"+imName+".png","static/s3Bucket/boxER_"+imName+".png")
+                    # self.resetProcess()
 
     def resetProcess(self):
         return 1
-        for file in os.scandir("static/processingImg"):
-           if file.name.endswith(".png"):
-               os.unlink(file.path)
-        HoldStatus("").writeFile("0", "_processing")
-        HoldStatus("").writeFile("", "_lastScan")
+        # for file in os.scandir("static/processingImg"):
+        #    if file.name.endswith(".png"):
+        #        os.unlink(file.path)
+        # HoldStatus("").writeFile("0", "_processing")
+        # HoldStatus("").writeFile("", "_lastScan")
 
     def postToDeepblu(self):
         with open("static/uploads/_goodData.txt", 'r') as t:
