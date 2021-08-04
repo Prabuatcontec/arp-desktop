@@ -1,8 +1,0 @@
-
-{'serial': 'CP2027HD3U3', 'address1': '889E68D885CC', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
-{'serial': 'CP2033HD34J', 'address1': '5C7D7D033AF8', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
-{'serial': 'CP2045HD0NV', 'address1': '484BD416689A', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
-{'serial': 'CP2103HD2FQ', 'address1': 'E4BFFAFDE61C', 'address2': 'BATC4400-AMV2B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
-{'serial': 'CP2033HD34D', 'address1': '5C7D7D033B08', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
-{'serial': 'CP2028HD0V6', 'address1': 'F4C1143D7D34', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}
-{'serial': 'CP2033HD4A3', 'address1': '5C7D7D0327B4', 'address2': 'BATC4400-AMV3B', 'model': 'TC4400-AM', 'customer': 'WOWxxxxxC0'}

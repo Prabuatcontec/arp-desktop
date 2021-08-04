@@ -98,14 +98,11 @@ class PageThree(tk.Frame):
 
     def change_dropdown(self,*args):
         print( self.category.get() )
-        HoldStatus("").writeFile("", "_lastScan")
-        HoldStatus("").writeFile("2", "_scan")
-        HoldStatus("").writeFile("0", "_serialpostCount")
         HoldStatus("").writeFile("", "_goodData")
-        HoldStatus("").writeFile("0", "_processing")
         open("static/uploads/_serial.txt", "w").write("")
         open("static/uploads/_status.txt", "w").write("")
         open("static/uploads/_goodDataAvailable.txt", "w").write("")
+        
         
         dict = {}
         self.progress.grid(row=2,column=0)
@@ -142,9 +139,10 @@ class PageThree(tk.Frame):
         """ Background thread doing various maintenance tasks """
         readText = ImageProcess()
         while True:
-            # do things...
-            time.sleep(1)
+            lo=threading.Lock()
+            lo.acquire()
             readText.postToDeepblu()
+            lo.release()
 
         
 
@@ -225,12 +223,6 @@ class PageTwo(tk.Frame):
             flag,self.frame = self.vs.read()
             if flag is None:
                 print ("Failed")
-            #self.frame = cv2.imread("sddddd.png")
-            #self.frame = imutils.resize(self.frame, width=1200, height=1500)
-    
-            # OpenCV represents images in BGR order; however PIL
-            # represents images in RGB order, so we need to swap
-            # the channels, then convert to PIL and ImageTk format
             customer = open("static/uploads/_customer.txt").readline().strip("\n")
             status = open("static/uploads/_status.txt").readline().strip("\n")
             
@@ -261,18 +253,6 @@ class PageTwo(tk.Frame):
                 self.panel.image = image
 
                 image = self.frame
-                #image = cv2.resize(image, (4000, 2160 ), interpolation=cv2.INTER_CUBIC)
-                # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                # image = gray
-
-                # thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-
-                # contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-                # cnt = contours
-                # s = 1
-                # for c in cnt:
-                #     if(cv2.contourArea(c)  > 100000):
-                #         s = s + 1
                 image1 = image
                 s = 2
                 if (s > 1):
@@ -284,31 +264,19 @@ class PageTwo(tk.Frame):
                         if len(barcodes) > 2:
                             image = image1
                             break
-
-                        
                     serials = []
-
-
                     for barcode in barcodes:
                         barcodeData = barcode.data.decode("utf-8")
                         if(detect_special_characer(barcodeData) == True):
                             serials.append(barcodeData)
 
-                    
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
-                    
                     fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
 
                     if len(serials) > 0:
-                        # if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
-                        #     s = 1
-                        
-                    
-                        #print("Scanned")
                         print(serials)
                         serials.append(fillenameImage)
-                        #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                         cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
                         file1 = open("static/uploads/_serial.txt", "a")
                         file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
@@ -327,7 +295,6 @@ class Arp(tk.Tk):
         self.page3_label = tk.StringVar()
         self.page2_entry = tk.StringVar()
         open("static/uploads/_login.txt", "w").write("")
-        
 
         container = tk.Frame(self)
         container.pack(side='top')
@@ -341,38 +308,26 @@ class Arp(tk.Tk):
             frame.configure(background='lightgrey')
             frame.grid(row=0, column=0, sticky='nswe')
         self.show_frame(PageOne)
-    
-    
-        
-        
+
 
     def show_frame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
- 
 
 def detect_special_characer(pass_string):
-    regex= re.compile("'") 
+    regex= re.compile("'")
     if(regex.search(pass_string) != None): 
         return False
-        
     regex= re.compile('[@_!#$%^&*()<>?/\\\|}{~:[\]]"') 
     if(regex.search(pass_string) == None): 
         res = True
-    else: 
+    else:
         res = False
     return(res)
- 
- 
-
 
 
 if __name__ == "__main__":
     app = Arp()
     app.mainloop()
-    # root = tk.Tk()
-    # app = App(root)
     MAINTENANCE_INTERVAL = .1
 
-    
-    # root.mainloop()
