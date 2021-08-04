@@ -97,7 +97,7 @@ class PageThree(tk.Frame):
         open("static/uploads/_model.txt", "w").write(f"{self.model.get()}")
 
     def change_dropdown(self,*args):
-        print( self.category.get() )
+        open("static/uploads/_customer.txt", "w").write(f"{self.category.get() }")
         HoldStatus("").writeFile("", "_goodData")
         open("static/uploads/_serial.txt", "w").write("")
         open("static/uploads/_status.txt", "w").write("")
@@ -120,7 +120,6 @@ class PageThree(tk.Frame):
         
         threading.Thread(target=self.maintenance, daemon=True).start()
         threading.Thread(target=self.postingData, daemon=True).start()
-        open("static/uploads/_customer.txt", "w").write(f"{self.category.get() }")
         
       
 
