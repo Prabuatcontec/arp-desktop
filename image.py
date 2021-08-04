@@ -153,8 +153,14 @@ class ImageProcess(object):
                     file1 = open("static/uploads/_goodData.txt", "a")
                     file1.write("\n")
                     file1.write(str(dict))
+                    line = str(dict).replace("'",'"')
+                    response = requests.post(Config.DEEPBLU_URL + '/autoreceive/automation', line,
+                                        headers={'Content-Type': 'application/json', 
+                                        'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
+                                        )
  
     def postToDeepblu(self):
+        return 1
         if os.path.exists("static/uploads/_goodData.txt"):
             os.rename("static/uploads/_goodData.txt", "static/uploads/_goodData_process.txt")
             with open("static/uploads/_goodData_process.txt", 'r') as t:
