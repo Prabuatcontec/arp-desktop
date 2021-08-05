@@ -44,7 +44,7 @@ class ModelValidation(object):
         for c in range(len(serials)):
             for data in datas:
                 if str(c)  == data['sort']:
-                    #print(str(data['min']) +"======"+str(data['max'])+"======"+ data['regularExp']+"======"+serials[c].strip())
+                    print(str(data['min']) +"======"+str(data['max'])+"======"+ data['regularExp']+"======"+serials[c].strip())
                     result = self.checkminmax(data['min'], data['max'], data['regularExp'],serials[c].strip())
                     if result != '0':
                         return '1'

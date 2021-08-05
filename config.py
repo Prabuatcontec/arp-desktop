@@ -11,6 +11,6 @@ class Config(object):
     REPO_PATH = 'https://github.com/Prabuatcontec/ocr-receiving'
     DEEPBLU_URL = 'https://deepbluapi.gocontec.com'
     DEEPBLU_KEY = 'QVVUT1JFQ0VJVkU6YXV0b0AxMjM='
-    CAMERA_NO = 0
-    CAMERA_WIDTH = 1800
-    CAMERA_HEIGHT = 1400
+    CAMERA_NO = 2
+    CAMERA_WIDTH = 2750
+    CAMERA_HEIGHT = 2200
