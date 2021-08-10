@@ -361,7 +361,7 @@ class PageTwo(tk.Frame):
             if r == 0:
                 self.closeConveyor()
                 str1 = " " 
-                tkinter.messagebox.askretrycancel("Unit Failed", "Serials:"+ str1.join(line))
+                tkinter.messagebox.askretrycancel("Unit OCR Failed", "Serials:"+ str1.join(line))
                 self.callConveyor()
 
     def processValidation(self, key, value, line, image, image1):
@@ -379,7 +379,7 @@ class PageTwo(tk.Frame):
             if valid !='0':
                 self.closeConveyor()
                 str1 = " " 
-                tkinter.messagebox.askretrycancel("Unit Failed", "Serials:"+ str1.join(line))
+                tkinter.messagebox.askretrycancel("Unit Validation Failed", "Serials:"+ str1.join(line))
                 self.callConveyor()
                 return 1
 
