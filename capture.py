@@ -361,11 +361,8 @@ class PageTwo(tk.Frame):
             if r == 0:
                 self.closeConveyor()
                 str1 = " " 
-                if not tkinter.messagebox.askretrycancel("Unit Failed", "Serials:"+ str1.join(line)):
-                    print('OK')
-                    return 1
-                else:
-                    print('NOT OK   ')
+                tkinter.messagebox.askretrycancel("Unit Failed", "Serials:"+ str1.join(line))
+                self.callConveyor()
 
     def processValidation(self, key, value, line, image, image1):
             valid = str(value).replace("'",'"')
@@ -382,7 +379,8 @@ class PageTwo(tk.Frame):
             if valid !='0':
                 self.closeConveyor()
                 str1 = " " 
-                tkinter.messagebox.askokcancel("Unit Failed1", "Serials:"+ str1.join(line))
+                tkinter.messagebox.askretrycancel("Unit Failed", "Serials:"+ str1.join(line))
+                self.callConveyor()
                 return 1
 
             if valid == '0':
@@ -399,14 +397,13 @@ class PageTwo(tk.Frame):
                         dict.update(mdict1)
 
                 if(p == 0):
-                    gmt = time.gmtime()
-                    ts = calendar.timegm(gmt)
+                    #gmt = time.gmtime()
+                    #ts = calendar.timegm(gmt)
                     customer = open("static/uploads/_customer.txt").readline().strip("\n")
-                    fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                    #fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
                     open("static/uploads/_goodDataAvailable.txt", "a").write(str(line)+"\n")
-                    cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
-                    start = time.time()
-                    print(start)
+                    #cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
+                    
                     mdict1 = {"model": str(jsonArray["model"])}
                     dict.update(mdict1)
                     mdict1 = {"customer": str(customer)}
@@ -421,6 +418,8 @@ class PageTwo(tk.Frame):
                                         headers={'Content-Type': 'application/json', 
                                         'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
                                         )
+                    start = time.time()
+                    print(start)
             
     
     def callConveyor(self):
