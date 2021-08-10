@@ -75,6 +75,7 @@ class PageThree(tk.Frame):
         open("static/uploads/_customer.txt", "w").write("")
         open("static/uploads/_model.txt", "w").write("")
         open("static/uploads/_serial.txt", "w").write("")
+        open("static/uploads/_serialUpdate.txt", "w").write("0")
 
         popupMenu = tk.OptionMenu(frame_eb_data, self.category, *somechoices)
         popupMenu.grid(row=1, column=1)
@@ -105,6 +106,8 @@ class PageThree(tk.Frame):
         open("static/uploads/_status.txt", "w").write("")
         open("static/uploads/_lastScan.txt", "w").write("")
         open("static/uploads/_goodDataAvailable.txt", "w").write("")
+        open("static/uploads/_serialUpdate.txt", "w").write("")
+        
         
         
         dict = {}
@@ -259,9 +262,14 @@ class PageTwo(tk.Frame):
                 image = self.frame
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 image1 = image
+
+                
                 
                 s = 2
+                if open("static/uploads/_serialUpdate.txt").readline().strip("\n") == "1":
+                    s = 1
                 if (s > 1):
+                    open("static/uploads/_serialUpdate.txt", "w").write("1")
                     lo = [0, -5, 5]
                     for x in lo:
                         if (x != 0):
@@ -280,9 +288,6 @@ class PageTwo(tk.Frame):
                     sr = 0
                     if len(serials) > 0:
                         
-                        lastScan = HoldStatus("").readFile("_lastScan")
-                        if(str(lastScan) == str(json.dumps([ele for ele in reversed(serials)])) and str(lastScan)!=""):
-                            sr = 1
                         if sr == 0:
                             thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
                             _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
@@ -301,12 +306,17 @@ class PageTwo(tk.Frame):
                                 HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
                                 cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
                                 self.processImage(serials, image, image)
+                            else:
+                                open("static/uploads/_serialUpdate.txt", "w").write("0")
                                 
                         # serials.append(fillenameImage)
                         # cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
                         # file1 = open("static/uploads/_serial.txt", "a")
                         # file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
                         # file1.close()
+
+                    else:
+                        open("static/uploads/_serialUpdate.txt", "w").write("0")
 
 
     def Reverse(self, lst):
@@ -319,6 +329,7 @@ class PageTwo(tk.Frame):
         r = str(r.read())
         rev = self.Reverse(line)
         if(r.find(str(line)) !=-1 or r.find(str(rev)) != -1):
+            open("static/uploads/_serialUpdate.txt", "w").write("0")
             return 1
         else:
             validation = open("static/uploads/_validation.txt", 'r').read()
@@ -363,6 +374,7 @@ class PageTwo(tk.Frame):
                 str1 = " " 
                 tkinter.messagebox.askretrycancel("Unit OCR Failed", "Serials:"+ str1.join(line))
                 self.callConveyor()
+                open("static/uploads/_serialUpdate.txt", "w").write("0")
 
     def processValidation(self, key, value, line, image, image1):
             valid = str(value).replace("'",'"')
@@ -381,6 +393,7 @@ class PageTwo(tk.Frame):
                 str1 = " " 
                 tkinter.messagebox.askretrycancel("Unit Validation Failed", "Serials:"+ str1.join(line))
                 self.callConveyor()
+                open("static/uploads/_serialUpdate.txt", "w").write("0")
                 return 1
 
             if valid == '0':
