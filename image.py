@@ -41,6 +41,16 @@ class ImageProcess(object):
         data = res1.json()
         status = data['devices'][0]['controller response']
         open("static/uploads/_status.txt", "w").write(str(status))
+    
+    def getConState(self,id):
+        res1 = requests.get(
+            Config.API_MOTOR_URL + 'devices/'+id,
+            headers={'Content-Type': 'application/json'}
+        )
+        data = res1.json()
+        status = data['controller response']
+        return status
+        
 
     def readData(self):
         status = open("static/uploads/_status.txt").readline().strip("\n")

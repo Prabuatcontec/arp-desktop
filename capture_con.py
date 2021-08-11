@@ -288,63 +288,59 @@ class PageTwo(tk.Frame):
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 image1 = image
 
+                thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+                _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                cnt = contours
+                s = 1
+                self.p = []
+                for c in cnt:
+                    #print(cv2.contourArea(c))
+                    if(cv2.contourArea(c)  > 100000):
+                        rows,cols = thresh.shape[:2]
+                        [vx,vy,x,y] = cv2.fitLine(c, cv2.DIST_L2,0,0.01,0.01)
+                        lefty = int((-x*vy/vx) + y)
+                        righty = int(((cols-x)*vy/vx)+y)
+                        cv2.line(image,(cols-1,righty),(0,lefty),(0,255,0),2)
+                        cv2.line(image,(cols-1,righty),(0,righty),(0,255,0),2)
+                        #print("x="+str(cols-1)+",y="+str(righty)+",x1="+str(0)+",y1="+str(lefty))
+                        self.p.append([cols-1,righty])
+                        self.p.append([0,lefty])
+                        self.p.append([0,righty])
+                        s = s + 1
+                        x,y,w,h = cv2.boundingRect(c)
+
+                image = thresh[y:y+h,x:x+w]
                 
                 
-                s = 2
-                if open("static/uploads/_serialUpdate.txt").readline().strip("\n") == "1":
-                    s = 1
-                if (s > 1):
-                    
+                
+                if s > 1:
                     open("static/uploads/_serialUpdate.txt", "w").write("1")
-                    lo = [0, -5, 5]
-                    for x in lo:
-                        if (x != 0):
-                            image1 = self.rotate_bound(image, x)
-                        barcodes = pyzbar.decode(image1)
-                        if len(barcodes) > 2:
-                            image = image1
-                            break
-                    serials = []
-                    for barcode in barcodes:
-                        barcodeData = barcode.data.decode("utf-8")
-                        if(detect_special_characer(barcodeData) == True):
-                            serials.append(barcodeData)
-
+                    angel = self.getAngel()
+                    image1 = self.rotate_bound(image, angel)
+                    barcodes = pyzbar.decode(image1)
                     
-                    sr = 0
-                    if len(serials) > 1:
+                    
+                    if len(barcodes) > 2:
+                        print(angel)
+                        gmt = time.gmtime()
+                        ts = calendar.timegm(gmt)
+                        fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                        image = image1
+                        cv2.imwrite("static/processingImg/boxER_%s.png" % str(random.randint(100000,999999)), image)
                         
-                        start = time.time()
-                        print(start)
-                        if sr == 0:
-                            thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-                            _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-                            cnt = contours
-                            s = 1
-                            for c in cnt:
-                                #print(cv2.contourArea(c))
-                                if(cv2.contourArea(c)  > 100000):
-                                    s = s + 1
-                                    x,y,w,h = cv2.boundingRect(c)
-                            print(serials)
-                            print(s)
-                            if s > 1:
-                                gmt = time.gmtime()
-                                ts = calendar.timegm(gmt)
-                                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                image = thresh[y:y+h,x:x+w]
-                                #HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
-                                cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
-                                self.processImage(serials, image, image)
-                            else:
-                                open("static/uploads/_serialUpdate.txt", "w").write("0")
-                                
-                        # serials.append(fillenameImage)
-                        # cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
-                        # file1 = open("static/uploads/_serial.txt", "a")
-                        # file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
-                        # file1.close()
+                        
+                        serials = []
+                        for barcode in barcodes:
+                            barcodeData = barcode.data.decode("utf-8")
+                            if(detect_special_characer(barcodeData) == True):
+                                serials.append(barcodeData)
 
+                        gmt = time.gmtime()
+                        ts = calendar.timegm(gmt)
+                        fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                        
+                        cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
+                        self.processImage(serials, image, image)
                     else:
                         open("static/uploads/_serialUpdate.txt", "w").write("0")
 
@@ -409,6 +405,13 @@ class PageTwo(tk.Frame):
 
                 self.callConveyor()
                 open("static/uploads/_serialUpdate.txt", "w").write("0")
+                
+    def enableLight(self, state):
+        res1 = requests.post(
+            Config.API_MOTOR_URL + 'devices/4', data=json.dumps({"state": state}),
+            headers={'Content-Type': 'application/json'}
+        )
+        print(res1)
 
     def gradiant(self,p1,p2):
         return (p1[1]-p2[1])/(p2[0]-p1[0])
@@ -420,7 +423,10 @@ class PageTwo(tk.Frame):
             m2 = self.gradiant(p1,p3)
             aR = math.atan((m2-m1)/(1+(m2*m1)))
             aD = round(math.degrees(aR))
-            print(aD)
+            #print(aD)
+            return aD
+        return 0
+            
 
     def processValidation(self, key, value, line, image, image1):
             valid = str(value).replace("'",'"')
@@ -482,25 +488,13 @@ class PageTwo(tk.Frame):
                                         headers={'Content-Type': 'application/json', 
                                         'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
                                         )
-                    print('success')
                     self.enableLight("GREEN")
+                    print('success')
                     open("static/uploads/_serialUpdate.txt", "w").write("0")
                     self.callConveyor()
                     start = time.time()
                     print(start)
             
-    def enableLight(self, state):
-        # print("Light On")
-        # readStatus = ImageProcess()
-        # status = readStatus.getConState("4")
-        
-        # if (status=="OFF"):
-        res1 = requests.post(
-            Config.API_MOTOR_URL + 'devices/4', data=json.dumps({"state": state}),
-            headers={'Content-Type': 'application/json'}
-        )
-        print(res1)
-
     
     def callConveyor(self):
         print("start conv")
