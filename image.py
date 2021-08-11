@@ -33,6 +33,15 @@ class ImageProcess(object):
         self.validation = open("static/uploads/_validation.txt", 'r').read()
         self.customer = open("static/uploads/_customer.txt").readline().strip("\n")
 
+    def conStatus(self):
+        res1 = requests.get(
+            Config.API_MOTOR_URL + 'devices',
+            headers={'Content-Type': 'application/json'}
+        )
+        data = res1.json()
+        status = data['devices'][0]['controller response']
+        open("static/uploads/_status.txt", "w").write(str(status))
+
     def readData(self):
         status = open("static/uploads/_status.txt").readline().strip("\n")
         changedTime = os.stat("static/uploads/_status.txt")[-2]

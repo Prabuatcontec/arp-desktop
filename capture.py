@@ -2,7 +2,7 @@ from config import Config
 from timeit import default_timer as timer
 from tkinter.constants import HORIZONTAL
 import pytesseract
-
+from numpy.lib import math
 import cv2
 import numpy as np
 import structlog
@@ -74,7 +74,7 @@ class PageThree(tk.Frame):
         self.category.set("Pick a Customer")
         open("static/uploads/_customer.txt", "w").write("")
         open("static/uploads/_model.txt", "w").write("")
-        open("static/uploads/_serial.txt", "w").write("")
+        #open("static/uploads/_serial.txt", "w").write("")
         open("static/uploads/_serialUpdate.txt", "w").write("0")
 
         popupMenu = tk.OptionMenu(frame_eb_data, self.category, *somechoices)
@@ -101,10 +101,11 @@ class PageThree(tk.Frame):
 
     def change_dropdown(self,*args):
         open("static/uploads/_customer.txt", "w").write(f"{self.category.get() }")
-        HoldStatus("").writeFile("", "_goodData")
-        open("static/uploads/_serial.txt", "w").write("")
+        #HoldStatus("").writeFile("", "_goodData")
+        #open("static/uploads/_serial.txt", "w").write("")
         open("static/uploads/_status.txt", "w").write("")
-        open("static/uploads/_lastScan.txt", "w").write("")
+        open("static/uploads/_lastFail.txt", "w").write("")
+        #open("static/uploads/_lastScan.txt", "w").write("")
         open("static/uploads/_goodDataAvailable.txt", "w").write("")
         open("static/uploads/_serialUpdate.txt", "w").write("")
         
@@ -148,7 +149,7 @@ class PageThree(tk.Frame):
             headers={'Content-Type': 'application/json'}
         )
         print(res1)
-        # threading.Thread(target=self.maintenance, daemon=True).start()
+        threading.Thread(target=self.maintenance, daemon=True).start()
         # threading.Thread(target=self.postingData, daemon=True).start()
         
       
@@ -159,7 +160,7 @@ class PageThree(tk.Frame):
         while True:
             l=threading.Lock()
             l.acquire()
-            readText.readData()
+            readText.conStatus()
             l.release()
             
             
@@ -254,17 +255,17 @@ class PageTwo(tk.Frame):
             if flag is None:
                 print ("Failed")
             customer = open("static/uploads/_customer.txt").readline().strip("\n")
-            status = open("static/uploads/_status.txt").readline().strip("\n")
+            #status = open("static/uploads/_status.txt").readline().strip("\n")
             
             
             if(customer != ""):
                 image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-                if status == "Success":
-                    cv2.putText(image, "Status:"+status, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 100, 0), 8)
-                elif status == "":
-                    cv2.putText(image, "Status:Waiting", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 150, 0), 8)
-                else:
-                    cv2.putText(image, "Status:Failed", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 8)
+                # if status == "Success":
+                #     cv2.putText(image, "Status:"+status, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 100, 0), 8)
+                # elif status == "":
+                #     cv2.putText(image, "Status:Waiting", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 150, 0), 8)
+                # else:
+                #     cv2.putText(image, "Status:Failed", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 8)
             else:
                 image = cv2.imread("static/uploads/customer1.jpg")
                 cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
@@ -317,7 +318,7 @@ class PageTwo(tk.Frame):
                         print(start)
                         if sr == 0:
                             thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-                            contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                            _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
                             cnt = contours
                             s = 1
                             for c in cnt:
@@ -332,7 +333,7 @@ class PageTwo(tk.Frame):
                                 ts = calendar.timegm(gmt)
                                 fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
                                 image = thresh[y:y+h,x:x+w]
-                                HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
+                                #HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
                                 cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
                                 self.processImage(serials, image, image)
                             else:
@@ -401,9 +402,24 @@ class PageTwo(tk.Frame):
             if r == 0:
                 self.closeConveyor()
                 str1 = " " 
-                tkinter.messagebox.askretrycancel("Unit OCR Failed", "Serials:"+ str1.join(line))
+                if str(str1.join(line)) != open("static/uploads/_lastFail.txt").readline().strip("\n"):
+                    tkinter.messagebox.askretrycancel("Unit OCR Failed", "For Units:"+ str1.join(line)+". Try to position the box in 0 or 180 degree and click retry. ")
+                    open("static/uploads/_lastFail.txt", "w").write(str(str1.join(line)))
+
                 self.callConveyor()
                 open("static/uploads/_serialUpdate.txt", "w").write("0")
+
+    def gradiant(self,p1,p2):
+        return (p1[1]-p2[1])/(p2[0]-p1[0])
+    
+    def getAngel(self):
+        if(len(self.p)>=3):
+            p1,p2,p3 =self.p[-3:]
+            m1 = self.gradiant(p1,p2)
+            m2 = self.gradiant(p1,p3)
+            aR = math.atan((m2-m1)/(1+(m2*m1)))
+            aD = round(math.degrees(aR))
+            print(aD)
 
     def processValidation(self, key, value, line, image, image1):
             valid = str(value).replace("'",'"')
@@ -420,7 +436,9 @@ class PageTwo(tk.Frame):
             if valid !='0':
                 self.closeConveyor()
                 str1 = " " 
-                tkinter.messagebox.askretrycancel("Unit Validation Failed", "Serials:"+ str1.join(line))
+                if str(str1.join(line)) != open("static/uploads/_lastFail.txt").readline().strip("\n"):
+                    tkinter.messagebox.askretrycancel("Unit Validation Failed", "Serials:"+ str1.join(line))
+                    open("static/uploads/_lastFail.txt", "w").write(str(str1.join(line)))
                 self.callConveyor()
                 open("static/uploads/_serialUpdate.txt", "w").write("0")
                 return 1
@@ -446,17 +464,17 @@ class PageTwo(tk.Frame):
                     #ts = calendar.timegm(gmt)
                     #fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
                     open("static/uploads/_goodDataAvailable.txt", "a").write(str(line)+"\n")
-                    #cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
+                    #cv2.imwrite("static/processingImg/boxER_%s.png" % str(random.randint(100000,999999)), image)
                     
                     mdict1 = {"model": str(jsonArray["model"])}
                     dict.update(mdict1)
                     mdict1 = {"customer": str(customer)}
                     dict.update(mdict1)
                 
-                    open("static/uploads/_status.txt", "w").write("Success")
-                    file1 = open("static/uploads/_goodData.txt", "a")
-                    file1.write("\n")
-                    file1.write(str(dict))
+                    # open("static/uploads/_status.txt", "w").write("Success")
+                    # file1 = open("static/uploads/_goodData.txt", "a")
+                    # file1.write("\n")
+                    # file1.write(str(dict))
                     line = str(dict).replace("'",'"')
                     requests.post(Config.DEEPBLU_URL + '/autoreceive/automation', line,
                                         headers={'Content-Type': 'application/json', 
@@ -474,17 +492,17 @@ class PageTwo(tk.Frame):
         start = time.time()
         print(start)
         res1 = requests.post(
+            Config.API_MOTOR_URL + 'devices/3', data=json.dumps({"state": "ON"}),
+            headers={'Content-Type': 'application/json'}
+        )
+        print(res1)
+        res1 = requests.post(
             Config.API_MOTOR_URL + 'devices/1', data=json.dumps({"state": "ON"}),
             headers={'Content-Type': 'application/json'}
         )
         print(res1)
         res1 = requests.post(
             Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "HIGH"}),
-            headers={'Content-Type': 'application/json'}
-        )
-        print(res1)
-        res1 = requests.post(
-            Config.API_MOTOR_URL + 'devices/3', data=json.dumps({"state": "ON"}),
             headers={'Content-Type': 'application/json'}
         )
         print(res1)
