@@ -110,6 +110,7 @@ class PageThree(tk.Frame):
         
         
         
+        
         dict = {}
         self.progress.grid(row=2,column=0)
         self.progress.start()
@@ -124,8 +125,31 @@ class PageThree(tk.Frame):
         self.progress.grid_forget()
         HoldStatus("").writeFile(json.dumps(dict),"_validation")
         
-        threading.Thread(target=self.maintenance, daemon=True).start()
-        threading.Thread(target=self.postingData, daemon=True).start()
+        res1 = requests.post(
+            Config.API_MOTOR_URL + 'devices/1', data=json.dumps({"state": "ON"}),
+            headers={'Content-Type': 'application/json'}
+        )
+        res1 = requests.post(
+            Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "HIGH"}),
+            headers={'Content-Type': 'application/json'}
+        )
+        print(res1)
+        res1 = requests.post(
+            Config.API_MOTOR_URL + 'devices/2', data=json.dumps({"state": "ON"}),
+            headers={'Content-Type': 'application/json'}
+        )
+        res1 = requests.post(
+            Config.API_MOTOR_URL + 'devices/2', data=json.dumps({ "spd": "HIGH"}),
+            headers={'Content-Type': 'application/json'}
+        )
+        print(res1)
+        res1 = requests.post(
+            Config.API_MOTOR_URL + 'devices/3', data=json.dumps({"state": "ON"}),
+            headers={'Content-Type': 'application/json'}
+        )
+        print(res1)
+        # threading.Thread(target=self.maintenance, daemon=True).start()
+        # threading.Thread(target=self.postingData, daemon=True).start()
         
       
 
@@ -210,7 +234,7 @@ class PageTwo(tk.Frame):
         Config.API_USER_URL + 'users/login', data=json.dumps({"username": self.entry_nombre_fld.get(), "password": self.entry_nombre_fld1.get(), "Site": "Matamoros"}),
         headers={'Content-Type': 'application/json'}
         )
-        self.callConveyor()
+        
         if response.status_code != 200:
             self.controller.page2_label.set("Authentication Failed!")
         else:
@@ -269,6 +293,7 @@ class PageTwo(tk.Frame):
                 if open("static/uploads/_serialUpdate.txt").readline().strip("\n") == "1":
                     s = 1
                 if (s > 1):
+                    
                     open("static/uploads/_serialUpdate.txt", "w").write("1")
                     lo = [0, -5, 5]
                     for x in lo:
@@ -286,11 +311,13 @@ class PageTwo(tk.Frame):
 
                     
                     sr = 0
-                    if len(serials) > 0:
+                    if len(serials) > 1:
                         
+                        start = time.time()
+                        print(start)
                         if sr == 0:
                             thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-                            _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                            contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
                             cnt = contours
                             s = 1
                             for c in cnt:
@@ -301,7 +328,9 @@ class PageTwo(tk.Frame):
                             print(serials)
                             print(s)
                             if s > 1:
-                                fillenameImage = 111
+                                gmt = time.gmtime()
+                                ts = calendar.timegm(gmt)
+                                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
                                 image = thresh[y:y+h,x:x+w]
                                 HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
                                 cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
@@ -413,6 +442,8 @@ class PageTwo(tk.Frame):
                     #gmt = time.gmtime()
                     #ts = calendar.timegm(gmt)
                     customer = open("static/uploads/_customer.txt").readline().strip("\n")
+                    #gmt = time.gmtime()
+                    #ts = calendar.timegm(gmt)
                     #fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
                     open("static/uploads/_goodDataAvailable.txt", "a").write(str(line)+"\n")
                     #cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
@@ -431,28 +462,24 @@ class PageTwo(tk.Frame):
                                         headers={'Content-Type': 'application/json', 
                                         'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
                                         )
+                    print('success')
+                    open("static/uploads/_serialUpdate.txt", "w").write("0")
+                    self.callConveyor()
                     start = time.time()
                     print(start)
             
     
     def callConveyor(self):
+        print("start conv")
         start = time.time()
         print(start)
         res1 = requests.post(
             Config.API_MOTOR_URL + 'devices/1', data=json.dumps({"state": "ON"}),
             headers={'Content-Type': 'application/json'}
         )
-        res1 = requests.post(
-            Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "HIGH"}),
-            headers={'Content-Type': 'application/json'}
-        )
         print(res1)
         res1 = requests.post(
-            Config.API_MOTOR_URL + 'devices/2', data=json.dumps({"state": "ON"}),
-            headers={'Content-Type': 'application/json'}
-        )
-        res1 = requests.post(
-            Config.API_MOTOR_URL + 'devices/2', data=json.dumps({ "spd": "HIGH"}),
+            Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "HIGH"}),
             headers={'Content-Type': 'application/json'}
         )
         print(res1)
@@ -466,13 +493,10 @@ class PageTwo(tk.Frame):
         return 1
 
     def closeConveyor(self):
+        print("stop conv")
         start = time.time()
         requests.post(
             Config.API_MOTOR_URL + 'devices/1', data=json.dumps({"state": "OFF"}),
-            headers={'Content-Type': 'application/json'}
-        )
-        requests.post(
-            Config.API_MOTOR_URL + 'devices/2', data=json.dumps({"state": "OFF"}),
             headers={'Content-Type': 'application/json'}
         )
         requests.post(
