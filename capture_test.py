@@ -1,3 +1,4 @@
+from numpy.lib import math
 from config import Config
 from timeit import default_timer as timer
 from tkinter.constants import HORIZONTAL
@@ -204,6 +205,7 @@ class PageTwo(tk.Frame):
         self.thread = threading.Thread(target=self.videoLoop1, args=())
         self.thread.start()
         self.panel = None
+        self.p = []
 
         threading.Thread(target=self.maintenance, daemon=True).start()
         threading.Thread(target=self.postingData, daemon=True).start()
@@ -225,6 +227,24 @@ class PageTwo(tk.Frame):
             
     def rotate_bound(self, image, angle):
         return imutils.rotate(image, -angle) 
+
+    def gradiant(self,p1,p2):
+        print(p1[1]-p2[1])
+        print(p2[0]-p1[0])
+        cal =  (p1[1]-p2[1])/(p2[0]-p1[0])
+        return cal
+    
+    def getAngel(self):
+        if(len(self.p)>=3):
+            p1,p2,p3 =self.p[-3:]
+            m1 = self.gradiant(p1,p2)
+            m2 = self.gradiant(p1,p3)
+            aR = math.atan((m2-m1)/(1+(m2*m1)))
+            aD = round(math.degrees(aR))
+            return aD
+        
+        return 0
+         
 
     def videoLoop(self):
         stats = []
@@ -374,11 +394,79 @@ class PageTwo(tk.Frame):
                     for c in cnt:
                         #print(cv2.contourArea(c))
                         if(cv2.contourArea(c)  > 100000):
+                            # rows,cols = thresh.shape[:2]
+                            # [vx,vy,x,y] = cv2.fitLine(c, cv2.DIST_L2,0,0.01,0.01)
+                            # lefty = int((-x*vy/vx) + y)
+                            # righty = int(((cols-x)*vy/vx)+y)
+                            # # cv2.line(image,(cols-1,righty),(0,lefty),(0,255,0),2)
+                            # # cv2.line(image,(cols-1,righty),(0,righty),(0,255,0),2)
+                            # print("x="+str(cols-1)+",y="+str(righty)+",x1="+str(0)+",y1="+str(lefty))
+                            # self.p.append([cols-1,righty])
+                            # self.p.append([0,lefty])
+                            # self.p.append([0,righty])
+
+                            rect = cv2.minAreaRect(c)
+                            box = np.int0(cv2.boxPoints(rect))
+                            [vx,vy,x,y] = box
+
+                            # center_coordinates = (x[0] , vy[0])
+                            # radius = 20
+                            
+                            # # Blue color in BGR
+                            # color = (255, 0, 0)
+                            
+                            # # Line thickness of 2 px
+                            # thickness = 2
+                            
+                            # # Using cv2.circle() method
+                            # # Draw a circle with blue line borders of thickness of 2 px
+                            # image = cv2.circle(image, (x[0],x[1]), radius, color, thickness)
+                            # image = cv2.circle(image, (y[0],y[1]), radius, color, thickness)
+                            # image = cv2.circle(image, center_coordinates, radius, color, thickness)
+
+                            self.p.append([x[0],x[1]+1])
+                            self.p.append([x[0]-1,vy[0]])
+                            self.p.append([y[0],y[1]])
+                            
+                            
                             s = s + 1
                             x,y,w,h = cv2.boundingRect(c)
 
                     if s > 1:
-                        gray = thresh[y:y+h,x:x+w]
+                        gmt = time.gmtime()
+                        ts = calendar.timegm(gmt)
+                        fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                        #cv2.imwrite("static/processingImg/22222222222boxER_%s.png" % fillenameImage, image)
+                        text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                        print("".join(text.split()).encode('utf8'))
+                        image = thresh[y:y+h,x:x+w]
+                        start = time.time()
+                        print(start)
+                        print('start')
+                        image = cv2.resize(image, (3000, 3000 ), interpolation=cv2.INTER_CUBIC)
+                        start = time.time()
+                        print(start)
+                        print('end start')
+                        x = self.getAngel()
+                        image = self.rotate_bound(image, x)
+                        image1 = self.rotate_bound(image, 90)
+                        image2 = self.rotate_bound(image, -90)
+                        start = time.time()
+                        print(start)
+                        print('end')
+                        print(x)
+                        cv2.imwrite("static/processingImg/111111111111boxER_%s.png" % fillenameImage, image)
+                        text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                        print("".join(text.split()).encode('utf8'))
+                        print(90)
+                        cv2.imwrite("static/processingImg/4522222222222boxER_%s.png" % fillenameImage, image1)
+                        text = pytesseract.image_to_string(Image.fromarray(image1),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                        print("".join(text.split()).encode('utf8'))
+                        print(-90)
+                        cv2.imwrite("static/processingImg/minus22222222222boxER_%s.png" % fillenameImage, image2)
+                        text = pytesseract.image_to_string(Image.fromarray(image2),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                        print("".join(text.split()).encode('utf8'))
+                        #gray = thresh
 
                     #line = self.trimValue(serials)
                         self.processImage(serials, gray, image)
@@ -483,12 +571,12 @@ class PageTwo(tk.Frame):
                     cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
                     start = time.time()
                     print(start)
-                    # if( str(jsonArray["model"]) == 'DMS2004UHD'):
-                    #     cv2.imwrite("static/processingImg/dms/boxER_%s.png" % fillenameImage, image)
-                    #     cv2.imwrite("static/processingImg/dms/real/boxER_%s.png" % fillenameImage, image1)
-                    # else:
-                    #     cv2.imwrite("static/processingImg/vip250/boxER_%s.png" % fillenameImage, image)
-                    #     cv2.imwrite("static/processingImg/vip250/real/boxER_%s.png" % fillenameImage, image1)
+                    if( str(jsonArray["model"]) == 'DMS2004UHD'):
+                        cv2.imwrite("static/processingImg/dms/boxER_%s.png" % fillenameImage, image)
+                        cv2.imwrite("static/processingImg/dms/real/boxER_%s.png" % fillenameImage, image1)
+                    else:
+                        cv2.imwrite("static/processingImg/vip250/boxER_%s.png" % fillenameImage, image)
+                        cv2.imwrite("static/processingImg/vip250/real/boxER_%s.png" % fillenameImage, image1)
                     # mdict1 = {"model": str(jsonArray["model"])}
                     # dict.update(mdict1)
                     # mdict1 = {"customer": str(self.customer)}
