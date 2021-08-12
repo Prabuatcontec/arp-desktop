@@ -149,7 +149,7 @@ class PageThree(tk.Frame):
             headers={'Content-Type': 'application/json'}
         )
         print(res1)
-        threading.Thread(target=self.maintenance, daemon=True).start()
+        #threading.Thread(target=self.maintenance, daemon=True).start()
         # threading.Thread(target=self.postingData, daemon=True).start()
         
       
@@ -289,13 +289,14 @@ class PageTwo(tk.Frame):
                 image1 = image
 
                 thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-                _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
                 cnt = contours
                 s = 1
                 self.p = []
                 for c in cnt:
                     #print(cv2.contourArea(c))
                     if(cv2.contourArea(c)  > 100000):
+                        #print(1)
                         rows,cols = thresh.shape[:2]
                         [vx,vy,x,y] = cv2.fitLine(c, cv2.DIST_L2,0,0.01,0.01)
                         lefty = int((-x*vy/vx) + y)
@@ -316,11 +317,13 @@ class PageTwo(tk.Frame):
                 if s > 1:
                     open("static/uploads/_serialUpdate.txt", "w").write("1")
                     angel = self.getAngel()
+                    
                     image1 = self.rotate_bound(image, angel)
                     barcodes = pyzbar.decode(image1)
+                    print(barcodes)
                     
                     
-                    if len(barcodes) > 2:
+                    if len(barcodes) > 1:
                         print(angel)
                         gmt = time.gmtime()
                         ts = calendar.timegm(gmt)

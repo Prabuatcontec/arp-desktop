@@ -149,7 +149,7 @@ class PageThree(tk.Frame):
             headers={'Content-Type': 'application/json'}
         )
         print(res1)
-        threading.Thread(target=self.maintenance, daemon=True).start()
+        #threading.Thread(target=self.maintenance, daemon=True).start()
         # threading.Thread(target=self.postingData, daemon=True).start()
         
       
@@ -293,15 +293,22 @@ class PageTwo(tk.Frame):
                 s = 2
                 if open("static/uploads/_serialUpdate.txt").readline().strip("\n") == "1":
                     s = 1
+                    print('val=1')
                 if (s > 1):
                     
                     open("static/uploads/_serialUpdate.txt", "w").write("1")
-                    lo = [0, -5, 5]
+                    lo = [0, -5, 5, -10, 10]
                     for x in lo:
                         if (x != 0):
                             image1 = self.rotate_bound(image, x)
                         barcodes = pyzbar.decode(image1)
-                        if len(barcodes) > 2:
+                        if len(barcodes) > 1:
+                            gmt = time.gmtime()
+                            ts = calendar.timegm(gmt)
+                            fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                            
+                            #HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
+                            cv2.imwrite("static/processingImg/Goos_boxER_%s.png" % fillenameImage, image)
                             image = image1
                             break
                     serials = []
@@ -310,43 +317,49 @@ class PageTwo(tk.Frame):
                         if(detect_special_characer(barcodeData) == True):
                             serials.append(barcodeData)
 
-                    
-                    sr = 0
-                    if len(serials) > 1:
-                        
-                        start = time.time()
-                        print(start)
-                        if sr == 0:
-                            thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-                            _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-                            cnt = contours
-                            s = 1
-                            for c in cnt:
-                                #print(cv2.contourArea(c))
-                                if(cv2.contourArea(c)  > 100000):
-                                    s = s + 1
-                                    x,y,w,h = cv2.boundingRect(c)
-                            print(serials)
-                            print(s)
-                            if s > 1:
-                                gmt = time.gmtime()
-                                ts = calendar.timegm(gmt)
-                                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                image = thresh[y:y+h,x:x+w]
-                                #HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
-                                cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
-                                self.processImage(serials, image, image)
-                            else:
-                                open("static/uploads/_serialUpdate.txt", "w").write("0")
-                                
-                        # serials.append(fillenameImage)
-                        # cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
-                        # file1 = open("static/uploads/_serial.txt", "a")
-                        # file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
-                        # file1.close()
-
-                    else:
+                    r = open("static/uploads/_goodDataAvailable.txt", "r")
+                    r = str(r.read())
+                    rev = self.Reverse(serials)
+                    if(r.find(str(serials)) !=-1 or r.find(str(rev)) != -1):
                         open("static/uploads/_serialUpdate.txt", "w").write("0")
+                        print('goodSerial=1')
+                    else:
+                        sr = 0
+                        if len(serials) > 1:
+                            
+                            start = time.time()
+                            print(start)
+                            if sr == 0:
+                                thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+                                contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                                cnt = contours
+                                s = 1
+                                for c in cnt:
+                                    #print(cv2.contourArea(c))
+                                    if(cv2.contourArea(c)  > 100000):
+                                        s = s + 1
+                                        x,y,w,h = cv2.boundingRect(c)
+                                print(serials)
+                                print(s)
+                                if s > 1:
+                                    gmt = time.gmtime()
+                                    ts = calendar.timegm(gmt)
+                                    fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                                    image = thresh[y:y+h,x:x+w]
+                                    #HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
+                                    cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
+                                    self.processImage(serials, image, image)
+                                else:
+                                    open("static/uploads/_serialUpdate.txt", "w").write("0")
+                                    
+                            # serials.append(fillenameImage)
+                            # cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
+                            # file1 = open("static/uploads/_serial.txt", "a")
+                            # file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
+                            # file1.close()
+
+                        else:
+                            open("static/uploads/_serialUpdate.txt", "w").write("0")
 
 
     def Reverse(self, lst):
@@ -406,6 +419,7 @@ class PageTwo(tk.Frame):
                     self.enableLight("RED")
                     tkinter.messagebox.askretrycancel("Unit OCR Failed", "For Units:"+ str1.join(line)+". Try to position the box in 0 or 180 degree and click retry. ")
                     open("static/uploads/_lastFail.txt", "w").write(str(str1.join(line)))
+                    self.enableLight("OFF")
 
                 self.callConveyor()
                 open("static/uploads/_serialUpdate.txt", "w").write("0")
@@ -441,6 +455,7 @@ class PageTwo(tk.Frame):
                     self.enableLight("RED")
                     tkinter.messagebox.askretrycancel("Unit Validation Failed", "Serials:"+ str1.join(line))
                     open("static/uploads/_lastFail.txt", "w").write(str(str1.join(line)))
+                    self.enableLight("OFF")
                 self.callConveyor()
                 open("static/uploads/_serialUpdate.txt", "w").write("0")
                 return 1
