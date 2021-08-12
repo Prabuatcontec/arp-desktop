@@ -125,6 +125,7 @@ class PageThree(tk.Frame):
         #open("static/uploads/_lastScan.txt", "w").write("")
         open("static/uploads/_goodDataAvailable.txt", "w").write("")
         open("static/uploads/_serialUpdate.txt", "w").write("")
+        open("static/uploads/_serialC.txt", "w").write("0")
         
         dict = {}
         self.progress.grid(row=2,column=0)
@@ -284,32 +285,38 @@ class PageTwo(tk.Frame):
                     self.p = []
                     for c in cnt:
                         if(cv2.contourArea(c)  > 100000):
-                            #print(cv2.contourArea(c))
-                            rect = cv2.minAreaRect(c)
-                            box = np.int0(cv2.boxPoints(rect))
-                            [vx,vy,x,y] = box
+                            serialC = open("static/uploads/_serialC.txt").readline().strip("\n")
+                            if(serialC=="0"):
+                                time.sleep(.5)
+                                open("static/uploads/_serialC.txt", "w").write("1")
+                            else:
+                                open("static/uploads/_serialC.txt", "w").write("0")
+                                #print(cv2.contourArea(c))
+                                rect = cv2.minAreaRect(c)
+                                box = np.int0(cv2.boxPoints(rect))
+                                [vx,vy,x,y] = box
 
-                            center_coordinates = (x[0] , vy[0])
-                            radius = 20
-                            
-                            # Blue color in BGR
-                            color = (255, 0, 0)
-                            
-                            # Line thickness of 2 px
-                            thickness = 2
-                            
-                            # Using cv2.circle() method
-                            # Draw a circle with blue line borders of thickness of 2 px
-                            image = cv2.circle(image, (x[0],x[1]), radius, color, thickness)
-                            image = cv2.circle(image, (y[0],y[1]), radius, color, thickness)
-                            image = cv2.circle(image, center_coordinates, radius, color, thickness)
-                            self.p.append([x[0],x[1]+1])
-                            self.p.append([x[0]-1,vy[0]])
-                            self.p.append([y[0],y[1]])
-                            s9 = s9 + 1
-                            x,y,w,h = cv2.boundingRect(c)
+                                # center_coordinates = (x[0] , vy[0])
+                                # radius = 20
+                                
+                                # # Blue color in BGR
+                                # color = (255, 0, 0)
+                                
+                                # # Line thickness of 2 px
+                                # thickness = 2
+                                
+                                # # Using cv2.circle() method
+                                # # Draw a circle with blue line borders of thickness of 2 px
+                                # image = cv2.circle(image, (x[0],x[1]), radius, color, thickness)
+                                # image = cv2.circle(image, (y[0],y[1]), radius, color, thickness)
+                                # image = cv2.circle(image, center_coordinates, radius, color, thickness)
+                                self.p.append([x[0],x[1]+1])
+                                self.p.append([x[0]-1,vy[0]])
+                                self.p.append([y[0],y[1]])
+                                s9 = s9 + 1
+                                x,y,w,h = cv2.boundingRect(c)
 
-                            image = thresh[y:y+h,x:x+w]
+                                image = thresh[y:y+h,x:x+w]
                             
                             
                             
@@ -355,11 +362,6 @@ class PageTwo(tk.Frame):
                                     if len(serials) > 1:
                                             print(serials)
                                             if s > 1:
-                                                gmt = time.gmtime()
-                                                ts = calendar.timegm(gmt)
-                                                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                                #HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
-                                                cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
                                                 self.processImage(serials, image, image)
                                             else:
                                                 open("static/uploads/_serialUpdate.txt", "w").write("0")

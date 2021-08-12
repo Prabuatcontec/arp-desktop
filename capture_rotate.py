@@ -289,20 +289,20 @@ class PageTwo(tk.Frame):
                             box = np.int0(cv2.boxPoints(rect))
                             [vx,vy,x,y] = box
 
-                            center_coordinates = (x[0] , vy[0])
-                            radius = 20
+                            # center_coordinates = (x[0] , vy[0])
+                            # radius = 20
                             
-                            # Blue color in BGR
-                            color = (255, 0, 0)
+                            # # Blue color in BGR
+                            # color = (255, 0, 0)
                             
-                            # Line thickness of 2 px
-                            thickness = 2
+                            # # Line thickness of 2 px
+                            # thickness = 2
                             
-                            # Using cv2.circle() method
-                            # Draw a circle with blue line borders of thickness of 2 px
-                            image = cv2.circle(image, (x[0],x[1]), radius, color, thickness)
-                            image = cv2.circle(image, (y[0],y[1]), radius, color, thickness)
-                            image = cv2.circle(image, center_coordinates, radius, color, thickness)
+                            # # Using cv2.circle() method
+                            # # Draw a circle with blue line borders of thickness of 2 px
+                            # image = cv2.circle(image, (x[0],x[1]), radius, color, thickness)
+                            # image = cv2.circle(image, (y[0],y[1]), radius, color, thickness)
+                            # image = cv2.circle(image, center_coordinates, radius, color, thickness)
                             self.p.append([x[0],x[1]+1])
                             self.p.append([x[0]-1,vy[0]])
                             self.p.append([y[0],y[1]])
