@@ -284,14 +284,14 @@ class PageTwo(tk.Frame):
                     s = 1
                     self.p = []
                     for c in cnt:
-                        if(cv2.contourArea(c)  > 100000):
+                        if(cv2.contourArea(c)  > 300000):
                             serialC = open("static/uploads/_serialC.txt").readline().strip("\n")
                             if(serialC=="0"):
                                 time.sleep(.5)
                                 open("static/uploads/_serialC.txt", "w").write("1")
                             else:
                                 open("static/uploads/_serialC.txt", "w").write("0")
-                                #print(cv2.contourArea(c))
+                                print(cv2.contourArea(c))
                                 rect = cv2.minAreaRect(c)
                                 box = np.int0(cv2.boxPoints(rect))
                                 [vx,vy,x,y] = box
@@ -316,7 +316,12 @@ class PageTwo(tk.Frame):
                                 s9 = s9 + 1
                                 x,y,w,h = cv2.boundingRect(c)
 
-                                image = thresh[y:y+h,x:x+w]
+                                image = thresh
+                                gmt = time.gmtime()
+                                ts = calendar.timegm(gmt)
+                                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                                
+                                cv2.imwrite("static/processingImg/CCPOSOSGoos_boxER_%s.png" % fillenameImage, image)
                             
                             
                             
@@ -338,7 +343,7 @@ class PageTwo(tk.Frame):
                             ts = calendar.timegm(gmt)
                             fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
                             
-                            #cv2.imwrite("static/processingImg/POSOSGoos_boxER_%s.png" % fillenameImage, image)
+                            cv2.imwrite("static/processingImg/POSOSGoos_boxER_%s.png" % fillenameImage, image)
                             
                             barcodes = pyzbar.decode(image)
                             if len(barcodes) > 0:
