@@ -273,7 +273,7 @@ class PageTwo(tk.Frame):
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 image1 = image
 
-                
+                #image = cv2.resize(image, (5000, 5000 ), interpolation=cv2.INTER_CUBIC)
                 if(customer != ""):
                     s9 = 2
                     
@@ -284,16 +284,35 @@ class PageTwo(tk.Frame):
                     self.p = []
                     for c in cnt:
                         if(cv2.contourArea(c)  > 100000):
+                            print(cv2.contourArea(c))
                             rect = cv2.minAreaRect(c)
                             box = np.int0(cv2.boxPoints(rect))
                             [vx,vy,x,y] = box
+
+                            center_coordinates = (x[0] , vy[0])
+                            radius = 20
+                            
+                            # Blue color in BGR
+                            color = (255, 0, 0)
+                            
+                            # Line thickness of 2 px
+                            thickness = 2
+                            
+                            # Using cv2.circle() method
+                            # Draw a circle with blue line borders of thickness of 2 px
+                            image = cv2.circle(image, (x[0],x[1]), radius, color, thickness)
+                            image = cv2.circle(image, (y[0],y[1]), radius, color, thickness)
+                            image = cv2.circle(image, center_coordinates, radius, color, thickness)
                             self.p.append([x[0],x[1]+1])
                             self.p.append([x[0]-1,vy[0]])
                             self.p.append([y[0],y[1]])
                             s9 = s9 + 1
                             x,y,w,h = cv2.boundingRect(c)
+
+                            #image = image[y:y+h,x:x+w]
                             
-                            image = image[y:y+h,x:x+w]
+                            
+                            
                             
                             
                     if s9 > 1 :
@@ -304,12 +323,18 @@ class PageTwo(tk.Frame):
                             print("greater")
                             open("static/uploads/_serialUpdate.txt", "w").write("1")
                             
-                            image = cv2.resize(image, (3000, 3000 ), interpolation=cv2.INTER_CUBIC)
+                            #
                             x = self.getAngel()
                             image = self.rotate_bound(image, x)
+
+                            gmt = time.gmtime()
+                            ts = calendar.timegm(gmt)
+                            fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                            
+                            cv2.imwrite("static/processingImg/POSOSGoos_boxER_%s.png" % fillenameImage, image)
                             
                             barcodes = pyzbar.decode(image)
-                            if len(barcodes) > 1:
+                            if len(barcodes) > 0:
                                 gmt = time.gmtime()
                                 ts = calendar.timegm(gmt)
                                 fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
