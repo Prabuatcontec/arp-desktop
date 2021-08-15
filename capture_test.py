@@ -229,17 +229,18 @@ class PageTwo(tk.Frame):
         return imutils.rotate(image, -angle) 
 
     def gradiant(self,p1,p2):
-        print(p1[1]-p2[1])
-        print(p2[0]-p1[0])
         cal =  (p1[1]-p2[1])/(p2[0]-p1[0])
         return cal
     
     def getAngel(self):
+        
         if(len(self.p)>=3):
             p1,p2,p3 =self.p[-3:]
             m1 = self.gradiant(p1,p2)
             m2 = self.gradiant(p1,p3)
             aR = math.atan((m2-m1)/(1+(m2*m1)))
+            if math.isnan(aR):
+                return 0
             aD = round(math.degrees(aR))
             return aD
         
@@ -364,119 +365,253 @@ class PageTwo(tk.Frame):
     def videoLoop1(self):
         stats = []
         start = timer()
-        for filename in os.listdir("static/processingImg/v5/"):
+        for filename in os.listdir("static/processingImg/v5/v6/"):
             start = time.time()
-            print(start)
-            image = cv2.imread("static/processingImg/v5/"+ filename)
+            print(filename)
+            image = cv2.imread("static/processingImg/v5/v6/"+ filename)
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            barcodes = pyzbar.decode(gray)
+
+
+
+
+            thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY   + cv2.THRESH_OTSU)[1]
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (21, 7))
+            closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+
+            _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+            cnt = contours
+            s = 1
+            angle = 0
+            for c in cnt:
+                #print(cv2.contourArea(c))
+                if(cv2.contourArea(c)  > 100000):
+                    print("connnnnnnnnnnnnnnnnnn")
+                    #print(cv2.contourArea(c))
+                    # rows,cols = thresh.shape[:2]
+                    # [vx,vy,x,y] = cv2.fitLine(c, cv2.DIST_L2,0,0.01,0.01)
+                    # lefty = int((-x*vy/vx) + y)
+                    # righty = int(((cols-x)*vy/vx)+y)
+                    # # cv2.line(image,(cols-1,righty),(0,lefty),(0,255,0),2)
+                    # # cv2.line(image,(cols-1,righty),(0,righty),(0,255,0),2)
+                    # print("x="+str(cols-1)+",y="+str(righty)+",x1="+str(0)+",y1="+str(lefty))
+                    # self.p.append([cols-1,righty])
+                    # self.p.append([0,lefty])
+                    # self.p.append([0,righty])
+
+                    rect = cv2.minAreaRect(c)
+                    box = np.int0(cv2.boxPoints(rect))
+                    #cv2.drawContours(image, [box], 0, (36,255,12), 3) 
+                    #print(box)
+                    [vx,vy,x,y] = box
+
+                    center_coordinates = (x[0] , vy[0])
+                    radius = 20
                     
-            serials = []
-
-
-            for barcode in barcodes:
-                barcodeData = barcode.data.decode("utf-8")
-                if(detect_special_characer(barcodeData) == True):
-                    serials.append(barcodeData)
-
-            s = 0
-            
-            
-            if len(serials) > 0:
-                
-                if s == 0:
-                    print(serials)
+                    # Blue color in BGR
+                    color = (255, 0, 0)
                     
-                    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-                    _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-                    cnt = contours
-                    s = 1
-                    for c in cnt:
-                        #print(cv2.contourArea(c))
-                        if(cv2.contourArea(c)  > 100000):
-                            # rows,cols = thresh.shape[:2]
-                            # [vx,vy,x,y] = cv2.fitLine(c, cv2.DIST_L2,0,0.01,0.01)
-                            # lefty = int((-x*vy/vx) + y)
-                            # righty = int(((cols-x)*vy/vx)+y)
-                            # # cv2.line(image,(cols-1,righty),(0,lefty),(0,255,0),2)
-                            # # cv2.line(image,(cols-1,righty),(0,righty),(0,255,0),2)
-                            # print("x="+str(cols-1)+",y="+str(righty)+",x1="+str(0)+",y1="+str(lefty))
-                            # self.p.append([cols-1,righty])
-                            # self.p.append([0,lefty])
-                            # self.p.append([0,righty])
+                    # Line thickness of 2 px
+                    thickness = 2
 
-                            rect = cv2.minAreaRect(c)
-                            box = np.int0(cv2.boxPoints(rect))
-                            [vx,vy,x,y] = box
+                    # cv2.line(image,(x[0],x[1]),(y[0],y[1]),(0,255,0),2)
+                    # cv2.line(image,(x[0],x[1]),(x[0],vy[0]),(0,255,0),2)
+                    # cv2.line(image,(x[0],vy[0]),(y[0],y[1]),(0,255,0),2)
 
-                            # center_coordinates = (x[0] , vy[0])
-                            # radius = 20
-                            
-                            # # Blue color in BGR
-                            # color = (255, 0, 0)
-                            
-                            # # Line thickness of 2 px
-                            # thickness = 2
-                            
-                            # # Using cv2.circle() method
-                            # # Draw a circle with blue line borders of thickness of 2 px
-                            # image = cv2.circle(image, (x[0],x[1]), radius, color, thickness)
-                            # image = cv2.circle(image, (y[0],y[1]), radius, color, thickness)
-                            # image = cv2.circle(image, center_coordinates, radius, color, thickness)
+                    # cv2.putText(image, "M1", (x[0],x[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 100, 0), 8)
+                    # cv2.putText(image, "M2", (y[0],y[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 100, 0), 8)
+                    # cv2.putText(image, "M3", center_coordinates, cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 100, 0), 8)
+                    # Using cv2.circle() method
+                    # Draw a circle with blue line borders of thickness of 2 px
+                    # image = cv2.circle(image, (x[0],x[1]), radius, color, thickness)
+                    # image = cv2.circle(image, (y[0],y[1]), radius, color, thickness)
+                    # image = cv2.circle(image, center_coordinates, radius, color, thickness)
 
-                            self.p.append([x[0],x[1]+1])
-                            self.p.append([x[0]-1,vy[0]])
-                            self.p.append([y[0],y[1]])
-                            
-                            
-                            s = s + 1
-                            x,y,w,h = cv2.boundingRect(c)
+                    self.p.append([x[0],x[1]+1])
+                    self.p.append([x[0]-1,vy[0]])
+                    self.p.append([y[0],y[1]])
+                    x = self.getAngel()
+                    print('ang')
+                    print(x)
 
-                    if s > 1:
+                    min_area = 0.95*180*35
+                    max_area = 1.05*180*35
+                    area = cv2.contourArea(c)
+                    #print(rect)
+                    image = self.rotate_bound(thresh, x)
+                    barcodes = pyzbar.decode(image)
+                    serials = []
+                    if (len(barcodes)>0):
                         gmt = time.gmtime()
                         ts = calendar.timegm(gmt)
                         fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                        #cv2.imwrite("static/processingImg/22222222222boxER_%s.png" % fillenameImage, image)
-                        text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                        print("".join(text.split()).encode('utf8'))
-                        image = thresh[y:y+h,x:x+w]
-                        start = time.time()
-                        print(start)
-                        print('start')
-                        image = cv2.resize(image, (3000, 3000 ), interpolation=cv2.INTER_CUBIC)
-                        start = time.time()
-                        print(start)
-                        print('end start')
-                        x = self.getAngel()
-                        image = self.rotate_bound(image, x)
-                        image1 = self.rotate_bound(image, 90)
-                        image2 = self.rotate_bound(image, -90)
-                        start = time.time()
-                        print(start)
-                        print('end')
-                        print(x)
-                        cv2.imwrite("static/processingImg/111111111111boxER_%s.png" % fillenameImage, image)
-                        text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                        print("".join(text.split()).encode('utf8'))
-                        print(90)
-                        cv2.imwrite("static/processingImg/4522222222222boxER_%s.png" % fillenameImage, image1)
-                        text = pytesseract.image_to_string(Image.fromarray(image1),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                        print("".join(text.split()).encode('utf8'))
-                        print(-90)
-                        cv2.imwrite("static/processingImg/minus22222222222boxER_%s.png" % fillenameImage, image2)
-                        text = pytesseract.image_to_string(Image.fromarray(image2),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                        print("".join(text.split()).encode('utf8'))
-                        #gray = thresh
+                        cv2.imwrite("static/processingImg/22222222222boxER_%s.png" % fillenameImage, image)
+                        angle = x
+                        for barcode in barcodes:
+                            barcodeData = barcode.data.decode("utf-8")
+                            if(detect_special_characer(barcodeData) == True):
+                                serials.append(barcodeData)
+                        
+                        if len(serials)>0:
+                            text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                            print("".join(text.split()).encode('utf8'))
+                            print("---------------------------------------------------------")
+                            image1 = self.rotate_bound(image, 90)
+                            cv2.imwrite("static/processingImg/9022222222222boxER_%s.png" % fillenameImage, image1)
+                            text = pytesseract.image_to_string(Image.fromarray(image1),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                            print("".join(text.split()).encode('utf8'))
+                            print("---------------------------------------------------------")
+                            image2 = self.rotate_bound(image, -90)
+                            cv2.imwrite("static/processingImg/minus9022222222222boxER_%s.png" % fillenameImage, image2)
+                            text = pytesseract.image_to_string(Image.fromarray(image2),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+                            print("".join(text.split()).encode('utf8'))
 
-                    #line = self.trimValue(serials)
-                        self.processImage(serials, gray, image)
-                    # HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
-                    # serials.append(fillenameImage)
-                    # open("static/serials/%s.txt" %fillenameImage, "w").write(json.dumps([ele for ele in reversed(serials)]))
-                    # cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
-                    # file1 = open("static/uploads/_serial.txt", "a")
-                    # file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
-                    # file1.close()
+                        print("-===============================================---")
+                        print(serials)
+                        break
+                    #print(barcodes)
+
+                    # serials = []
+
+
+                    for barcode in barcodes:
+                        barcodeData = barcode.data.decode("utf-8")
+                        if(detect_special_characer(barcodeData) == True):
+                            stats.append(barcodeData)
+
+                    #
+                    
+                    #condition to skip the light effect 
+                    # if vx[0] == 0 and vx[1] == 0 :
+                    #     s = 1
+                    # else: 
+                    #     s = s + 1
+                    s = s + 1
+                    x,y,w,h = cv2.boundingRect(c)
+
+            if s > 1:
+                
+                gmt = time.gmtime()
+                ts = calendar.timegm(gmt)
+                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                cv2.imwrite("static/processingImg/22222222222boxER_%s.png" % fillenameImage, image)
+
+
+
+                
+
+                cv2.imwrite("static/processingImg/RotateboxER_%s.png" % fillenameImage, image)
+        print (stats)
+        return 1
+
+            # barcodes = pyzbar.decode(image)
+                    
+            # serials = []
+
+
+            # for barcode in barcodes:
+            #     barcodeData = barcode.data.decode("utf-8")
+            #     if(detect_special_characer(barcodeData) == True):
+            #         serials.append(barcodeData)
+
+            # print(serials)
+            # s = 0
+            
+            
+            # if len(serials) > 0:
+                
+            #     if s == 0:
+            #         print(serials)
+                    
+            #         thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+            #         _, contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+            #         cnt = contours
+            #         s = 1
+            #         for c in cnt:
+            #             #print(cv2.contourArea(c))
+            #             if(cv2.contourArea(c)  > 100000):
+            #                 # rows,cols = thresh.shape[:2]
+            #                 # [vx,vy,x,y] = cv2.fitLine(c, cv2.DIST_L2,0,0.01,0.01)
+            #                 # lefty = int((-x*vy/vx) + y)
+            #                 # righty = int(((cols-x)*vy/vx)+y)
+            #                 # # cv2.line(image,(cols-1,righty),(0,lefty),(0,255,0),2)
+            #                 # # cv2.line(image,(cols-1,righty),(0,righty),(0,255,0),2)
+            #                 # print("x="+str(cols-1)+",y="+str(righty)+",x1="+str(0)+",y1="+str(lefty))
+            #                 # self.p.append([cols-1,righty])
+            #                 # self.p.append([0,lefty])
+            #                 # self.p.append([0,righty])
+
+            #                 rect = cv2.minAreaRect(c)
+            #                 box = np.int0(cv2.boxPoints(rect))
+            #                 [vx,vy,x,y] = box
+
+            #                 # center_coordinates = (x[0] , vy[0])
+            #                 # radius = 20
+                            
+            #                 # # Blue color in BGR
+            #                 # color = (255, 0, 0)
+                            
+            #                 # # Line thickness of 2 px
+            #                 # thickness = 2
+                            
+            #                 # # Using cv2.circle() method
+            #                 # # Draw a circle with blue line borders of thickness of 2 px
+            #                 # image = cv2.circle(image, (x[0],x[1]), radius, color, thickness)
+            #                 # image = cv2.circle(image, (y[0],y[1]), radius, color, thickness)
+            #                 # image = cv2.circle(image, center_coordinates, radius, color, thickness)
+
+            #                 self.p.append([x[0],x[1]+1])
+            #                 self.p.append([x[0]-1,vy[0]])
+            #                 self.p.append([y[0],y[1]])
+                            
+                            
+            #                 s = s + 1
+            #                 x,y,w,h = cv2.boundingRect(c)
+
+            #         if s > 1:
+            #             gmt = time.gmtime()
+            #             ts = calendar.timegm(gmt)
+            #             fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+            #             #cv2.imwrite("static/processingImg/22222222222boxER_%s.png" % fillenameImage, image)
+            #             text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+            #             print("".join(text.split()).encode('utf8'))
+            #             image = thresh[y:y+h,x:x+w]
+            #             start = time.time()
+            #             print(start)
+            #             print('start')
+            #             image = cv2.resize(image, (3000, 3000 ), interpolation=cv2.INTER_CUBIC)
+            #             start = time.time()
+            #             print(start)
+            #             print('end start')
+            #             x = self.getAngel()
+            #             image = self.rotate_bound(image, x)
+            #             image1 = self.rotate_bound(image, 90)
+            #             image2 = self.rotate_bound(image, -90)
+            #             start = time.time()
+            #             print(start)
+            #             print('end')
+            #             print(x)
+            #             cv2.imwrite("static/processingImg/111111111111boxER_%s.png" % fillenameImage, image)
+            #             text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+            #             print("".join(text.split()).encode('utf8'))
+            #             print(90)
+            #             cv2.imwrite("static/processingImg/4522222222222boxER_%s.png" % fillenameImage, image1)
+            #             text = pytesseract.image_to_string(Image.fromarray(image1),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+            #             print("".join(text.split()).encode('utf8'))
+            #             print(-90)
+            #             cv2.imwrite("static/processingImg/minus22222222222boxER_%s.png" % fillenameImage, image2)
+            #             text = pytesseract.image_to_string(Image.fromarray(image2),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
+            #             print("".join(text.split()).encode('utf8'))
+            #             #gray = thresh
+
+            #         #line = self.trimValue(serials)
+            #             self.processImage(serials, gray, image)
+            #         # HoldStatus("").writeFile(json.dumps([ele for ele in reversed(serials)]), "_lastScan")
+            #         # serials.append(fillenameImage)
+            #         # open("static/serials/%s.txt" %fillenameImage, "w").write(json.dumps([ele for ele in reversed(serials)]))
+            #         # cv2.imwrite("static/processingImg/boxER_%s.png" % fillenameImage, image)
+            #         # file1 = open("static/uploads/_serial.txt", "a")
+            #         # file1.write(json.dumps([ele for ele in reversed(serials)])+"\n")
+            #         # file1.close()
 
     def Reverse(self, lst):
         return [ele for ele in reversed(lst)]
