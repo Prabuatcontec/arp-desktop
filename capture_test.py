@@ -454,16 +454,18 @@ class PageTwo(tk.Frame):
                         if len(serials)>0:
                             text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                             print("".join(text.split()).encode('utf8'))
+                            print("---------------------------------------------------------")
                             image1 = self.rotate_bound(image, 90)
                             cv2.imwrite("static/processingImg/9022222222222boxER_%s.png" % fillenameImage, image1)
                             text = pytesseract.image_to_string(Image.fromarray(image1),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                             print("".join(text.split()).encode('utf8'))
+                            print("---------------------------------------------------------")
                             image2 = self.rotate_bound(image, -90)
                             cv2.imwrite("static/processingImg/minus9022222222222boxER_%s.png" % fillenameImage, image2)
                             text = pytesseract.image_to_string(Image.fromarray(image2),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                             print("".join(text.split()).encode('utf8'))
 
-                            
+                        print("-===============================================---")
                         print(serials)
                         break
                     #print(barcodes)
