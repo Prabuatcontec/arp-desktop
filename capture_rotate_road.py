@@ -291,7 +291,7 @@ class PageTwo(tk.Frame):
                                 open("static/uploads/_serialC.txt", "w").write("1")
                             else:
                                 open("static/uploads/_serialC.txt", "w").write("0")
-                                print(cv2.contourArea(c))
+                                #print(cv2.contourArea(c))
                                 rect = cv2.minAreaRect(c)
                                 box = np.int0(cv2.boxPoints(rect))
                                 [vx,vy,x,y] = box
@@ -321,7 +321,7 @@ class PageTwo(tk.Frame):
                                 ts = calendar.timegm(gmt)
                                 fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
                                 
-                                cv2.imwrite("static/processingImg/CCPOSOSGoos_boxER_%s.png" % fillenameImage, image)
+                                #cv2.imwrite("static/processingImg/CCPOSOSGoos_boxER_%s.png" % fillenameImage, image)
                             
                             
                             
@@ -336,14 +336,14 @@ class PageTwo(tk.Frame):
                             open("static/uploads/_serialUpdate.txt", "w").write("1")
                             
                             #
-                            x = self.getAngel()
-                            image = self.rotate_bound(image, x)
+                            #x = self.getAngel()
+                            #image = self.rotate_bound(image, x)
 
                             gmt = time.gmtime()
                             ts = calendar.timegm(gmt)
                             fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
                             
-                            cv2.imwrite("static/processingImg/POSOSGoos_boxER_%s.png" % fillenameImage, image)
+                            #cv2.imwrite("static/processingImg/POSOSGoos_boxER_%s.png" % fillenameImage, image)
                             
                             barcodes = pyzbar.decode(image)
                             if len(barcodes) > 0:
@@ -408,13 +408,13 @@ class PageTwo(tk.Frame):
                     r = 1
                     break
             if(angleSame ==0):
-                lo = [180, 90 , -90]
+                lo = [180]
                 for x in lo:
                     print (x)
                     img = self.rotate_bound(image, x)
                     
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                    print("".join(text.split()).encode('utf8'))
+                    #print("".join(text.split()).encode('utf8'))
                     
                     for key, value in models.items():
                         sub_index = str("".join(text.split())).find(key.replace('"', ""))
