@@ -283,7 +283,7 @@ class PageTwo(tk.Frame):
                         thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY   + cv2.THRESH_OTSU)[1]
                         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (21, 7))
                         closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-                        _,contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                        contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
                         cnt = contours
                         s = 1
                         
@@ -311,7 +311,7 @@ class PageTwo(tk.Frame):
                                     x,y,w,h = cv2.boundingRect(c)
                                     x = self.getAngel()
                                     #print(x)
-                                    image = self.rotate_bound(thresh, x)
+                                    image = self.rotate_bound(image, x)
 
                                     barcodes = pyzbar.decode(image)
                                     #print(barcodes)
@@ -326,13 +326,18 @@ class PageTwo(tk.Frame):
                             if (s > 1):
                                 open("static/uploads/_serialUpdate.txt", "w").write("1")
                                 
-                                barcodes = pyzbar.decode(image)
+                                
                                 if len(barcodes) > 0:
                                     serials = []
                                     for barcode in barcodes:
                                         barcodeData = barcode.data.decode("utf-8")
                                         if(detect_special_characer(barcodeData) == True):
                                             serials.append(barcodeData)
+
+                                    gmt = time.gmtime()
+                                    ts = calendar.timegm(gmt)
+                                    fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                                    cv2.imwrite("static/processingImg/22222222222boxER_%s.png" % fillenameImage, image)
 
                                     r = open("static/uploads/_goodDataAvailable.txt", "r")
                                     r = str(r.read())
@@ -387,7 +392,13 @@ class PageTwo(tk.Frame):
                 lo = [180, -90, 90]
                 for x in lo:
                     print (x)
+                    
                     img = self.rotate_bound(image, x)
+
+                    gmt = time.gmtime()
+                    ts = calendar.timegm(gmt)
+                    fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                    cv2.imwrite("static/processingImg/22222222222boxER_%s.png" % fillenameImage, img)
                     
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                     #print("".join(text.split()).encode('utf8'))
@@ -406,6 +417,7 @@ class PageTwo(tk.Frame):
             if r == 0:
                 str1 = " " 
                 if str(str1.join(line)) != open("static/uploads/_lastFail.txt").readline().strip("\n"):
+                    open("static/uploads/_serialUpdate.txt", "w").write("1")
                     open("static/uploads/_lastFail.txt", "w").write(str(str1.join(line)))
                     Conveyor().closeConveyor()
                     self.enableLight("RED")
@@ -448,6 +460,7 @@ class PageTwo(tk.Frame):
             if valid !='0':
                 str1 = " " 
                 if str(str1.join(line)) != open("static/uploads/_lastFail.txt").readline().strip("\n"):
+                    open("static/uploads/_serialUpdate.txt", "w").write("1")
                     open("static/uploads/_lastFail.txt", "w").write(str(str1.join(line)))
                     Conveyor().closeConveyor()
                     self.enableLight("RED")
