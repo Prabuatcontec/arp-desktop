@@ -289,7 +289,7 @@ class PageTwo(tk.Frame):
                         
                         for c in cnt:
                             if(cv2.contourArea(c)  > 100000):
-                                print(cv2.contourArea(c))
+                                #print(cv2.contourArea(c))
                                 #image = cv2.resize(thresh, (3000, 3000 ), interpolation=cv2.INTER_CUBIC)
                                 serialC = open("static/uploads/_serialC.txt").readline().strip("\n")
                                 if(serialC=="0"):
@@ -310,11 +310,11 @@ class PageTwo(tk.Frame):
                                     self.p.append([y[0],y[1]])
                                     x,y,w,h = cv2.boundingRect(c)
                                     x = self.getAngel()
-                                    print(x)
+                                    #print(x)
                                     image = self.rotate_bound(thresh, x)
 
                                     barcodes = pyzbar.decode(image)
-                                    print(barcodes)
+                                    #print(barcodes)
                                     if (len(barcodes)>0):
                                         s9 = s9 + 1
                                         break
