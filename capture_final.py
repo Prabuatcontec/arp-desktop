@@ -311,6 +311,10 @@ class PageTwo(tk.Frame):
                                     x,y,w,h = cv2.boundingRect(c)
                                     x = self.getAngel()
                                     #print(x)
+                                    gmt = time.gmtime()
+                                    ts = calendar.timegm(gmt)
+                                    fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                                    cv2.imwrite("static/processingImg/Bfrrot1boxER_%s.png" % fillenameImage, image)
                                     image = self.rotate_bound(image, x)
 
                                     barcodes = pyzbar.decode(image)
@@ -337,7 +341,7 @@ class PageTwo(tk.Frame):
                                     gmt = time.gmtime()
                                     ts = calendar.timegm(gmt)
                                     fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                    cv2.imwrite("static/processingImg/22222222222boxER_%s.png" % fillenameImage, image)
+                                    cv2.imwrite("static/processingImg/rot1boxER_%s.png" % fillenameImage, image)
 
                                     r = open("static/uploads/_goodDataAvailable.txt", "r")
                                     r = str(r.read())
