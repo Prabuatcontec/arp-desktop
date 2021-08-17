@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import structlog
 from pyzbar import pyzbar
-
+import pickle
 
 from datetime import datetime 
 from filehandling import HoldStatus
@@ -116,13 +116,15 @@ class PageThree(tk.Frame):
     def closeConv(self):
         Conveyor().CloseAllConveyor()
 
+    
+
     def change_dropdown(self,*args):
         open("static/uploads/_customer.txt", "w").write(f"{self.category.get() }")
         #HoldStatus("").writeFile("", "_goodData")
         #open("static/uploads/_serial.txt", "w").write("")
         open("static/uploads/_status.txt", "w").write("")
         open("static/uploads/_lastFail.txt", "w").write("")
-        #open("static/uploads/_lastScan.txt", "w").write("")
+        Conveyor.resetLastScan("", "")
         open("static/uploads/_goodDataAvailable.txt", "w").write("")
         open("static/uploads/_serialUpdate.txt", "w").write("")
         open("static/uploads/_serialC.txt", "w").write("0")
@@ -283,7 +285,7 @@ class PageTwo(tk.Frame):
                         thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY   + cv2.THRESH_OTSU)[1]
                         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (21, 7))
                         closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-                        contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                        contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2:]
                         cnt = contours
                         s = 1
                         
@@ -371,6 +373,7 @@ class PageTwo(tk.Frame):
             open("static/uploads/_serialUpdate.txt", "w").write("0")
             return 1
         else:
+                
             validation = open("static/uploads/_validation.txt", 'r').read()
             #print("=============================================")
             text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
@@ -380,11 +383,21 @@ class PageTwo(tk.Frame):
             angleSame = 0
             r = 0
             for key, value in models.items():
+                calib_result_pickle = pickle.load(open("static/uploads/lastScan.p", "rb" ))
+                keystored = calib_result_pickle["key"]
+                valuestored = calib_result_pickle["value"]
+                if keystored != "" and valuestored !="":
+                    key = keystored
+                    value = valuestored
+
                 sub_index = str("".join(text.split())).find(key.replace('"', ""))
                 if sub_index >-1:
+                    # print(key)
+                    # print(value)
                     print(90)
                     text = ""
                     self.processValidation(key, value, line, image, image1)
+                    Conveyor.resetLastScan(key, value)
                     angleSame = 1
                     r = 1
                     break
@@ -409,6 +422,7 @@ class PageTwo(tk.Frame):
                             text = ""
                             line = self.Reverse(line)
                             self.processValidation(key, value, line, image, image1)
+                            Conveyor.resetLastScan(key, value)
                             r = 1
                             break
                     if r == 1:
