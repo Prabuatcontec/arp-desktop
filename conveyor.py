@@ -41,8 +41,6 @@ class Conveyor(object):
                 Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "HIGH"}),
                 headers={'Content-Type': 'application/json'}
             )
-            print('call 1')
-            print(res1)
             res1 = requests.post(
                 Config.API_MOTOR_URL + 'devices/2', data=json.dumps({"state": "ON"}),
                 headers={'Content-Type': 'application/json'}
@@ -51,12 +49,10 @@ class Conveyor(object):
                 Config.API_MOTOR_URL + 'devices/2', data=json.dumps({ "spd": "HIGH"}),
                 headers={'Content-Type': 'application/json'}
             )
-            print(res1)
             res1 = requests.post(
                 Config.API_MOTOR_URL + 'devices/3', data=json.dumps({"state": "ON"}),
                 headers={'Content-Type': 'application/json'}
             )
-            print(res1)
     
     def CloseAllConveyor(self):
         requests.post(
@@ -73,31 +69,21 @@ class Conveyor(object):
         )
 
     def callConveyor(self):
-        print("start conv")
-        start = time.time()
-        print(start)
         res1 = requests.post(
             Config.API_MOTOR_URL + 'devices/3', data=json.dumps({"state": "ON"}),
             headers={'Content-Type': 'application/json'}
         )
-        print(res1)
         res1 = requests.post(
             Config.API_MOTOR_URL + 'devices/1', data=json.dumps({"state": "ON"}),
             headers={'Content-Type': 'application/json'}
         )
-        print(res1)
         res1 = requests.post(
             Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "HIGH"}),
             headers={'Content-Type': 'application/json'}
         )
-        print(res1)
-        start = time.time()
-        print(start)
         return 1
 
     def closeConveyor(self):
-        print("stop conv")
-        start = time.time()
         requests.post(
             Config.API_MOTOR_URL + 'devices/1', data=json.dumps({"state": "OFF"}),
             headers={'Content-Type': 'application/json'}
@@ -106,5 +92,10 @@ class Conveyor(object):
             Config.API_MOTOR_URL + 'devices/3', data=json.dumps({"state": "OFF"}),
             headers={'Content-Type': 'application/json'}
         )
-        print(start)
         return 1
+
+    def resetLastScan(key, value):
+        calib_result_pickle = {}
+        calib_result_pickle["key"] = key
+        calib_result_pickle["value"] = value
+        pickle.dump(calib_result_pickle, open("static/uploads/lastScan.p", "wb" )) 
