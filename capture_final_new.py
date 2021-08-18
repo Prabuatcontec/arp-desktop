@@ -340,7 +340,7 @@ class PageTwo(tk.Frame):
                                             gmt = time.gmtime()
                                             ts = calendar.timegm(gmt)
                                             fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                            cv2.imwrite("static/processingImg/1Bfrrot1boxER_%s.png" % fillenameImage, image)
+                                            #cv2.imwrite("static/processingImg/1Bfrrot1boxER_%s.png" % fillenameImage, image)
                                             
                                             
                                             
@@ -359,10 +359,15 @@ class PageTwo(tk.Frame):
                                                 print(serials)
 
                                                 image = self.rotate_bound(image, x)
+                                                barcodes = pyzbar.decode(image)
                                                 
                                                 cv2.imwrite("static/processingImg/Bfrrot1boxER_%s.png" % fillenameImage, image)
-                                                #print(barcodes)
-                                                if (len(barcodes)>0):
+                                                serials = []
+                                                for barcode in barcodes:
+                                                    barcodeData = barcode.data.decode("utf-8")
+                                                    if(detect_special_characer(barcodeData) == True):
+                                                        serials.append(barcodeData)
+                                                if (len(serials)>0):
                                                     s9 = s9 + 1
                                                     self.ang = [180, 90, -90]
                                                     break
@@ -376,12 +381,6 @@ class PageTwo(tk.Frame):
                                     if po == 1:
                                         break
                                 
-                                
-                                
-
-                                
-                                        
-                                
                         if s9 > 1 :
                             start = time.time()
                             print(start)
@@ -391,7 +390,7 @@ class PageTwo(tk.Frame):
                             if (s > 1):
                                 open("static/uploads/_serialUpdate.txt", "w").write("1")
                                 
-
+                                i = i - 1
                                 r = open("static/uploads/_goodDataAvailable.txt", "r")
                                 r = str(r.read())
                                 rev = self.Reverse(serials)
