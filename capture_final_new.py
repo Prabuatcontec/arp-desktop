@@ -310,14 +310,21 @@ class PageTwo(tk.Frame):
                             if(cv2.contourArea(c)  > 100000):
                                 an.append(int(cv2.contourArea(c)))
                         an.sort(reverse = True)
-                        i = 0
+                        print(an)
+                        i = len(an)
+                        poi = 0
                         po = 0
                         if len(an)>0:
                             
                             for c in cnt:
                                 if(cv2.contourArea(c)  > 100000):
-                                    if(int(cv2.contourArea(c))  == an[i]):
-                                        
+                                    print(cv2.contourArea(c))
+                                    i = i - 1
+                                    print(i)
+
+                                    print(an[i])
+                                    if(int(cv2.contourArea(c))  == an[0]):
+                                        print("in")
                                         #image = cv2.resize(thresh, (3000, 3000 ), interpolation=cv2.INTER_CUBIC)
                                         serialC = open("static/uploads/_serialC.txt").readline().strip("\n")
                                         if(serialC=="0"):
@@ -340,7 +347,7 @@ class PageTwo(tk.Frame):
                                             gmt = time.gmtime()
                                             ts = calendar.timegm(gmt)
                                             fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                            #cv2.imwrite("static/processingImg/1Bfrrot1boxER_%s.png" % fillenameImage, image)
+                                            cv2.imwrite("static/processingImg/1Bfrrot1boxER_%s.png" % fillenameImage, image)
                                             
                                             
                                             
@@ -367,20 +374,23 @@ class PageTwo(tk.Frame):
                                                     barcodeData = barcode.data.decode("utf-8")
                                                     if(detect_special_characer(barcodeData) == True):
                                                         serials.append(barcodeData)
+
                                                 if (len(serials)>0):
                                                     s9 = s9 + 1
+                                                    poi = i
                                                     self.ang = [180, 90, -90]
                                                     break
                                             else:
                                                 s9 = s9 + 1
+                                                poi = i
                                                 self.ang = [180, 5, -5, 175, 185]
                                                 break
-                                    i = i+1
+                                    
                                     if (len(an) == i):
                                         break
                                     if po == 1:
                                         break
-                                
+                        
                         if s9 > 1 :
                             start = time.time()
                             print(start)
@@ -390,7 +400,7 @@ class PageTwo(tk.Frame):
                             if (s > 1):
                                 open("static/uploads/_serialUpdate.txt", "w").write("1")
                                 
-                                i = i - 1
+                                
                                 r = open("static/uploads/_goodDataAvailable.txt", "r")
                                 r = str(r.read())
                                 rev = self.Reverse(serials)
@@ -405,16 +415,17 @@ class PageTwo(tk.Frame):
                                                 cnte = contourse
                                                 an1 = []
                                                 for c1 in cnte:
-                                                    if(cv2.contourArea(c1)  > 100000):
+                                                    if(cv2.contourArea(c1)  >100000):
                                                         an1.append(int(cv2.contourArea(c1)))
                                                 print(an1)
                                                 an1.sort(reverse = True)
                                                 
                                                 #an1 = self.Reverse(an1)
                                                 print(an1)
+                                                print(poi)
                                                 for c2 in cnte:
                                                     #print(cv2.contourArea(c))
-                                                    if(int(cv2.contourArea(c2))  == an1[i]):
+                                                    if(int(cv2.contourArea(c2))  == an1[0]):
                                                         x,y,w,h = cv2.boundingRect(c2)
                                                         t = image[y:y+h,x:x+w]
                                                         po = 1
@@ -592,6 +603,7 @@ class PageTwo(tk.Frame):
                     print(start)
             
     def enableLight(self, state):
+        return 1
         res1 = requests.post(
             Config.API_MOTOR_URL + 'devices/4', data=json.dumps({"state": state}),
             headers={'Content-Type': 'application/json'}
