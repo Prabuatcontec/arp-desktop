@@ -593,7 +593,6 @@ class PageTwo(tk.Frame):
                     print(start)
             
     def enableLight(self, state):
-        return 1
         res1 = requests.post(
             Config.API_MOTOR_URL + 'devices/4', data=json.dumps({"state": state}),
             headers={'Content-Type': 'application/json'}
