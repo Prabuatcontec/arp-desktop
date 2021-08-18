@@ -223,6 +223,7 @@ class PageTwo(tk.Frame):
         self.thread.start()
         self.panel = None
         self.p = []
+        self.ang = []
 
 
     # # Added this function to update the page1_label StringVar.
@@ -241,7 +242,38 @@ class PageTwo(tk.Frame):
             self.controller.show_frame(PageThree)
             
     def rotate_bound(self, image, angle):
-        return imutils.rotate(image, -angle) 
+        image_height = image.shape[0]
+        image_width = image.shape[1]
+        diagonal_square = (image_width*image_width) + (
+            image_height* image_height
+        )
+        #
+        diagonal = round(math.sqrt(diagonal_square))
+        padding_top = round((diagonal-image_height) / 2)
+        padding_bottom = round((diagonal-image_height) / 2)
+        padding_right = round((diagonal-image_width) / 2)
+        padding_left = round((diagonal-image_width) / 2)
+        padded_image = cv2.copyMakeBorder(image,
+                                        top=padding_top,
+                                        bottom=padding_bottom,
+                                        left=padding_left,
+                                        right=padding_right,
+                                        borderType=cv2.BORDER_CONSTANT,
+                                        value=0
+                )
+        padded_height = padded_image.shape[0]
+        padded_width = padded_image.shape[1]
+        transform_matrix = cv2.getRotationMatrix2D(
+                    (padded_height/2,
+                    padded_width/2), # center
+                    angle, # angle
+        1.0) # scale
+        rotated_image = cv2.warpAffine(padded_image,
+                                    transform_matrix,
+                                    (diagonal, diagonal),
+                                    flags=cv2.INTER_LANCZOS4)
+        return rotated_image
+        #return imutils.rotate(image, -angle) 
     
     def videoLoop(self):
         stats = []
@@ -291,11 +323,11 @@ class PageTwo(tk.Frame):
                         
                         for c in cnt:
                             if(cv2.contourArea(c)  > 100000):
-                                #print(cv2.contourArea(c))
+                                print(cv2.contourArea(c))
                                 #image = cv2.resize(thresh, (3000, 3000 ), interpolation=cv2.INTER_CUBIC)
                                 serialC = open("static/uploads/_serialC.txt").readline().strip("\n")
                                 if(serialC=="0"):
-                                    time.sleep(.5)
+                                    time.sleep(1)
                                     open("static/uploads/_serialC.txt", "w").write("1")
                                 else:
                                     open("static/uploads/_serialC.txt", "w").write("0")
@@ -303,29 +335,74 @@ class PageTwo(tk.Frame):
                                     #print(cv2.contourArea(c))
                                     rect = cv2.minAreaRect(c)
                                     box = np.int0(cv2.boxPoints(rect))
-
                                     [vx,vy,x,y] = box
+                                    radius = 20
+                    
+                                    # Blue color in BGR
+                                    # color = (255, 0, 0)
                                     
+                                    # # Line thickness of 2 px
+                                    # thickness = 2
+                                    # cv2.drawContours(image, [box], 0, (36,255,12), 3)
+
+                                    # center_coordinates = (x[0] , vy[0])
+
+                                    
+                                    # cv2.line(image,(x[0],x[1]),(y[0],y[1]),(0,255,0),2)
+                                    # cv2.line(image,(x[0],x[1]),(x[0],vy[0]),(0,255,0),2)
+                                    # cv2.line(image,(x[0],vy[0]),(y[0],y[1]),(0,255,0),2)
+
+                                    # cv2.putText(image, "M1", (x[0],x[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 100, 0), 8)
+                                    # cv2.putText(image, "M2", (y[0],y[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 100, 0), 8)
+                                    # cv2.putText(image, "M3", center_coordinates, cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 100, 0), 8)
+                                    # # Using cv2.circle() method
+                                    # # Draw a circle with blue line borders of thickness of 2 px
+                                    # image = cv2.circle(image, (x[0],x[1]), radius, color, thickness)
+                                    # image = cv2.circle(image, (y[0],y[1]), radius, color, thickness)
+                                    # image = cv2.circle(image, center_coordinates, radius, color, thickness)
                                     self.p = []
                                     self.p.append([x[0],x[1]+1])
                                     self.p.append([x[0]-1,vy[0]])
                                     self.p.append([y[0],y[1]])
                                     x,y,w,h = cv2.boundingRect(c)
-                                    x = self.getAngel()
-                                    #print(x)
                                     gmt = time.gmtime()
                                     ts = calendar.timegm(gmt)
                                     fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                    cv2.imwrite("static/processingImg/Bfrrot1boxER_%s.png" % fillenameImage, image)
-                                    image = self.rotate_bound(image, x)
+                                    cv2.imwrite("static/processingImg/1Bfrrot1boxER_%s.png" % fillenameImage, image)
+                                    
+                                    
+                                    
 
                                     barcodes = pyzbar.decode(image)
-                                    #print(barcodes)
-                                    if (len(barcodes)>0):
+
+                                    serials = []
+                                    for barcode in barcodes:
+                                        barcodeData = barcode.data.decode("utf-8")
+                                        if(detect_special_characer(barcodeData) == True):
+                                            serials.append(barcodeData)
+
+                                    if len(serials)<1:
+                                        x = self.getAngel()
+                                        print(x)
+                                        print(serials)
+
+                                        image = self.rotate_bound(image, x-2)
+                                        
+                                        cv2.imwrite("static/processingImg/Bfrrot1boxER_%s.png" % fillenameImage, image)
+                                        #print(barcodes)
+                                        if (len(barcodes)>0):
+                                            s9 = s9 + 1
+                                            self.ang = [180, 90, -90]
+                                            break
+                                    else:
                                         s9 = s9 + 1
+                                        self.ang = [180, 5, -5, 175, 185]
                                         break
+                                        
                                 
                         if s9 > 1 :
+                            start = time.time()
+                            print(start)
                             s = 2
                             if open("static/uploads/_serialUpdate.txt").readline().strip("\n") == "1":
                                 s = 1
@@ -333,35 +410,32 @@ class PageTwo(tk.Frame):
                                 open("static/uploads/_serialUpdate.txt", "w").write("1")
                                 
                                 
-                                if len(barcodes) > 0:
-                                    serials = []
-                                    for barcode in barcodes:
-                                        barcodeData = barcode.data.decode("utf-8")
-                                        if(detect_special_characer(barcodeData) == True):
-                                            serials.append(barcodeData)
+                                # if len(barcodes) > 0:
+                                #     serials = []
+                                #     for barcode in barcodes:
+                                #         barcodeData = barcode.data.decode("utf-8")
+                                #         if(detect_special_characer(barcodeData) == True):
+                                #             serials.append(barcodeData)
 
-                                    gmt = time.gmtime()
-                                    ts = calendar.timegm(gmt)
-                                    fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                    cv2.imwrite("static/processingImg/rot1boxER_%s.png" % fillenameImage, image)
+                                    
 
-                                    r = open("static/uploads/_goodDataAvailable.txt", "r")
-                                    r = str(r.read())
-                                    rev = self.Reverse(serials)
-                                    if(r.find(str(serials)) !=-1 or r.find(str(rev)) != -1):
-                                        open("static/uploads/_serialUpdate.txt", "w").write("0")
-                                    else:
-                                        if len(serials) > 1:
-                                                print(serials)
-                                                if s > 1:
-                                                    self.processImage(serials, image, image)
-                                                else:
-                                                    open("static/uploads/_serialUpdate.txt", "w").write("0")
-
-                                        else:
-                                            open("static/uploads/_serialUpdate.txt", "w").write("0")
-                                else:
+                                r = open("static/uploads/_goodDataAvailable.txt", "r")
+                                r = str(r.read())
+                                rev = self.Reverse(serials)
+                                if(r.find(str(serials)) !=-1 or r.find(str(rev)) != -1):
                                     open("static/uploads/_serialUpdate.txt", "w").write("0")
+                                else:
+                                    if len(serials) > 1:
+                                            print(serials)
+                                            if s > 1:
+                                                self.processImage(serials, image, image)
+                                            else:
+                                                open("static/uploads/_serialUpdate.txt", "w").write("0")
+
+                                    else:
+                                        open("static/uploads/_serialUpdate.txt", "w").write("0")
+                                # else:
+                                #     open("static/uploads/_serialUpdate.txt", "w").write("0")
 
 
     def Reverse(self, lst):
@@ -381,7 +455,7 @@ class PageTwo(tk.Frame):
             validation = open("static/uploads/_validation.txt", 'r').read()
             #print("=============================================")
             text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-            #print("".join(text.split()).encode('utf8'))
+            print("".join(text.split()).encode('utf8'))
             strVal = str(validation)
             models = json.loads(strVal)
             angleSame = 0
@@ -399,6 +473,10 @@ class PageTwo(tk.Frame):
                     # print(key)
                     # print(value)
                     print(90)
+                    gmt = time.gmtime()
+                    ts = calendar.timegm(gmt)
+                    fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                    cv2.imwrite("static/processingImg/rot1boxER_%s.png" % fillenameImage, image)
                     text = ""
                     self.processValidation(key, value, line, image, image1)
                     Conveyor.resetLastScan(key, value)
@@ -406,7 +484,7 @@ class PageTwo(tk.Frame):
                     r = 1
                     break
             if(angleSame ==0):
-                lo = [180, -90, 90]
+                lo = self.ang
                 for x in lo:
                     print (x)
                     
@@ -418,7 +496,7 @@ class PageTwo(tk.Frame):
                     cv2.imwrite("static/processingImg/22222222222boxER_%s.png" % fillenameImage, img)
                     
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                    #print("".join(text.split()).encode('utf8'))
+                    print("".join(text.split()).encode('utf8'))
                     
                     for key, value in models.items():
                         sub_index = str("".join(text.split())).find(key.replace('"', ""))
