@@ -347,7 +347,7 @@ class PageTwo(tk.Frame):
                                             gmt = time.gmtime()
                                             ts = calendar.timegm(gmt)
                                             fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                            cv2.imwrite("static/processingImg/1Bfrrot1boxER_%s.png" % fillenameImage, image)
+                                            #cv2.imwrite("static/processingImg/1Bfrrot1boxER_%s.png" % fillenameImage, image)
                                             
                                             
                                             
@@ -603,7 +603,6 @@ class PageTwo(tk.Frame):
                     print(start)
             
     def enableLight(self, state):
-        return 1
         res1 = requests.post(
             Config.API_MOTOR_URL + 'devices/4', data=json.dumps({"state": state}),
             headers={'Content-Type': 'application/json'}
