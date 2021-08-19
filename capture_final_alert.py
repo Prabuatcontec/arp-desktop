@@ -371,7 +371,7 @@ class PageTwo(tk.Frame):
                                                 image = self.rotate_bound(image, x)
                                                 barcodes = pyzbar.decode(image)
                                                 
-                                                cv2.imwrite("static/processingImg/Bfrrot1boxER_%s.png" % fillenameImage, image)
+                                                #cv2.imwrite("static/processingImg/Bfrrot1boxER_%s.png" % fillenameImage, image)
                                                 serials = []
                                                 for barcode in barcodes:
                                                     barcodeData = barcode.data.decode("utf-8")
@@ -402,8 +402,10 @@ class PageTwo(tk.Frame):
                                 s = 1
                             if (s > 1):
                                 open("static/uploads/_serialUpdate.txt", "w").write("1")
-                                
-                                
+                                gmt = time.gmtime()
+                                ts = calendar.timegm(gmt)
+                                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                                cv2.imwrite("static/processingImg/111Bfrrot1boxER_%s.png" % fillenameImage, image)
                                 r = open("static/uploads/_goodDataAvailable.txt", "r")
                                 r = str(r.read())
                                 rev = self.Reverse(serials)
