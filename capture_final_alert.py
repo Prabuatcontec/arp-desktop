@@ -57,17 +57,17 @@ class PageOne(tk.Frame):
 class PageThree(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        
+        global on, frame, lbx
         frame_eb_data = tk.Frame(self, width=100, height=10)
         frame_eb_data.grid(row=0, column=1, sticky='nsew', padx=1, pady=1)
         lab_eb_data = tk.Label(frame_eb_data, background='#DDD4EF', textvariable=controller.page1_label)
         lab_eb_data.grid(row=0, column=1)
 
         frame_but_one = tk.Frame(self, width=240, height=60)
-        frame_but_one.grid(row=1, column=1, padx=1, pady=1, sticky='nsew')
+        frame_but_one.grid(row=0, column=2, padx=1, pady=1, sticky='nsew')
 
         b5 = tk.Button(frame_but_one, bg='#A877BA', text='Restart', command=self.removeStatus)
-        b5.grid(row=0, column=0, padx=1, pady=1, sticky='w')
+        b5.grid(row=0, column=2, padx=1, pady=1, sticky='w')
         # b6 = tk.Button(frame_but_one, text='Stop', command=self.closeConv)
         # b6.grid(row=0, column=1, padx=1, pady=1, sticky='w')
 
@@ -75,40 +75,56 @@ class PageThree(tk.Frame):
         frame_but_right = tk.Frame(self, width=240, height=60)
         frame_but_right.grid(row=3, column=1, padx=1, pady=1, sticky='nsew')
         b_ebdata = tk.Button(frame_but_right, text="Logout", width=10, height=2, command=lambda: controller.show_frame(PageOne))
-        b_ebdata.grid(row=2, column=1)
+        b_ebdata.grid(row=3, column=1)
+
+        self.model = tk.StringVar()
+        frame = tk.Frame(self, width=240, height=60)
+        frame.grid(row=1, column=1, padx=1, pady=1, sticky='nsew')
+        somechoices = ["F", "C", "T"]
+        popupMenu1 = tk.OptionMenu(frame, self.model, *somechoices)
+        self.model.set("Return Type")
+        popupMenu1.grid(row=1, column=2)
+        self.model.trace('w', self.option_select)
+
         self.category = tk.StringVar()
         somechoices = []
         for value in Connection().getCustomer():
            somechoices.append(value[2])
 
+        
+
         #somechoices = ["1", "2", "C", "D"]
         self.category.set("Pick a Customer")
         open("static/uploads/_customer.txt", "w").write("")
         open("static/uploads/_model.txt", "w").write("")
+        open("static/uploads/_rtype.txt", "w").write("")
         #open("static/uploads/_serial.txt", "w").write("")
         open("static/uploads/_serialUpdate.txt", "w").write("0")
 
         popupMenu = tk.OptionMenu(frame_eb_data, self.category, *somechoices)
-        popupMenu.grid(row=1, column=1)
+        popupMenu.grid(row=1, column=0)
 
         self.category.trace('w', self.change_dropdown)
-        self.model = tk.StringVar()
+       
        
 
-        somechoices = ["TC4400", "PH3004", "VIP250", "DMS2004", "NVG589"]
         
         
-        frame_but_right1 = tk.Frame(self, width=240, height=60)
-        frame_but_right1.grid(row=2, column=1, padx=1, pady=1, sticky='nsew')
-        # popupMenu1 = tk.OptionMenu(frame_but_right1, self.model, *somechoices)
-        # self.model.set("Pick a Model")
-        # popupMenu1.grid(row=1, column=2)
-        self.model.trace('w', self.option_select)
+        
+        
         self.progress = Progressbar(frame_eb_data, orient=HORIZONTAL,length=100,  mode='indeterminate')
+
+    def grid_hide(self, widget):
+        widget._grid_info = widget.grid_info()
+        widget.grid_remove()
+
+    def grid_show(self, widget):
+        widget.grid(**widget._grid_info)
+
 
     def option_select(self, *args):
         print (self.model.get())
-        open("static/uploads/_model.txt", "w").write(f"{self.model.get()}")
+        open("static/uploads/_rtype.txt", "w").write(f"{self.model.get()}")
 
     def callConv(self):
         Conveyor().callAllConveyor()
@@ -123,6 +139,9 @@ class PageThree(tk.Frame):
         Conveyor().CloseAllConveyor()
 
     
+    
+
+    
 
     def change_dropdown(self,*args):
         open("static/uploads/_customer.txt", "w").write(f"{self.category.get() }")
@@ -130,10 +149,17 @@ class PageThree(tk.Frame):
         #open("static/uploads/_serial.txt", "w").write("")
         open("static/uploads/_status.txt", "w").write("")
         open("static/uploads/_lastFail.txt", "w").write("")
+        open("static/uploads/_rtype.txt", "w").write("")
         Conveyor.resetLastScan("", "")
         open("static/uploads/_goodDataAvailable.txt", "w").write("")
         open("static/uploads/_serialUpdate.txt", "w").write("")
         open("static/uploads/_serialC.txt", "w").write("0")
+        if (self.category.get() == "ATLBROADC1"):
+            frame.grid(**frame._grid_info)
+        else:
+            frame._grid_info = frame.grid_info()
+            frame.grid_remove()
+
         
         dict = {}
         self.progress.grid(row=2,column=0)
@@ -441,6 +467,11 @@ class PageTwo(tk.Frame):
                                                     if(int(cv2.contourArea(c2))  == an1[0]):
                                                         x,y,w,h = cv2.boundingRect(c2)
                                                         t = image[y:y+h,x:x+w]
+                                                        barcodes = pyzbar.decode(t)
+
+                                                        if (len(barcodes)<1):
+                                                            t = image
+
                                                         po = 1
                                                         self.processImage(serials, t, image)
                                                         break
@@ -600,6 +631,13 @@ class PageTwo(tk.Frame):
                     dict.update(mdict1)
                     mdict1 = {"customer": str(customer)}
                     dict.update(mdict1)
+                    if (str(customer) == "ATLBROADC1"):
+                        rtype = open("static/uploads/_rtype.txt").readline().strip("\n")
+                        if rtype != "":
+                            c = c+1
+                            mdict1 = {str("address"+str(c)): rtype}
+                            dict.update(mdict1)
+                    print(dict)
                     line = str(dict).replace("'",'"')
                     requests.post(Config.DEEPBLU_URL + '/autoreceive/automation', line,
                                         headers={'Content-Type': 'application/json', 
