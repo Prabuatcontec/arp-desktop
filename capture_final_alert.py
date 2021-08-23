@@ -154,7 +154,7 @@ class PageThree(tk.Frame):
         open("static/uploads/_goodDataAvailable.txt", "w").write("")
         open("static/uploads/_serialUpdate.txt", "w").write("")
         open("static/uploads/_serialC.txt", "w").write("0")
-        if (self.category.get() == "ATLBROADC1"):
+        if (self.category.get() == "FRONTIERC0"):
             frame.grid(**frame._grid_info)
         else:
             frame._grid_info = frame.grid_info()
@@ -377,10 +377,6 @@ class PageTwo(tk.Frame):
                                             ts = calendar.timegm(gmt)
                                             fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
                                             #cv2.imwrite("static/processingImg/1Bfrrot1boxER_%s.png" % fillenameImage, image)
-                                            
-                                            
-                                            
-
                                             barcodes = pyzbar.decode(image)
 
                                             serials = []
@@ -631,7 +627,7 @@ class PageTwo(tk.Frame):
                     dict.update(mdict1)
                     mdict1 = {"customer": str(customer)}
                     dict.update(mdict1)
-                    if (str(customer) == "ATLBROADC1"):
+                    if (str(customer) == "FRONTIERC0"):
                         rtype = open("static/uploads/_rtype.txt").readline().strip("\n")
                         if rtype != "":
                             c = c+1
