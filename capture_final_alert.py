@@ -15,6 +15,8 @@ import calendar
 import random
 import time
 import re
+import os
+import sys
 import json
 import threading
 from image import ImageProcess
@@ -95,11 +97,11 @@ class PageThree(tk.Frame):
 
         #somechoices = ["1", "2", "C", "D"]
         self.category.set("Pick a Customer")
-        open("static/uploads/_customer.txt", "w").write("")
-        open("static/uploads/_model.txt", "w").write("")
-        open("static/uploads/_rtype.txt", "w").write("")
+        open(get_correct_path("static/uploads/_customer.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_model.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_rtype.txt"), "w").write("")
         #open("static/uploads/_serial.txt", "w").write("")
-        open("static/uploads/_serialUpdate.txt", "w").write("0")
+        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
 
         popupMenu = tk.OptionMenu(frame_eb_data, self.category, *somechoices)
         popupMenu.grid(row=1, column=0)
@@ -124,15 +126,15 @@ class PageThree(tk.Frame):
 
     def option_select(self, *args):
         print (self.model.get())
-        open("static/uploads/_rtype.txt", "w").write(f"{self.model.get()}")
+        open(get_correct_path("static/uploads/_rtype.txt"), "w").write(f"{self.model.get()}")
 
     def callConv(self):
         Conveyor().callAllConveyor()
 
     def removeStatus(self):
-        open("static/uploads/_status.txt", "w").write("")
-        open("static/uploads/_lastFail.txt", "w").write("")
-        open("static/uploads/_serialUpdate.txt", "w").write("0")
+        open(get_correct_path("static/uploads/_status.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
         Conveyor().enableLight("OFF")
 
     def closeConv(self):
@@ -144,16 +146,14 @@ class PageThree(tk.Frame):
     
 
     def change_dropdown(self,*args):
-        open("static/uploads/_customer.txt", "w").write(f"{self.category.get() }")
-        #HoldStatus("").writeFile("", "_goodData")
-        #open("static/uploads/_serial.txt", "w").write("")
-        open("static/uploads/_status.txt", "w").write("")
-        open("static/uploads/_lastFail.txt", "w").write("")
-        open("static/uploads/_rtype.txt", "w").write("")
+        open(get_correct_path("static/uploads/_customer.txt"), "w").write(f"{self.category.get() }")
+        open(get_correct_path("static/uploads/_status.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_rtype.txt"), "w").write("")
         Conveyor.resetLastScan("", "")
-        open("static/uploads/_goodDataAvailable.txt", "w").write("")
-        open("static/uploads/_serialUpdate.txt", "w").write("")
-        open("static/uploads/_serialC.txt", "w").write("0")
+        open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_serialC.txt"), "w").write("0")
         if (self.category.get() == "FRONTIERC0"):
             frame.grid(**frame._grid_info)
         else:
@@ -173,7 +173,7 @@ class PageThree(tk.Frame):
         #                      command=lambda value=value[1]: self.om_variable.set(value[1]))
         self.progress.stop()
         self.progress.grid_forget()
-        HoldStatus("").writeFile(json.dumps(dict),"_validation")
+        open(get_correct_path("static/uploads/_validation.txt"), "w").write(json.dumps(dict))
         
         
         #threading.Thread(target=self.maintenance, daemon=True).start()
@@ -269,7 +269,7 @@ class PageTwo(tk.Frame):
             self.controller.page2_label.set("Authentication Failed!")
         else:
             self.controller.page1_label.set(self.entry_nombre_fld.get().upper())
-            open("static/uploads/_login.txt", "w").write(f"{self.entry_nombre_fld.get() }")
+            open(get_correct_path("static/uploads/_login.txt"), "w").write(f"{self.entry_nombre_fld.get() }")
             self.controller.page3_label.set("Logout")
             self.controller.show_frame(PageThree)
             
@@ -300,17 +300,17 @@ class PageTwo(tk.Frame):
             flag,self.frame = self.vs.read()
             if flag is None:
                 print ("Failed")
-            customer = open("static/uploads/_customer.txt").readline().strip("\n")
+            customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
             
             
             if(customer != ""):
                 image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-                _status = open("static/uploads/_status.txt").readline().strip("\n")
+                _status = open(get_correct_path("static/uploads/_status.txt")).readline().strip("\n")
                 
                 if _status != "":
                     cv2.putText(image, _status, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 8)
             else:
-                image = cv2.imread("static/uploads/customer1.jpg")
+                image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
                 cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
 
             image = Image.fromarray(image)
@@ -355,12 +355,12 @@ class PageTwo(tk.Frame):
                                     i = i - 1
                                     if(int(cv2.contourArea(c))  == an[0]):
                                         #image = cv2.resize(thresh, (3000, 3000 ), interpolation=cv2.INTER_CUBIC)
-                                        serialC = open("static/uploads/_serialC.txt").readline().strip("\n")
+                                        serialC = open(get_correct_path("static/uploads/_serialC.txt")).readline().strip("\n")
                                         if(serialC=="0"):
                                             time.sleep(1)
-                                            open("static/uploads/_serialC.txt", "w").write("1")
+                                            open(get_correct_path("static/uploads/_serialC.txt"), "w").write("1")
                                         else:
-                                            open("static/uploads/_serialC.txt", "w").write("0")
+                                            open(get_correct_path("static/uploads/_serialC.txt"), "w").write("0")
 
                                             #print(cv2.contourArea(c))
                                             rect = cv2.minAreaRect(c)
@@ -376,7 +376,7 @@ class PageTwo(tk.Frame):
                                             gmt = time.gmtime()
                                             ts = calendar.timegm(gmt)
                                             fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                            #cv2.imwrite("static/processingImg/1Bfrrot1boxER_%s.png" % fillenameImage, image)
+                                            #cv2.imwrite(get_correct_path("static/processingImg/1Bfrrot1boxER_%s.png") % fillenameImage, image)
                                             barcodes = pyzbar.decode(image)
 
                                             serials = []
@@ -393,7 +393,7 @@ class PageTwo(tk.Frame):
                                                 image = self.rotate_bound(image, x)
                                                 barcodes = pyzbar.decode(image)
                                                 
-                                                #cv2.imwrite("static/processingImg/Bfrrot1boxER_%s.png" % fillenameImage, image)
+                                                #cv2.imwrite(get_correct_path("static/processingImg/Bfrrot1boxER_%s.png") % fillenameImage, image)
                                                 serials = []
                                                 for barcode in barcodes:
                                                     barcodeData = barcode.data.decode("utf-8")
@@ -420,30 +420,30 @@ class PageTwo(tk.Frame):
                             start = time.time()
                             print(start)
                             s = 2
-                            if open("static/uploads/_serialUpdate.txt").readline().strip("\n") == "1":
+                            if open(get_correct_path("static/uploads/_serialUpdate.txt")).readline().strip("\n") == "1":
                                 s = 1
                             if (s > 1):
-                                open("static/uploads/_serialUpdate.txt", "w").write("1")
+                                open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
                                 gmt = time.gmtime()
                                 ts = calendar.timegm(gmt)
                                 fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                cv2.imwrite("static/processingImg/111Bfrrot1boxER_%s.png" % fillenameImage, image)
-                                r = open("static/uploads/_goodDataAvailable.txt", "r")
+                                cv2.imwrite(get_correct_path("static/processingImg/111Bfrrot1boxER_%s.png") % fillenameImage, image)
+                                r = open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "r")
                                 r = str(r.read())
                                 rev = self.Reverse(serials)
 
                                 str1 = " " 
-                                if str(str1.join(serials)) == open("static/uploads/_lastFail.txt").readline().strip("\n"):
+                                if str(str1.join(serials)) == open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
                                     serials = []
                                     print(1111)
                                 
                                 str1 = " " 
-                                if str(str1.join(rev)) == open("static/uploads/_lastFail.txt").readline().strip("\n"):
+                                if str(str1.join(rev)) == open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
                                     serials = []
                                     print(11112)
 
                                 if(r.find(str(serials)) !=-1 or r.find(str(rev)) != -1):
-                                    open("static/uploads/_serialUpdate.txt", "w").write("0")
+                                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
                                 else:
                                     if len(serials) > 1:
                                             print(serials)
@@ -472,12 +472,12 @@ class PageTwo(tk.Frame):
                                                         self.processImage(serials, t, image)
                                                         break
                                             else:
-                                                open("static/uploads/_serialUpdate.txt", "w").write("0")
+                                                open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
 
                                     else:
-                                        open("static/uploads/_serialUpdate.txt", "w").write("0")
+                                        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
                         else:
-                            open("static/uploads/_serialUpdate.txt", "w").write("0")
+                            open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
 
 
     def Reverse(self, lst):
@@ -486,15 +486,15 @@ class PageTwo(tk.Frame):
 
     def processImage(self, line, image, image1):
         
-        r = open("static/uploads/_goodDataAvailable.txt", "r")
+        r = open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "r")
         r = str(r.read())
         rev = self.Reverse(line)
         if(r.find(str(line)) !=-1 or r.find(str(rev)) != -1):
-            open("static/uploads/_serialUpdate.txt", "w").write("0")
+            open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
             return 1
         else:
                 
-            validation = open("static/uploads/_validation.txt", 'r').read()
+            validation = open(get_correct_path("static/uploads/_validation.txt"), 'r').read()
             #print("=============================================")
             text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
             print("".join(text.split()).encode('utf8'))
@@ -503,7 +503,7 @@ class PageTwo(tk.Frame):
             angleSame = 0
             r = 0
             for key, value in models.items():
-                calib_result_pickle = pickle.load(open("static/uploads/lastScan.p", "rb" ))
+                calib_result_pickle = pickle.load(open(get_correct_path("static/uploads/lastScan.p"), "rb" ))
                 keystored = calib_result_pickle["key"]
                 valuestored = calib_result_pickle["value"]
                 if keystored != "" and valuestored !="":
@@ -518,7 +518,7 @@ class PageTwo(tk.Frame):
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
                     fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                    cv2.imwrite("static/processingImg/rot1boxER_%s.png" % fillenameImage, image)
+                    cv2.imwrite(get_correct_path("static/processingImg/rot1boxER_%s.png") % fillenameImage, image)
                     text = ""
                     self.processValidation(key, value, line, image, image1)
                     Conveyor.resetLastScan(key, value)
@@ -535,7 +535,7 @@ class PageTwo(tk.Frame):
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
                     fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                    cv2.imwrite("static/processingImg/22222222222boxER_%s.png" % fillenameImage, img)
+                    cv2.imwrite(get_correct_path("static/processingImg/22222222222boxER_%s.png") % fillenameImage, img)
                     
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                     print("".join(text.split()).encode('utf8'))
@@ -554,12 +554,12 @@ class PageTwo(tk.Frame):
                 
             if r == 0:
                 str1 = " " 
-                if str(str1.join(line)) != open("static/uploads/_lastFail.txt").readline().strip("\n"):
-                    open("static/uploads/_serialUpdate.txt", "w").write("1")
-                    open("static/uploads/_lastFail.txt", "w").write(str(str1.join(line)))
+                if str(str1.join(line)) != open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
+                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
+                    open(get_correct_path("static/uploads/_lastFail.txt"), "w").write(str(str1.join(line)))
                     Conveyor().closeConveyor()
                     Conveyor().enableLight("RED")
-                    open("static/uploads/_status.txt", "w").write("Unit OCR Failed : Try to position the box in 0 or 180 degree and click retry")
+                    open(get_correct_path("static/uploads/_status.txt"), "w").write("Unit OCR Failed : Try to position the box in 0 or 180 degree and click retry")
                     #tkinter.messagebox.askretrycancel("Unit OCR Failed", "For Units:"+ str1.join(line)+". Try to position the box in 0 or 180 degree and click retry. ")
                     #self.enableLight("OFF")
 
@@ -595,12 +595,12 @@ class PageTwo(tk.Frame):
             
             if valid !='0':
                 str1 = " " 
-                if str(str1.join(line)) != open("static/uploads/_lastFail.txt").readline().strip("\n"):
-                    open("static/uploads/_serialUpdate.txt", "w").write("1")
-                    open("static/uploads/_lastFail.txt", "w").write(str(str1.join(line)))
+                if str(str1.join(line)) != open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
+                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
+                    open(get_correct_path("static/uploads/_lastFail.txt"), "w").write(str(str1.join(line)))
                     Conveyor().closeConveyor()
                     Conveyor().enableLight("RED")
-                    open("static/uploads/_status.txt", "w").write("Unit Validation Failed: Try to position the box in 0 or 180 degree and click retry")
+                    open(get_correct_path("static/uploads/_status.txt"), "w").write("Unit Validation Failed: Try to position the box in 0 or 180 degree and click retry")
                     
                 
                 
@@ -620,15 +620,15 @@ class PageTwo(tk.Frame):
                         dict.update(mdict1)
 
                 if(p == 0):
-                    customer = open("static/uploads/_customer.txt").readline().strip("\n")
-                    open("static/uploads/_goodDataAvailable.txt", "a").write(str(line)+"\n")
+                    customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
+                    open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "a").write(str(line)+"\n")
                     
                     mdict1 = {"model": str(jsonArray["model"])}
                     dict.update(mdict1)
                     mdict1 = {"customer": str(customer)}
                     dict.update(mdict1)
                     if (str(customer) == "FRONTIERC0"):
-                        rtype = open("static/uploads/_rtype.txt").readline().strip("\n")
+                        rtype = open(get_correct_path("static/uploads/_rtype.txt")).readline().strip("\n")
                         if rtype != "":
                             c = c+1
                             mdict1 = {str("address"+str(c)): rtype}
@@ -641,9 +641,9 @@ class PageTwo(tk.Frame):
                                         )
                     print('success')
                     Conveyor().enableLight("GREEN")
-                    open("static/uploads/_serialUpdate.txt", "w").write("0")
-                    open("static/uploads/_status.txt", "w").write("")
-                    open("static/uploads/_lastFail.txt", "w").write("")
+                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+                    open(get_correct_path("static/uploads/_status.txt"), "w").write("")
+                    open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
                     Conveyor().callConveyor()
                     start = time.time()
                     print(start)
@@ -661,7 +661,7 @@ class Arp(tk.Tk):
         self.page2_label = tk.StringVar()
         self.page3_label = tk.StringVar()
         self.page2_entry = tk.StringVar()
-        open("static/uploads/_login.txt", "w").write("")
+        open(get_correct_path("static/uploads/_login.txt"), "w").write("")
 
         container = tk.Frame(self)
         container.pack(side='top')
@@ -691,6 +691,10 @@ def detect_special_characer(pass_string):
     else:
         res = False
     return(res)
+
+def get_correct_path(relative_path):
+    p = os.path.abspath(".").replace('/dist', "")
+    return os.path.join(p, relative_path)
 
 
 if __name__ == "__main__":
