@@ -94,6 +94,12 @@ class Conveyor(object):
         )
         return 1
 
+    def enableLight(self, state):
+        res1 = requests.post(
+            Config.API_MOTOR_URL + 'devices/4', data=json.dumps({"state": state}),
+            headers={'Content-Type': 'application/json'}
+        )
+
     def resetLastScan(key, value):
         calib_result_pickle = {}
         calib_result_pickle["key"] = key
