@@ -62,59 +62,59 @@ class PageOne(tk.Frame):
 class PageThree(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-    #     global on, frame, lbx
-    #     frame_eb_data = tk.Frame(self, width=100, height=10)
-    #     frame_eb_data.grid(row=0, column=1, sticky='nsew', padx=1, pady=1)
-    #     lab_eb_data = tk.Label(frame_eb_data, background='#DDD4EF', textvariable=controller.page1_label)
-    #     lab_eb_data.grid(row=0, column=1)
+        global on, frame, lbx
+        frame_eb_data = tk.Frame(self, width=100, height=10)
+        frame_eb_data.grid(row=0, column=1, sticky='nsew', padx=1, pady=1)
+        lab_eb_data = tk.Label(frame_eb_data, background='#DDD4EF', textvariable=controller.page1_label)
+        lab_eb_data.grid(row=0, column=1)
 
-    #     frame_but_one = tk.Frame(self, width=240, height=10)
-    #     frame_but_one.grid(row=4, column=1, padx=1, pady=1, sticky='nsew')
+        frame_but_one = tk.Frame(self, width=240, height=10)
+        frame_but_one.grid(row=4, column=1, padx=1, pady=1, sticky='nsew')
 
-    #     b5 = tk.Button(frame_but_one, bg='#18A558', text='Restart', height=2, command=self.removeStatus)
-    #     b5.grid(row=0, column=1, padx=1, pady=1, sticky='w')
-    #     # b6 = tk.Button(frame_but_one, text='Stop', command=self.closeConv)
-    #     # b6.grid(row=0, column=1, padx=1, pady=1, sticky='w')
+        b5 = tk.Button(frame_but_one, bg='#18A558', text='Restart', height=2, command=self.removeStatus)
+        b5.grid(row=0, column=1, padx=1, pady=1, sticky='w')
+        # b6 = tk.Button(frame_but_one, text='Stop', command=self.closeConv)
+        # b6.grid(row=0, column=1, padx=1, pady=1, sticky='w')
 
 
-    #     frame_but_right = tk.Frame(self, width=240, height=10)
-    #     frame_but_right.grid(row=3, column=1, padx=1, pady=1, sticky='nsew')
-    #     b_ebdata = tk.Button(frame_but_right, text="Logout", width=10, height=2, background='#FFA500',  command=lambda: controller.show_frame(PageOne))
-    #     b_ebdata.grid(row=3, column=1)
-    #     b_ebdata = tk.Button(frame_but_right, text="Close", width=10, height=2, background='#D10000',  command=Close)
-    #     b_ebdata.grid(row=3, column=0)
+        frame_but_right = tk.Frame(self, width=240, height=10)
+        frame_but_right.grid(row=3, column=1, padx=1, pady=1, sticky='nsew')
+        b_ebdata = tk.Button(frame_but_right, text="Logout", width=10, height=2, background='#FFA500',  command=lambda: controller.show_frame(PageOne))
+        b_ebdata.grid(row=3, column=1)
+        b_ebdata = tk.Button(frame_but_right, text="Close", width=10, height=2, background='#D10000',  command=Close)
+        b_ebdata.grid(row=3, column=0)
 
-    #     self.model = tk.StringVar()
-    #     frame = tk.Frame(self, width=240, height=10)
-    #     frame.grid(row=1, column=1, padx=1, pady=1, sticky='nsew')
+        self.model = tk.StringVar()
+        frame = tk.Frame(self, width=240, height=10)
+        frame.grid(row=1, column=1, padx=1, pady=1, sticky='nsew')
 
-    #     frame._grid_info = frame.grid_info()
-    #     frame.grid_remove()
-    #     somechoices = ["F", "C", "T"]
-    #     popupMenu1 = tk.OptionMenu(frame, self.model, *somechoices)
-    #     self.model.set("Return Type")
-    #     popupMenu1.grid(row=1, column=2)
-    #     self.model.trace('w', self.option_select)
+        frame._grid_info = frame.grid_info()
+        frame.grid_remove()
+        somechoices = ["F", "C", "T"]
+        popupMenu1 = tk.OptionMenu(frame, self.model, *somechoices)
+        self.model.set("Return Type")
+        popupMenu1.grid(row=1, column=2)
+        self.model.trace('w', self.option_select)
 
-    #     self.category = tk.StringVar()
-    #     somechoices = []
-    #     for value in Connection().getCustomer():
-    #        somechoices.append(value[2])
+        self.category = tk.StringVar()
+        somechoices = []
+        for value in Connection().getCustomer():
+           somechoices.append(value[2])
 
         
 
-    #     #somechoices = ["1", "2", "C", "D"]
-    #     self.category.set("Pick a Customer")
-    #     open(get_correct_path("static/uploads/_customer.txt"), "w").write("")
-    #     open(get_correct_path("static/uploads/_model.txt"), "w").write("")
-    #     open(get_correct_path("static/uploads/_rtype.txt"), "w").write("")
-    #     #open("static/uploads/_serial.txt", "w").write("")
-    #     open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+        #somechoices = ["1", "2", "C", "D"]
+        self.category.set("Pick a Customer")
+        open(get_correct_path("static/uploads/_customer.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_model.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_rtype.txt"), "w").write("")
+        #open("static/uploads/_serial.txt", "w").write("")
+        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
 
-    #     popupMenu = tk.OptionMenu(frame_eb_data, self.category, *somechoices)
-    #     popupMenu.grid(row=1, column=0)
+        popupMenu = tk.OptionMenu(frame_eb_data, self.category, *somechoices)
+        popupMenu.grid(row=1, column=0)
 
-    #     self.category.trace('w', self.change_dropdown)
+        self.category.trace('w', self.change_dropdown)
        
        
 
@@ -122,94 +122,94 @@ class PageThree(tk.Frame):
         
         
         
-    #     self.progress = Progressbar(frame_eb_data, orient=HORIZONTAL,length=100,  mode='indeterminate')
+        self.progress = Progressbar(frame_eb_data, orient=HORIZONTAL,length=100,  mode='indeterminate')
 
-    # def grid_hide(self, widget):
-    #     widget._grid_info = widget.grid_info()
-    #     widget.grid_remove()
+    def grid_hide(self, widget):
+        widget._grid_info = widget.grid_info()
+        widget.grid_remove()
 
-    # def grid_show(self, widget):
-    #     widget.grid(**widget._grid_info)
+    def grid_show(self, widget):
+        widget.grid(**widget._grid_info)
 
 
-    # def option_select(self, *args):
-    #     print (self.model.get())
-    #     open(get_correct_path("static/uploads/_rtype.txt"), "w").write(f"{self.model.get()}")
+    def option_select(self, *args):
+        print (self.model.get())
+        open(get_correct_path("static/uploads/_rtype.txt"), "w").write(f"{self.model.get()}")
 
-    # def callConv(self):
-    #     Conveyor().callAllConveyor()
+    def callConv(self):
+        Conveyor().callAllConveyor()
 
-    # def removeStatus(self):
-    #     open(get_correct_path("static/uploads/_status.txt"), "w").write("")
-    #     open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
-    #     open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
-    #     Conveyor().enableLight("OFF")
+    def removeStatus(self):
+        open(get_correct_path("static/uploads/_status.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+        Conveyor().enableLight("OFF")
 
-    # def closeConv(self):
-    #     Conveyor().CloseAllConveyor()
-
-    
-    
+    def closeConv(self):
+        Conveyor().CloseAllConveyor()
 
     
+    
 
-    # def change_dropdown(self,*args):
-    #     open(get_correct_path("static/uploads/_customer.txt"), "w").write(f"{self.category.get() }")
-    #     open(get_correct_path("static/uploads/_status.txt"), "w").write("")
-    #     open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
-    #     open(get_correct_path("static/uploads/_rtype.txt"), "w").write("")
-    #     Conveyor.resetLastScan("", "")
-    #     open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write("")
-    #     open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("")
-    #     open(get_correct_path("static/uploads/_serialC.txt"), "w").write("0")
+    
 
-    #     dict = {}
-    #     self.progress.grid(row=2,column=0)
-    #     self.progress.start()
-    #     # menu = self.model["menu"]
-    #     # menu.delete(0, "end")
-    #     for value in Connection().getModels(self.category.get()):
-    #        mdict1 = {value[1]:value[2]}
-    #        dict.update(mdict1)
-    #     #    menu.add_command(label=value[1], 
-    #     #                      command=lambda value=value[1]: self.om_variable.set(value[1]))
-    #     self.progress.stop()
-    #     self.progress.grid_forget()
-    #     open(get_correct_path("static/uploads/_validation.txt"), "w").write(json.dumps(dict))
-    #     if (self.category.get() == "FRONTIERC0"):
-    #         frame.grid(**frame._grid_info)
-    #     else:
-    #         frame._grid_info = frame.grid_info()
-    #         frame.grid_remove()
+    def change_dropdown(self,*args):
+        open(get_correct_path("static/uploads/_customer.txt"), "w").write(f"{self.category.get() }")
+        open(get_correct_path("static/uploads/_status.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_rtype.txt"), "w").write("")
+        Conveyor.resetLastScan("", "")
+        open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_serialC.txt"), "w").write("0")
+
+        dict = {}
+        self.progress.grid(row=2,column=0)
+        self.progress.start()
+        # menu = self.model["menu"]
+        # menu.delete(0, "end")
+        for value in Connection().getModels(self.category.get()):
+           mdict1 = {value[1]:value[2]}
+           dict.update(mdict1)
+        #    menu.add_command(label=value[1], 
+        #                      command=lambda value=value[1]: self.om_variable.set(value[1]))
+        self.progress.stop()
+        self.progress.grid_forget()
+        open(get_correct_path("static/uploads/_validation.txt"), "w").write(json.dumps(dict))
+        if (self.category.get() == "FRONTIERC0"):
+            frame.grid(**frame._grid_info)
+        else:
+            frame._grid_info = frame.grid_info()
+            frame.grid_remove()
 
         
         
         
         
-    #     #threading.Thread(target=self.maintenance, daemon=True).start()
-    #     # threading.Thread(target=self.postingData, daemon=True).start()
+        #threading.Thread(target=self.maintenance, daemon=True).start()
+        # threading.Thread(target=self.postingData, daemon=True).start()
         
       
 
-    # def maintenance(self):
-    #     """ Background thread doing various maintenance tasks """
-    #     readText = ImageProcess()
-    #     while True:
-    #         l=threading.Lock()
-    #         l.acquire()
-    #         readText.conStatus()
-    #         l.release()
+    def maintenance(self):
+        """ Background thread doing various maintenance tasks """
+        readText = ImageProcess()
+        while True:
+            l=threading.Lock()
+            l.acquire()
+            readText.conStatus()
+            l.release()
             
             
 
-    # def postingData(self):
-    #     """ Background thread doing various maintenance tasks """
-    #     readText = ImageProcess()
-    #     while True:
-    #         lo=threading.Lock()
-    #         lo.acquire()
-    #         readText.postToDeepblu()
-    #         lo.release()
+    def postingData(self):
+        """ Background thread doing various maintenance tasks """
+        readText = ImageProcess()
+        while True:
+            lo=threading.Lock()
+            lo.acquire()
+            readText.postToDeepblu()
+            lo.release()
 
         
 
