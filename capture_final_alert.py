@@ -82,6 +82,9 @@ class PageThree(tk.Frame):
         self.model = tk.StringVar()
         frame = tk.Frame(self, width=240, height=60)
         frame.grid(row=1, column=1, padx=1, pady=1, sticky='nsew')
+
+        frame._grid_info = frame.grid_info()
+        frame.grid_remove()
         somechoices = ["F", "C", "T"]
         popupMenu1 = tk.OptionMenu(frame, self.model, *somechoices)
         self.model.set("Return Type")
@@ -154,13 +157,7 @@ class PageThree(tk.Frame):
         open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write("")
         open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("")
         open(get_correct_path("static/uploads/_serialC.txt"), "w").write("0")
-        if (self.category.get() == "FRONTIERC0"):
-            frame.grid(**frame._grid_info)
-        else:
-            frame._grid_info = frame.grid_info()
-            frame.grid_remove()
 
-        
         dict = {}
         self.progress.grid(row=2,column=0)
         self.progress.start()
@@ -174,6 +171,14 @@ class PageThree(tk.Frame):
         self.progress.stop()
         self.progress.grid_forget()
         open(get_correct_path("static/uploads/_validation.txt"), "w").write(json.dumps(dict))
+        if (self.category.get() == "FRONTIERC0"):
+            frame.grid(**frame._grid_info)
+        else:
+            frame._grid_info = frame.grid_info()
+            frame.grid_remove()
+
+        
+        
         
         
         #threading.Thread(target=self.maintenance, daemon=True).start()
