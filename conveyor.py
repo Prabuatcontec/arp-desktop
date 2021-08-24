@@ -104,4 +104,9 @@ class Conveyor(object):
         calib_result_pickle = {}
         calib_result_pickle["key"] = key
         calib_result_pickle["value"] = value
-        pickle.dump(calib_result_pickle, open("static/uploads/lastScan.p", "wb" )) 
+        pickle.dump(calib_result_pickle, open(get_correct_path("static/uploads/lastScan.p"), "wb" )) 
+
+        
+def get_correct_path(relative_path):
+    p = os.path.abspath(".").replace('/dist', "")
+    return os.path.join(p, relative_path)
