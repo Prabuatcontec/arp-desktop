@@ -481,6 +481,7 @@ class PageTwo(tk.Frame):
                                                         po = 1
                                                         self.processImage(serials, t, image)
                                                         break
+                                                self.processImage(serials, t, image)
                                             else:
                                                 open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
 
@@ -725,7 +726,8 @@ def Close():
         open(get_correct_path("static/uploads/_serialC.txt"), "w").write("0")
 
         vs.release()
-
+def disable_event():
+    pass
 
 if __name__ == "__main__":
     global vs
@@ -734,6 +736,7 @@ if __name__ == "__main__":
     vs .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
     vs.set(cv2.CAP_PROP_AUTOFOCUS, 0) 
     app = Arp()
+    app.protocol("WM_DELETE_WINDOW", disable_event)
     app.mainloop()
     MAINTENANCE_INTERVAL = .1
 
