@@ -8,6 +8,7 @@ import numpy as np
 import structlog
 from pyzbar import pyzbar
 import pickle
+import socket
 
 from datetime import datetime 
 from filehandling import HoldStatus
@@ -231,10 +232,39 @@ class PageThree(tk.Frame):
             icon=WARNING)
 
         if answer:
-            res = requests.patch(Config.DEEPBLU_URL + '/autoreceive/closepallet',  data=json.dumps({"palletId": open(get_correct_path("static/uploads/_palletId.txt")).readline().strip("\n")}),
+            response = requests.patch(Config.DEEPBLU_URL + '/autoreceive/closepallet',  data=json.dumps({"palletId": open(get_correct_path("static/uploads/_palletId.txt")).readline().strip("\n")}),
                                         headers={'Content-Type': 'application/json', 
                                         'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
                                         )
+            if response.status_code != 200:
+                self.controller.page2_label.set("Deepblu Pallet Falied!")
+                print()
+            else:
+                a = response.json()
+                Conveyor.resetLastScan("","","")
+
+                palletID = a['pallet_id']
+                itemID = a['serialized_good']['id']
+                itemName = a['serialized_good']['item_name']
+                model = a['serialized_good']['model']
+                cusItemID = a['serialized_good']['cus_item_id']
+                qty = str(a['qty'])
+                warehouse = str(datetime.today().strftime('%m%d%y'))+'NC'
+
+                #palletTag = "^XA^SZ2^JMA^MCY^PMN~JSN^JZY^LH0,0^LRN^FB1308,1,0,C^FT43,1308^A0B,33,49^FDPALLET ID TAG^FS ^FT196,1226^BY3,2.5^B3B,N,147,N,N^FD"+palletID+"^FS ^FT327,1292^A0B,147,131^FD"+palletID+"^FS ^FB1308,1,0,C^FT409,1308^A0B,59,59^FD"+itemID+"^FS ^FT474,1243^A0B,39,39^FD"+itemName+"^FS ^FT523,1243^A0B,39,39^FD"+model+"^FS ^FB1243,1,0,R^FT523,1308^A0B,39,39^FD"+cusItemID+"^FS ^FT605,1275^A0B,65,49^FDOrig Qty: "+qty+"^FS ^FB1275,1,0,R^FT605,1308^A0B,65,49^FD"+warehouse+"^FS ^XZ"
+                #palletTag = "^XA^SZ2^JMA^MCY^PMN~JSN^JZY^LH0,0^LRN^FB808,1,0,C^FT0,43^A0N,23,29^FDPALLET ID TAG^FS ^FT10,125^BY2.4,2.2^B3N,N,77,N,N^FD"+palletID+"^FS ^FT16,185^A0N,67,40^FD"+palletID+"^FS ^FB308,1,0,C^FT200,213^A0N,29,29^FD"+itemID+"^FS ^FT16,255^A0N,29,29^FD"+itemName+"^FS ^FT16,285^A0N,29,29^FD"+model+"^FS ^FB305,1,0,R^FT0,325^A0N,29,29^FD"+cusItemID+"^FS^FT33,365^A0N,29,29^FDOrig Qty: "+qty+"^FS ^FB775,1,0,R^FT0,365^A0N,29,29^FD"+warehouse+"^FS ^XZ"
+                palletTag = "^XA^MMT^PW812^LL0406^LS0^FT288,38^A0N,31,38^FH\^FDPALLET ID TAG^FS^BY3,3,81^FT23,131^BCN,,N,N^FD>:"+palletID+"^FS^FT64,205^A0N,70,69^FH\^FD"+palletID+"^FS^FT324,253^A0N,31,31^FH\^FD"+itemID+"^FS^FT23,307^A0N,31,31^FH\^FD"+itemName+"^FS^FT23,348^A0N,31,31^FH\^FD"+model+"^FS^FT21,391^A0N,31,31^FH\^FDOrig Qty:^FS^FT136,391^A0N,31,31^FH\^FD"+qty+"^FS^FT550,349^A0N,25,24^FH\^FD"+cusItemID+"^FS^FT664,391^A0N,31,31^FH\^FD"+warehouse+"^FS^PQ1,0,1,Y^XZ"
+                print(palletTag)
+                mysocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)         
+                host = "10.10.145.21" 
+                port = 9100   
+                try:           
+                    mysocket.connect((host, port)) #connecting to host
+                    mysocket.send(palletTag.encode('ascii'))#using bytes
+                    mysocket.close () #closing connection
+                    print("Label")
+                except:
+                    print("Error with the connection")
             
             
 
@@ -626,68 +656,80 @@ class PageTwo(tk.Frame):
     def processValidation(self, key, value, line, image, image1):
             valid = str(value).replace("'",'"')
             jsonArray =json.loads(str(valid))
-            
-            valid = ModelValidation().validate(
-                jsonArray["data"], line)
-            Conveyor.resetLastScan(key, value, str(jsonArray["model"]))
-            
-            if(valid != '0'):
-                line = self.Reverse(line)
-                valid = ModelValidation().validate(
-                    jsonArray["data"], line)
-            
-            if valid !='0':
-                str1 = " " 
-                if str(str1.join(line)) != open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
+            calib_result_pickle = Conveyor.getScan()
+            model = calib_result_pickle["model"]
+            oldModel = 0
+            if model != "":
+                if model != str(jsonArray["model"]):
                     open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
-                    open(get_correct_path("static/uploads/_lastFail.txt"), "w").write(str(str1.join(line)))
                     Conveyor().closeConveyor()
                     Conveyor().enableLight("RED")
-                    open(get_correct_path("static/uploads/_status.txt"), "w").write("Unit Validation Failed: Try to position the box in 0 or 180 degree and click retry")
-                    
-                return 1
+                    open(get_correct_path("static/uploads/_status.txt"), "w").write("New Model "+jsonArray["model"]+" found, Close old model pallet or replace model and continue!")
+                    oldModel = 1
+            
 
-            if valid == '0':
-                dict = {}
-                p = 0
-                for c in range(len(line)):
-                    newline = line[c].replace("\n","").replace(" ","")
-                    
-                    if(c == 0):
-                        mdict1 = {"serial": newline}
-                        dict.update(mdict1)
-                    else:
-                        mdict1 = {str("address"+str(c)): newline}
-                        dict.update(mdict1)
+            if oldModel == 0:
+                valid = ModelValidation().validate(
+                jsonArray["data"], line)
+                Conveyor.resetLastScan(key, value, str(jsonArray["model"]))
+                
+                if(valid != '0'):
+                    line = self.Reverse(line)
+                    valid = ModelValidation().validate(
+                        jsonArray["data"], line)
+                
+                if valid !='0':
+                    str1 = " " 
+                    if str(str1.join(line)) != open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
+                        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
+                        open(get_correct_path("static/uploads/_lastFail.txt"), "w").write(str(str1.join(line)))
+                        Conveyor().closeConveyor()
+                        Conveyor().enableLight("RED")
+                        open(get_correct_path("static/uploads/_status.txt"), "w").write("Unit Validation Failed: Try to position the box in 0 or 180 degree and click retry")
+                        
+                    return 1
 
-                if(p == 0):
-                    customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
-                    open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "a").write(str(line)+"\n")
-                    
-                    mdict1 = {"model": str(jsonArray["model"])}
-                    dict.update(mdict1)
-                    mdict1 = {"customer": str(customer)}
-                    dict.update(mdict1)
-                    if (str(customer) == "FRONTIERC0"):
-                        rtype = open(get_correct_path("static/uploads/_rtype.txt")).readline().strip("\n")
-                        if rtype != "":
-                            c = c+1
-                            mdict1 = {str("address"+str(c)): rtype}
+                if valid == '0':
+                    dict = {}
+                    p = 0
+                    for c in range(len(line)):
+                        newline = line[c].replace("\n","").replace(" ","")
+                        
+                        if(c == 0):
+                            mdict1 = {"serial": newline}
                             dict.update(mdict1)
-                    print(dict)
-                    line = str(dict).replace("'",'"')
-                    requests.post(Config.DEEPBLU_URL + '/autoreceive/automation', line,
-                                        headers={'Content-Type': 'application/json', 
-                                        'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
-                                        )
-                    print('success')
-                    Conveyor().enableLight("GREEN")
-                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
-                    open(get_correct_path("static/uploads/_status.txt"), "w").write("")
-                    open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
-                    Conveyor().callConveyor()
-                    start = time.time()
-                    print(start)
+                        else:
+                            mdict1 = {str("address"+str(c)): newline}
+                            dict.update(mdict1)
+
+                    if(p == 0):
+                        customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
+                        open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "a").write(str(line)+"\n")
+                        
+                        mdict1 = {"model": str(jsonArray["model"])}
+                        dict.update(mdict1)
+                        mdict1 = {"customer": str(customer)}
+                        dict.update(mdict1)
+                        if (str(customer) == "FRONTIERC0"):
+                            rtype = open(get_correct_path("static/uploads/_rtype.txt")).readline().strip("\n")
+                            if rtype != "":
+                                c = c+1
+                                mdict1 = {str("address"+str(c)): rtype}
+                                dict.update(mdict1)
+                        print(dict)
+                        line = str(dict).replace("'",'"')
+                        requests.post(Config.DEEPBLU_URL + '/autoreceive/automation', line,
+                                            headers={'Content-Type': 'application/json', 
+                                            'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
+                                            )
+                        print('success')
+                        Conveyor().enableLight("GREEN")
+                        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+                        open(get_correct_path("static/uploads/_status.txt"), "w").write("")
+                        open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
+                        Conveyor().callConveyor()
+                        start = time.time()
+                        print(start)
 
 
 
