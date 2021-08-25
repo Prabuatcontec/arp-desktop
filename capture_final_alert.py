@@ -62,6 +62,7 @@ class PageOne(tk.Frame):
 class PageThree(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.controller = controller
         global on, frame, lbx
         frame_eb_data = tk.Frame(self, width=100, height=10)
         frame_eb_data.grid(row=0, column=1, sticky='nsew', padx=1, pady=1)
@@ -75,6 +76,14 @@ class PageThree(tk.Frame):
         b5.grid(row=0, column=1, padx=1, pady=1, sticky='w')
         # b6 = tk.Button(frame_but_one, text='Stop', command=self.closeConv)
         # b6.grid(row=0, column=1, padx=1, pady=1, sticky='w')
+
+        entry_nombre_fld1c = tk.Entry(frame_eb_data)
+        entry_nombre_fld1c.grid(row=0, column=2, sticky='w')
+
+        var = tk.StringVar()
+        var.set('Some text')
+        entry_nombre_fld1c.config(textvariable=controller.page4_label, relief='flat')
+        entry_nombre_fld1c.grid(row=0, column=2)
 
 
         frame_but_right = tk.Frame(self, width=240, height=10)
@@ -115,12 +124,9 @@ class PageThree(tk.Frame):
         popupMenu.grid(row=1, column=0)
 
         self.category.trace('w', self.change_dropdown)
-       
-       
 
-        
-        
-        
+        b_ebdata = tk.Button(frame_eb_data, text="Close Pallet", width=10, height=2, background='#D10000',  command=self.ClosePallet)
+        b_ebdata.grid(row=1, column=2)
         
         self.progress = Progressbar(frame_eb_data, orient=HORIZONTAL,length=100,  mode='indeterminate')
 
@@ -143,6 +149,7 @@ class PageThree(tk.Frame):
         open(get_correct_path("static/uploads/_status.txt"), "w").write("")
         open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
         open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+        #Conveyor().resetLastScan("","","")
         Conveyor().enableLight("OFF")
 
     def closeConv(self):
@@ -158,7 +165,8 @@ class PageThree(tk.Frame):
         open(get_correct_path("static/uploads/_status.txt"), "w").write("")
         open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
         open(get_correct_path("static/uploads/_rtype.txt"), "w").write("")
-        Conveyor.resetLastScan("", "")
+        open(get_correct_path("static/uploads/_palletId.txt"), "w").write("")
+        Conveyor.resetLastScan("", "","")
         open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write("")
         open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("")
         open(get_correct_path("static/uploads/_serialC.txt"), "w").write("0")
@@ -186,7 +194,7 @@ class PageThree(tk.Frame):
         
         
         
-        #threading.Thread(target=self.maintenance, daemon=True).start()
+        threading.Thread(target=self.maintenance, daemon=True).start()
         # threading.Thread(target=self.postingData, daemon=True).start()
         
       
@@ -197,8 +205,36 @@ class PageThree(tk.Frame):
         while True:
             l=threading.Lock()
             l.acquire()
-            readText.conStatus()
+            calib_result_pickle = Conveyor.getScan()
+            model = calib_result_pickle["model"]
+            if model != "":
+                response = requests.get(Config.DEEPBLU_URL + '/autoreceive/pallet/latest?model='+model,
+                                            headers={'Content-Type': 'application/json', 
+                                            'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
+                                            )
+                
+                if response.status_code != 200:
+                    self.controller.page2_label.set("Deepblu Pallet Falied!")
+                else:
+                    a = response.json()
+                    if len(a)>0:
+                        self.controller.page4_label.set(a[0]['palletId'])
+                        open(get_correct_path("static/uploads/_palletId.txt"), "w").write(str(a[0]['palletId']))
+
+            time.sleep(10)
             l.release()
+
+    def ClosePallet(self):
+        answer = askokcancel(
+            title='Confirmation',
+            message='Do you want to close the pallet?',
+            icon=WARNING)
+
+        if answer:
+            res = requests.patch(Config.DEEPBLU_URL + '/autoreceive/closepallet',  data=json.dumps({"palletId": open(get_correct_path("static/uploads/_palletId.txt")).readline().strip("\n")}),
+                                        headers={'Content-Type': 'application/json', 
+                                        'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
+                                        )
             
             
 
@@ -361,7 +397,7 @@ class PageTwo(tk.Frame):
                             
                             for c in cnt:
                                 if(cv2.contourArea(c)  > 100000):
-                                    print(cv2.contourArea(c))
+                                    #print(cv2.contourArea(c))
                                     i = i - 1
                                     if(int(cv2.contourArea(c))  == an[0]):
                                         #image = cv2.resize(thresh, (3000, 3000 ), interpolation=cv2.INTER_CUBIC)
@@ -397,8 +433,7 @@ class PageTwo(tk.Frame):
 
                                             if len(serials)<1:
                                                 x = self.getAngel()
-                                                print(x)
-                                                print(serials)
+                                                #print(x)
 
                                                 image = self.rotate_bound(image, x)
                                                 barcodes = pyzbar.decode(image)
@@ -445,17 +480,15 @@ class PageTwo(tk.Frame):
                                 str1 = " " 
                                 if str(str1.join(serials)) == open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
                                     serials = []
-                                    print(1111)
                                 
                                 str1 = " " 
                                 if str(str1.join(rev)) == open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
                                     serials = []
-                                    print(11112)
 
                                 if(r.find(str(serials)) !=-1 or r.find(str(rev)) != -1):
                                     open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
                                 else:
-                                    if len(serials) > 1:
+                                    if len(serials) > 0:
                                             print(serials)
                                             if s > 1:
                                                 thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY   + cv2.THRESH_OTSU)[1]
@@ -465,7 +498,7 @@ class PageTwo(tk.Frame):
                                                 for c1 in cnte:
                                                     if(cv2.contourArea(c1)  >100000):
                                                         an1.append(int(cv2.contourArea(c1)))
-                                                print(an1)
+                                                
                                                 an1.sort(reverse = True)
                                                 
                                                 for c2 in cnte:
@@ -514,7 +547,7 @@ class PageTwo(tk.Frame):
             angleSame = 0
             r = 0
             for key, value in models.items():
-                calib_result_pickle = pickle.load(open(get_correct_path("static/uploads/lastScan.p"), "rb" ))
+                calib_result_pickle = Conveyor.getScan()
                 keystored = calib_result_pickle["key"]
                 valuestored = calib_result_pickle["value"]
                 if keystored != "" and valuestored !="":
@@ -529,10 +562,9 @@ class PageTwo(tk.Frame):
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
                     fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                    cv2.imwrite(get_correct_path("static/processingImg/rot1boxER_%s.png") % fillenameImage, image)
+                    #cv2.imwrite(get_correct_path("static/processingImg/rot1boxER_%s.png") % fillenameImage, image)
                     text = ""
                     self.processValidation(key, value, line, image, image1)
-                    Conveyor.resetLastScan(key, value)
                     angleSame = 1
                     r = 1
                     break
@@ -546,7 +578,7 @@ class PageTwo(tk.Frame):
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
                     fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                    cv2.imwrite(get_correct_path("static/processingImg/22222222222boxER_%s.png") % fillenameImage, img)
+                    #cv2.imwrite(get_correct_path("static/processingImg/22222222222boxER_%s.png") % fillenameImage, img)
                     
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                     print("".join(text.split()).encode('utf8'))
@@ -557,7 +589,6 @@ class PageTwo(tk.Frame):
                             text = ""
                             line = self.Reverse(line)
                             self.processValidation(key, value, line, image, image1)
-                            Conveyor.resetLastScan(key, value)
                             r = 1
                             break
                     if r == 1:
@@ -598,6 +629,7 @@ class PageTwo(tk.Frame):
             
             valid = ModelValidation().validate(
                 jsonArray["data"], line)
+            Conveyor.resetLastScan(key, value, str(jsonArray["model"]))
             
             if(valid != '0'):
                 line = self.Reverse(line)
@@ -613,8 +645,6 @@ class PageTwo(tk.Frame):
                     Conveyor().enableLight("RED")
                     open(get_correct_path("static/uploads/_status.txt"), "w").write("Unit Validation Failed: Try to position the box in 0 or 180 degree and click retry")
                     
-                
-                
                 return 1
 
             if valid == '0':
@@ -671,6 +701,7 @@ class Arp(tk.Tk):
         self.page1_label = tk.StringVar()
         self.page2_label = tk.StringVar()
         self.page3_label = tk.StringVar()
+        self.page4_label = tk.StringVar()
         self.page2_entry = tk.StringVar()
         open(get_correct_path("static/uploads/_login.txt"), "w").write("")
 
@@ -720,7 +751,8 @@ def Close():
         open(get_correct_path("static/uploads/_status.txt"), "w").write("")
         open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
         open(get_correct_path("static/uploads/_rtype.txt"), "w").write("")
-        Conveyor.resetLastScan("", "")
+        open(get_correct_path("static/uploads/_palletId.txt"), "w").write("")
+        Conveyor.resetLastScan("", "", "")
         open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write("")
         open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("")
         open(get_correct_path("static/uploads/_serialC.txt"), "w").write("0")

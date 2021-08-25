@@ -100,11 +100,15 @@ class Conveyor(object):
             headers={'Content-Type': 'application/json'}
         )
 
-    def resetLastScan(key, value):
+    def resetLastScan(key, value, model):
         calib_result_pickle = {}
         calib_result_pickle["key"] = key
         calib_result_pickle["value"] = value
+        calib_result_pickle["model"] = model
         pickle.dump(calib_result_pickle, open(get_correct_path("static/uploads/lastScan.p"), "wb" )) 
+
+    def getScan():
+        return pickle.load(open(get_correct_path("static/uploads/lastScan.p"), "rb" ))
 
         
 def get_correct_path(relative_path):
