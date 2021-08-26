@@ -102,7 +102,7 @@ class PageThree(tk.Frame):
         frame.grid_remove()
         somechoices = ["F", "C", "T"]
         popupMenu1 = tk.OptionMenu(frame, self.model, *somechoices)
-        self.model.set("Return Type")
+        self.model.set("C")
         popupMenu1.grid(row=1, column=2)
         self.model.trace('w', self.option_select)
 
@@ -117,7 +117,7 @@ class PageThree(tk.Frame):
         self.category.set("Pick a Customer")
         open(get_correct_path("static/uploads/_customer.txt"), "w").write("")
         open(get_correct_path("static/uploads/_model.txt"), "w").write("")
-        open(get_correct_path("static/uploads/_rtype.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_rtype.txt"), "w").write("C")
         #open("static/uploads/_serial.txt", "w").write("")
         open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
 
@@ -165,7 +165,7 @@ class PageThree(tk.Frame):
         open(get_correct_path("static/uploads/_customer.txt"), "w").write(f"{self.category.get() }")
         open(get_correct_path("static/uploads/_status.txt"), "w").write("")
         open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
-        open(get_correct_path("static/uploads/_rtype.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_rtype.txt"), "w").write("C")
         open(get_correct_path("static/uploads/_palletId.txt"), "w").write("")
         Conveyor.resetLastScan("", "","")
         open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write("")
@@ -238,7 +238,6 @@ class PageThree(tk.Frame):
                                         )
             if response.status_code != 200:
                 self.controller.page2_label.set("Deepblu Pallet Falied!")
-                print()
             else:
                 a = response.json()
                 Conveyor.resetLastScan("","","")
@@ -383,10 +382,18 @@ class PageTwo(tk.Frame):
             
             if(customer != ""):
                 image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-                _status = open(get_correct_path("static/uploads/_status.txt")).readline().strip("\n")
-                
+                _status = open(get_correct_path("static/uploads/_status.txt")).read()
+                y0, dy = 50, 50
+                sub_index = _status.find("New")
+                if sub_index >-1:
+                    colr = (255, 165, 0)
+                else:
+                    colr = (255, 0, 0)
+
                 if _status != "":
-                    cv2.putText(image, _status, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 8)
+                    for i, line in enumerate(_status.split('\n')):
+                        y = y0 + i*dy
+                        cv2.putText(image, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colr, 8)
             else:
                 image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
                 cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
@@ -449,10 +456,7 @@ class PageTwo(tk.Frame):
                                             self.p.append([x[0]-1,vy[0]])
                                             self.p.append([y[0],y[1]])
                                             x,y,w,h = cv2.boundingRect(c)
-                                            gmt = time.gmtime()
-                                            ts = calendar.timegm(gmt)
-                                            fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                            #cv2.imwrite(get_correct_path("static/processingImg/1Bfrrot1boxER_%s.png") % fillenameImage, image)
+                                            
                                             barcodes = pyzbar.decode(image)
 
                                             serials = []
@@ -468,7 +472,7 @@ class PageTwo(tk.Frame):
                                                 image = self.rotate_bound(image, x)
                                                 barcodes = pyzbar.decode(image)
                                                 
-                                                #cv2.imwrite(get_correct_path("static/processingImg/Bfrrot1boxER_%s.png") % fillenameImage, image)
+                                                
                                                 serials = []
                                                 for barcode in barcodes:
                                                     barcodeData = barcode.data.decode("utf-8")
@@ -569,9 +573,8 @@ class PageTwo(tk.Frame):
         else:
                 
             validation = open(get_correct_path("static/uploads/_validation.txt"), 'r').read()
-            #print("=============================================")
             text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-            print("".join(text.split()).encode('utf8'))
+            
             strVal = str(validation)
             models = json.loads(strVal)
             angleSame = 0
@@ -586,13 +589,9 @@ class PageTwo(tk.Frame):
 
                 sub_index = str("".join(text.split())).find(key.replace('"', ""))
                 if sub_index >-1:
-                    # print(key)
-                    # print(value)
                     print(90)
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
-                    fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                    #cv2.imwrite(get_correct_path("static/processingImg/rot1boxER_%s.png") % fillenameImage, image)
                     text = ""
                     self.processValidation(key, value, line, image, image1)
                     angleSame = 1
@@ -600,6 +599,7 @@ class PageTwo(tk.Frame):
                     break
             if(angleSame ==0):
                 lo = self.ang
+                print(lo)
                 for x in lo:
                     print (x)
                     
@@ -607,11 +607,9 @@ class PageTwo(tk.Frame):
 
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
-                    fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                    #cv2.imwrite(get_correct_path("static/processingImg/22222222222boxER_%s.png") % fillenameImage, img)
                     
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                    print("".join(text.split()).encode('utf8'))
+                    
                     
                     for key, value in models.items():
                         sub_index = str("".join(text.split())).find(key.replace('"', ""))
@@ -631,9 +629,8 @@ class PageTwo(tk.Frame):
                     open(get_correct_path("static/uploads/_lastFail.txt"), "w").write(str(str1.join(line)))
                     Conveyor().closeConveyor()
                     Conveyor().enableLight("RED")
-                    open(get_correct_path("static/uploads/_status.txt"), "w").write("Unit OCR Failed : Try to position the box in 0 or 180 degree and click retry")
-                    #tkinter.messagebox.askretrycancel("Unit OCR Failed", "For Units:"+ str1.join(line)+". Try to position the box in 0 or 180 degree and click retry. ")
-                    #self.enableLight("OFF")
+                    open(get_correct_path("static/uploads/_status.txt"), "w").write("Unit OCR Failed : Try to position the box in \n 0 or 180 degree and click Restart")
+                    
 
     def gradiant(self,p1,p2):
         cal =  (p1[1]-p2[1])/(p2[0]-p1[0])
@@ -664,7 +661,7 @@ class PageTwo(tk.Frame):
                     open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
                     Conveyor().closeConveyor()
                     Conveyor().enableLight("RED")
-                    open(get_correct_path("static/uploads/_status.txt"), "w").write("New Model "+jsonArray["model"]+" found, Close old model pallet or replace model and continue!")
+                    open(get_correct_path("static/uploads/_status.txt"), "w").write("New Model "+jsonArray["model"]+" found, '\n' Close "+model+" old model pallet and Click Restart '\n' or replace model and Click Restart!")
                     oldModel = 1
             
 
@@ -685,7 +682,7 @@ class PageTwo(tk.Frame):
                         open(get_correct_path("static/uploads/_lastFail.txt"), "w").write(str(str1.join(line)))
                         Conveyor().closeConveyor()
                         Conveyor().enableLight("RED")
-                        open(get_correct_path("static/uploads/_status.txt"), "w").write("Unit Validation Failed: Try to position the box in 0 or 180 degree and click retry")
+                        open(get_correct_path("static/uploads/_status.txt"), "w").write("Unit Validation Failed: Try to position the box in \n 0 or 180 degree and click Restart")
                         
                     return 1
 
@@ -792,7 +789,7 @@ def Close():
         open(get_correct_path("static/uploads/_customer.txt"), "w").write("")
         open(get_correct_path("static/uploads/_status.txt"), "w").write("")
         open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
-        open(get_correct_path("static/uploads/_rtype.txt"), "w").write("")
+        open(get_correct_path("static/uploads/_rtype.txt"), "w").write("C")
         open(get_correct_path("static/uploads/_palletId.txt"), "w").write("")
         Conveyor.resetLastScan("", "", "")
         open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write("")
