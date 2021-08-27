@@ -213,11 +213,13 @@ class PageThree(tk.Frame):
                                             headers={'Content-Type': 'application/json', 
                                             'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
                                             )
-                
+                print("printe the label")
+                print(response)
                 if response.status_code != 200:
                     self.controller.page2_label.set("Deepblu Pallet Falied!")
                 else:
                     a = response.json()
+                    print(a)
                     if len(a)>0:
                         self.controller.page4_label.set(a[0]['palletId'])
                         open(get_correct_path("static/uploads/_palletId.txt"), "w").write(str(a[0]['palletId']))
@@ -487,7 +489,7 @@ class PageTwo(tk.Frame):
                                             else:
                                                 s9 = s9 + 1
                                                 poi = i
-                                                self.ang = [180, 5, -5, 175, 185]
+                                                self.ang = [180]
                                                 break
                                     
                                     if (len(an) == i):
@@ -574,7 +576,7 @@ class PageTwo(tk.Frame):
                 
             validation = open(get_correct_path("static/uploads/_validation.txt"), 'r').read()
             text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-            
+            print("".join(text.split()).encode('utf8'))
             strVal = str(validation)
             models = json.loads(strVal)
             angleSame = 0
@@ -609,7 +611,7 @@ class PageTwo(tk.Frame):
                     ts = calendar.timegm(gmt)
                     
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                    
+                    print("".join(text.split()).encode('utf8'))
                     
                     for key, value in models.items():
                         sub_index = str("".join(text.split())).find(key.replace('"', ""))
