@@ -25,6 +25,8 @@ from tkinter.ttk import Progressbar
 import requests
 from modelunitvalidation import ModelValidation
 from tkinter.messagebox import askokcancel, showinfo, WARNING
+import socket
+from datetime import datetime 
 
 class HomeFrame(tk.Frame):
     def __init__(self, parent, controller):
@@ -178,8 +180,25 @@ class ScanFrame(tk.Frame):
                 self.controller.loginResult.set("Deepblu Pallet Falied!")
             else:
                 palletDetail = response.json()
-                Conveyor.resetLastScan("","","")
-                Deepblu.printPalletTag(palletDetail)
+                palletID = palletDetail[0]['palletId']
+                itemID = palletDetail[0]['itemId']
+                itemName = palletDetail[0]['itemName']
+                model = palletDetail[0]['model']
+                cusItemID = palletDetail[0]['cusItemId']
+                qty = str(palletDetail[0]['qty'])
+                warehouse = str(datetime.today().strftime('%m%d%y'))+palletDetail[0]['warehouseCode']
+                palletTag = "^XA^MMT^PW812^LL0406^LS0^FT288,38^A0N,31,38^FH\^FDPALLET ID TAG^FS^BY3,3,81^FT23,131^BCN,,N,N^FD>:"+palletID+"^FS^FT64,205^A0N,70,69^FH\^FD"+palletID+"^FS^FT324,253^A0N,31,31^FH\^FD"+itemID+"^FS^FT23,307^A0N,31,31^FH\^FD"+itemName+"^FS^FT23,348^A0N,31,31^FH\^FD"+model+"^FS^FT21,391^A0N,31,31^FH\^FDOrig Qty:^FS^FT136,391^A0N,31,31^FH\^FD"+qty+"^FS^FT550,349^A0N,25,24^FH\^FD"+cusItemID+"^FS^FT664,391^A0N,31,31^FH\^FD"+warehouse+"^FS^PQ1,0,1,Y^XZ"
+                print(palletTag)
+                mysocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)         
+                host = "10.10.145.21" 
+                port = 9100   
+                try:           
+                    mysocket.connect((host, port)) #connecting to host
+                    mysocket.send(palletTag.encode('ascii'))#using bytes
+                    mysocket.close () #closing connection
+                    print("Label")
+                except:
+                    print("Error with the connection")
 
         
 
@@ -334,8 +353,9 @@ class LoginFrame(tk.Frame):
                                     i = i - 1
                                     if(int(cv2.contourArea(c))  == an[0]):
                                         serialC = open(get_correct_path("static/uploads/_serialC.txt")).readline().strip("\n")
+                                        #serialC = "1"
                                         if(serialC=="0"):
-                                            time.sleep(1)
+                                            time.sleep(2)
                                             open(get_correct_path("static/uploads/_serialC.txt"), "w").write("1")
                                         else:
                                             open(get_correct_path("static/uploads/_serialC.txt"), "w").write("0")
@@ -420,6 +440,7 @@ class LoginFrame(tk.Frame):
                                     if len(serials) > 0:
                                             print(serials)
                                             if s > 1:
+                                                
                                                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                                                 thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY   + cv2.THRESH_OTSU)[1]
                                                 contourse,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2:]
@@ -565,12 +586,10 @@ class LoginFrame(tk.Frame):
                 valid = ModelValidation().validate(
                 datacollectionValidation["data"], line)
                 Conveyor.resetLastScan(key, value, str(datacollectionValidation["model"]))
-                
                 if(valid != '0'):
                     line = self.Reverse(line)
                     valid = ModelValidation().validate(
                         datacollectionValidation["data"], line)
-                
                 if valid !='0':
                     str1 = " " 
                     if str(str1.join(line)) != open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
