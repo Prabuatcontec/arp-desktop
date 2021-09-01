@@ -494,8 +494,8 @@ class LoginFrame(tk.Frame):
                     print(90)
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
+                    self.processValidation(key, value, line, image, text)
                     text = ""
-                    self.processValidation(key, value, line, image, image1)
                     angleSame = 1
                     r = 1
                     break
@@ -516,9 +516,9 @@ class LoginFrame(tk.Frame):
                     for key, value in models.items():
                         sub_index = str("".join(text.split())).find(key.replace('"', ""))
                         if sub_index >-1:
-                            text = ""
                             line = self.Reverse(line)
-                            self.processValidation(key, value, line, image, image1)
+                            self.processValidation(key, value, line, image, text)
+                            text = ""
                             r = 1
                             break
                     if r == 1:
@@ -552,7 +552,7 @@ class LoginFrame(tk.Frame):
         
         return 0
 
-    def processValidation(self, key, value, line, image, image1):
+    def processValidation(self, key, value, line, image, text):
             valid = str(value).replace("'",'"')
             datacollectionValidation =json.loads(str(valid))
             calib_result_pickle = Conveyor.getScan()
@@ -608,6 +608,21 @@ class LoginFrame(tk.Frame):
                         mdict1 = {"customer": str(customer)}
                         dict.update(mdict1)
                         if (str(customer) == "FRONTIERC0"):
+                            sub_index = str(key.replace('"', "")).find("NVG")
+                            if sub_index >-1:
+                                print(text)
+                                accessCode = self.findAccessCode(text.replace("UL",""))
+                                if(accessCode != "0"):
+                                    c = c+1
+                                    mdict1 = {str("address"+str(c)): accessCode}
+                                    dict.update(mdict1)
+                                else:
+                                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
+                                    Conveyor().enableLight("RED")
+                                    open(get_correct_path("static/uploads/_status.txt"), "w").write("NVG Failed for access Code: Try to  \n position the box in  0 or 180 degree and click Restart")
+                                    
+
+
                             rtype = open(get_correct_path("static/uploads/_rtype.txt")).readline().strip("\n")
                             if rtype != "":
                                 if rtype == "Field Return":
@@ -630,7 +645,22 @@ class LoginFrame(tk.Frame):
                         Conveyor().callConveyor()
                         start = time.time()
                         print(start)
-
+    def findAccessCode(self, text):
+        text = str(" ".join(text.split()))
+        print(text)
+        findNvg = text.split("DAC")
+        print("================")
+        print(findNvg)
+        if(len(findNvg)<1):
+            return "0"
+        
+        findNvg = findNvg[1].split(" ")
+        if(len(findNvg)<1):
+            return "0"
+        else:
+            return findNvg[1]
+        
+        return "0"
 
 
 class Arp(tk.Tk):
