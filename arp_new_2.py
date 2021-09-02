@@ -285,104 +285,111 @@ class LoginFrame(tk.Frame):
         stats = []
         start = timer()
         while not self.stopEvent.is_set():
-            flag,readFrame = vs.read()
-            dim = (1000, 1000)
-            self.frame = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
-            if flag is None:
-                print ("Failed")
-            customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
-            
-            if(customer != ""):
-                image = cv2.cvtColor(readFrame, cv2.COLOR_BGR2RGB)
-                frameimage = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-                _status = open(get_correct_path("static/uploads/_status.txt")).read()
-                y0, dy = 50, 50
-                sub_index = _status.find("New")
-                if sub_index >-1:
-                    colr = (255, 165, 0)
+            if vs is None or not vs.isOpened():
+                return None
+            else:
+                flag,readFrame = vs.read()
+                dim = (1000, 1000)
+                self.frame = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
+                if flag is None:
+                    print ("Failed")
+                customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
+                
+                if(customer != ""):
+                    image = cv2.cvtColor(readFrame, cv2.COLOR_BGR2RGB)
+                    frameimage = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+                    _status = open(get_correct_path("static/uploads/_status.txt")).read()
+                    y0, dy = 50, 50
+                    sub_index = _status.find("New")
+                    if sub_index >-1:
+                        colr = (255, 165, 0)
+                    else:
+                        colr = (255, 0, 0)
+
+                    if _status != "":
+                        for i, line in enumerate(_status.split('\n')):
+                            y = y0 + i*dy
+                            cv2.putText(image, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colr, 8)
                 else:
-                    colr = (255, 0, 0)
+                    image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
+                    frameimage = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
+                    cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
 
-                if _status != "":
-                    for i, line in enumerate(_status.split('\n')):
-                        y = y0 + i*dy
-                        cv2.putText(image, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colr, 8)
-            else:
-                image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
-                frameimage = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
-                cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
+                image = Image.fromarray(image)
+                image = ImageTk.PhotoImage(image)
 
-            image = Image.fromarray(image)
-            image = ImageTk.PhotoImage(image)
+                frameimage = Image.fromarray(frameimage)
+                frameimage = ImageTk.PhotoImage(frameimage)
+        
+                # if the panel is not None, we need to initialize it
+                if self.panel is None:
+                    self.panel = tk.Label(image=frameimage)
+                    self.panel.image = frameimage
+                    self.panel.pack(side="left", padx=10, pady=10)
+        
+                # otherwise, simply update the panel
+                else:
+                    self.panel.configure(image=frameimage)
+                    self.panel.image = frameimage
 
-            frameimage = Image.fromarray(frameimage)
-            frameimage = ImageTk.PhotoImage(frameimage)
-    
-            # if the panel is not None, we need to initialize it
-            if self.panel is None:
-                self.panel = tk.Label(image=frameimage)
-                self.panel.image = frameimage
-                self.panel.pack(side="left", padx=10, pady=10)
-    
-            # otherwise, simply update the panel
-            else:
-                self.panel.configure(image=frameimage)
-                self.panel.image = frameimage
-
-                image = readFrame
-                self.ProcessCam(image, customer)
+                    image = readFrame
+                    self.ProcessCam(image, customer)
         
     def videoLoopOne(self):
         stats = []
         start = timer()
         while not self.stopEvent.is_set():
-            flag,readFrame = vs1.read()
-            dim = (750, 750)
-            self.frame1 = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
-            # flag,self.frame1 = vs1.read()
-            if flag is None:
-                print ("Failed")
-            customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
             
-            if(customer != ""):
-                image = cv2.cvtColor(readFrame, cv2.COLOR_BGR2RGB)
-                frameimage = cv2.cvtColor(self.frame1, cv2.COLOR_BGR2RGB)
-                _status = open(get_correct_path("static/uploads/_status.txt")).read()
-                y0, dy = 50, 50
-                sub_index = _status.find("New")
-                if sub_index >-1:
-                    colr = (255, 165, 0)
+            if vs1 is None or not vs1.isOpened():
+                return None
+            else:
+                flag,readFrame = vs1.read()
+                dim = (1000, 1000)
+                self.frame1 = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
+                # flag,self.frame1 = vs1.read()
+                if flag is None:
+                    print ("Failed")
+                customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
+                
+                if(customer != ""):
+                    image = cv2.cvtColor(readFrame, cv2.COLOR_BGR2RGB)
+                    frameimage = cv2.cvtColor(self.frame1, cv2.COLOR_BGR2RGB)
+                    _status = open(get_correct_path("static/uploads/_status.txt")).read()
+                    y0, dy = 50, 50
+                    sub_index = _status.find("New")
+                    if sub_index >-1:
+                        colr = (255, 165, 0)
+                    else:
+                        colr = (255, 0, 0)
+
+                    if _status != "":
+                        for i, line in enumerate(_status.split('\n')):
+                            y = y0 + i*dy
+                            cv2.putText(image, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colr, 8)
                 else:
-                    colr = (255, 0, 0)
+                    image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
+                    frameimage = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
+                    cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
 
-                if _status != "":
-                    for i, line in enumerate(_status.split('\n')):
-                        y = y0 + i*dy
-                        cv2.putText(image, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colr, 8)
-            else:
-                image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
-                frameimage = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
-                cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
+                image = Image.fromarray(image)
+                image = ImageTk.PhotoImage(image)
 
-            image = Image.fromarray(image)
-            image = ImageTk.PhotoImage(image)
+                frameimage = Image.fromarray(frameimage)
+                frameimage = ImageTk.PhotoImage(frameimage)
 
-            frameimage = Image.fromarray(frameimage)
-            frameimage = ImageTk.PhotoImage(frameimage)
+                # if the panel is not None, we need to initialize it
+                if self.panel1 is None:
+                    self.panel1 = tk.Label(image=frameimage)
+                    self.panel1.image = frameimage
+                    self.panel1.pack(side="right", padx=10, pady=10)
+        
+                # otherwise, simply update the panel
+                else:
+                    self.panel1.configure(image=frameimage)
+                    self.panel1.image = frameimage
 
-            # if the panel is not None, we need to initialize it
-            if self.panel1 is None:
-                self.panel1 = tk.Label(image=frameimage)
-                self.panel1.image = frameimage
-                self.panel1.pack(side="right", padx=10, pady=10)
-    
-            # otherwise, simply update the panel
-            else:
-                self.panel1.configure(image=frameimage)
-                self.panel1.image = frameimage
-
-                image = readFrame
-                self.ProcessCam(image, customer)
+                    image = readFrame
+                    self.ProcessCam(image, customer)
     
     def ProcessCam(self,image, customer):
         if image is not None:
@@ -797,6 +804,7 @@ def Close():
         app.destroy()
         resetScanData()
         vs.release()
+        vs1.release()
 
 def resetScanData():
     open(get_correct_path("static/uploads/_customer.txt"), "w").write("")
