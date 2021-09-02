@@ -292,7 +292,7 @@ class LoginFrame(tk.Frame):
         while not self.stopEvent.is_set():
             customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
             if vs is None or not vs.isOpened():
-                image = self.camNotAvailable("CAM 1 NOT AVAILABLE")
+                image = self.camNotAvailable("CAM 1 NOT AVAILABLE", "0")
                 frameimage = image
                 readFrame = image
             else:
@@ -307,7 +307,7 @@ class LoginFrame(tk.Frame):
                     frameimage = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
                     frameimage = self.alertProcess(frameimage)
                 else:
-                    image = self.camNotAvailable("CONTEC ARP")
+                    image = self.camNotAvailable("CONTEC ARP", "1")
                     frameimage = image
                     readFrame = image
 
@@ -350,7 +350,7 @@ class LoginFrame(tk.Frame):
         while not self.stopEvent.is_set():
             customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
             if vs1 is None or not vs1.isOpened():
-                image = self.camNotAvailable("CAM 2 NOT AVAILABLE")
+                image = self.camNotAvailable("CAM 2 NOT AVAILABLE", "0")
                 frameimage = image
                 readFrame = image
             else:
@@ -367,7 +367,7 @@ class LoginFrame(tk.Frame):
                     frameimage = self.alertProcess(frameimage)
                     
                 else:
-                    image = self.camNotAvailable("CONTEC ARP")
+                    image = self.camNotAvailable("CONTEC ARP", "1")
                     frameimage = image
                     readFrame = image
 
@@ -389,8 +389,11 @@ class LoginFrame(tk.Frame):
                 image = readFrame
                 self.ProcessCam(image, customer)
     
-    def camNotAvailable(self, alert):
-        image = cv2.imread(get_correct_path("static/uploads/cam.jpg"))
+    def camNotAvailable(self, alert, imgId):
+        if imgId == "0":
+            image = cv2.imread(get_correct_path("static/uploads/cam.png"))
+        else:
+            image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
         image = cv2.resize(image, (1000,1000), interpolation = cv2.INTER_AREA)
         cv2.putText(image, alert, (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, 255, 5)
         return image
