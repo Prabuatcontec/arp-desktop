@@ -280,68 +280,79 @@ class LoginFrame(tk.Frame):
         M[0, 2] += (nW / 2) - cX
         M[1, 2] += (nH / 2) - cY
         return cv2.warpAffine(image, M, (nW, nH))
+
+    def getImgArray(self, image):
+        image = Image.fromarray(image)
+        image = ImageTk.PhotoImage(image)
+        return image
     
     def videoLoop(self):
         stats = []
         start = timer()
         while not self.stopEvent.is_set():
+            customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
             if vs is None or not vs.isOpened():
-                return None
+                image = self.camNotAvailable("CAM 1 NOT AVAILABLE")
+                frameimage = image
+                readFrame = image
             else:
                 flag,readFrame = vs.read()
                 dim = (1000, 1000)
                 self.frame = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
                 if flag is None:
                     print ("Failed")
-                customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
                 
                 if(customer != ""):
                     image = cv2.cvtColor(readFrame, cv2.COLOR_BGR2RGB)
                     frameimage = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-                    _status = open(get_correct_path("static/uploads/_status.txt")).read()
-                    y0, dy = 50, 50
-                    sub_index = _status.find("New")
-                    if sub_index >-1:
-                        colr = (255, 165, 0)
-                    else:
-                        colr = (255, 0, 0)
-
-                    if _status != "":
-                        for i, line in enumerate(_status.split('\n')):
-                            y = y0 + i*dy
-                            cv2.putText(image, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colr, 8)
+                    frameimage = self.alertProcess(frameimage)
                 else:
-                    image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
-                    frameimage = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
-                    cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
+                    image = self.camNotAvailable("CONTEC ARP")
+                    frameimage = image
+                    readFrame = image
 
-                image = Image.fromarray(image)
-                image = ImageTk.PhotoImage(image)
+            image = self.getImgArray(image)
+            frameimage = self.getImgArray(frameimage)
+    
+            # if the panel is not None, we need to initialize it
+            if self.panel is None:
+                self.panel = tk.Label(image=frameimage)
+                self.panel.image = frameimage
+                self.panel.pack(side="left", padx=10, pady=10)
+    
+            # otherwise, simply update the panel
+            else:
+                self.panel.configure(image=frameimage)
+                self.panel.image = frameimage
 
-                frameimage = Image.fromarray(frameimage)
-                frameimage = ImageTk.PhotoImage(frameimage)
+                image = readFrame
+                self.ProcessCam(image, customer)
+
+    def alertProcess(self, frameimage):
+        _status = open(get_correct_path("static/uploads/_status.txt")).read()
+        y0, dy = 50, 50
+        sub_index = _status.find("New")
+        if sub_index >-1:
+            colr = (255, 165, 0)
+        else:
+            colr = (255, 0, 0)
+
+        if _status != "":
+            for i, line in enumerate(_status.split('\n')):
+                y = y0 + i*dy
+                cv2.putText(frameimage, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1, colr, 5)
         
-                # if the panel is not None, we need to initialize it
-                if self.panel is None:
-                    self.panel = tk.Label(image=frameimage)
-                    self.panel.image = frameimage
-                    self.panel.pack(side="left", padx=10, pady=10)
-        
-                # otherwise, simply update the panel
-                else:
-                    self.panel.configure(image=frameimage)
-                    self.panel.image = frameimage
-
-                    image = readFrame
-                    self.ProcessCam(image, customer)
+        return frameimage
         
     def videoLoopOne(self):
         stats = []
         start = timer()
         while not self.stopEvent.is_set():
-            
+            customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
             if vs1 is None or not vs1.isOpened():
-                return None
+                image = self.camNotAvailable("CAM 2 NOT AVAILABLE")
+                frameimage = image
+                readFrame = image
             else:
                 flag,readFrame = vs1.read()
                 dim = (1000, 1000)
@@ -349,48 +360,41 @@ class LoginFrame(tk.Frame):
                 # flag,self.frame1 = vs1.read()
                 if flag is None:
                     print ("Failed")
-                customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
                 
                 if(customer != ""):
                     image = cv2.cvtColor(readFrame, cv2.COLOR_BGR2RGB)
                     frameimage = cv2.cvtColor(self.frame1, cv2.COLOR_BGR2RGB)
-                    _status = open(get_correct_path("static/uploads/_status.txt")).read()
-                    y0, dy = 50, 50
-                    sub_index = _status.find("New")
-                    if sub_index >-1:
-                        colr = (255, 165, 0)
-                    else:
-                        colr = (255, 0, 0)
-
-                    if _status != "":
-                        for i, line in enumerate(_status.split('\n')):
-                            y = y0 + i*dy
-                            cv2.putText(image, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colr, 8)
+                    frameimage = self.alertProcess(frameimage)
+                    
                 else:
-                    image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
-                    frameimage = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
-                    cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
+                    image = self.camNotAvailable("CONTEC ARP")
+                    frameimage = image
+                    readFrame = image
 
-                image = Image.fromarray(image)
-                image = ImageTk.PhotoImage(image)
 
-                frameimage = Image.fromarray(frameimage)
-                frameimage = ImageTk.PhotoImage(frameimage)
+            image = self.getImgArray(image)
+            frameimage = self.getImgArray(frameimage)
 
-                # if the panel is not None, we need to initialize it
-                if self.panel1 is None:
-                    self.panel1 = tk.Label(image=frameimage)
-                    self.panel1.image = frameimage
-                    self.panel1.pack(side="right", padx=10, pady=10)
-        
-                # otherwise, simply update the panel
-                else:
-                    self.panel1.configure(image=frameimage)
-                    self.panel1.image = frameimage
-
-                    image = readFrame
-                    self.ProcessCam(image, customer)
+            # if the panel is not None, we need to initialize it
+            if self.panel1 is None:
+                self.panel1 = tk.Label(image=frameimage)
+                self.panel1.image = frameimage
+                self.panel1.pack(side="right", padx=10, pady=10)
     
+            # otherwise, simply update the panel
+            else:
+                self.panel1.configure(image=frameimage)
+                self.panel1.image = frameimage
+
+                image = readFrame
+                self.ProcessCam(image, customer)
+    
+    def camNotAvailable(self, alert):
+        image = cv2.imread(get_correct_path("static/uploads/cam.jpg"))
+        image = cv2.resize(image, (1000,1000), interpolation = cv2.INTER_AREA)
+        cv2.putText(image, alert, (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, 255, 5)
+        return image
+
     def ProcessCam(self,image, customer):
         if image is not None:
                     if(customer != ""):
@@ -690,7 +694,6 @@ class LoginFrame(tk.Frame):
                         if (str(customer) == "FRONTIERC0"):
                             sub_index = str(key.replace('"', "")).find("NVG")
                             if sub_index >-1:
-                                print(text)
                                 accessCode = self.findAccessCode(text.replace("UL",""))
                                 if(accessCode != "0"):
                                     c = c+1
