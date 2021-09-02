@@ -27,6 +27,7 @@ from modelunitvalidation import ModelValidation
 from tkinter.messagebox import askokcancel, showinfo, WARNING
 import socket
 from datetime import datetime 
+from tkinter import ttk  
 
 class HomeFrame(tk.Frame):
     def __init__(self, parent, controller):
@@ -248,6 +249,7 @@ class LoginFrame(tk.Frame):
         self.thread = threading.Thread(target=self.videoLoopOne, args=())
         self.thread.start()
         self.panel = None
+        self.panel1 = None
         self.p = []
         self.ang = []
 
@@ -283,13 +285,16 @@ class LoginFrame(tk.Frame):
         stats = []
         start = timer()
         while not self.stopEvent.is_set():
-            flag,self.frame = vs.read()
+            flag,readFrame = vs.read()
+            dim = (1000, 1000)
+            self.frame = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
             if flag is None:
                 print ("Failed")
             customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
             
             if(customer != ""):
-                image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+                image = cv2.cvtColor(readFrame, cv2.COLOR_BGR2RGB)
+                frameimage = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
                 _status = open(get_correct_path("static/uploads/_status.txt")).read()
                 y0, dy = 50, 50
                 sub_index = _status.find("New")
@@ -304,36 +309,44 @@ class LoginFrame(tk.Frame):
                         cv2.putText(image, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colr, 8)
             else:
                 image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
+                frameimage = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
                 cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
 
             image = Image.fromarray(image)
             image = ImageTk.PhotoImage(image)
+
+            frameimage = Image.fromarray(frameimage)
+            frameimage = ImageTk.PhotoImage(frameimage)
     
             # if the panel is not None, we need to initialize it
             if self.panel is None:
-                self.panel = tk.Label(image=image)
-                self.panel.image = image
+                self.panel = tk.Label(image=frameimage)
+                self.panel.image = frameimage
                 self.panel.pack(side="left", padx=10, pady=10)
     
             # otherwise, simply update the panel
             else:
-                self.panel.configure(image=image)
-                self.panel.image = image
+                self.panel.configure(image=frameimage)
+                self.panel.image = frameimage
 
-                image = self.frame
+                image = readFrame
                 self.ProcessCam(image, customer)
         
     def videoLoopOne(self):
         stats = []
         start = timer()
         while not self.stopEvent.is_set():
-            flag,self.frame1 = vs.read()
+            flag,readFrame = vs1.read()
+            dim = (750, 750)
+            self.frame1 = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
+            # flag,self.frame1 = vs1.read()
             if flag is None:
                 print ("Failed")
             customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
             
             if(customer != ""):
-                image = cv2.cvtColor(self.frame1, cv2.COLOR_BGR2RGB)
+                image = cv2.cvtColor(readFrame, cv2.COLOR_BGR2RGB)
+                frameimage = cv2.cvtColor(self.frame1, cv2.COLOR_BGR2RGB)
                 _status = open(get_correct_path("static/uploads/_status.txt")).read()
                 y0, dy = 50, 50
                 sub_index = _status.find("New")
@@ -348,23 +361,27 @@ class LoginFrame(tk.Frame):
                         cv2.putText(image, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colr, 8)
             else:
                 image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
+                frameimage = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
                 cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
 
             image = Image.fromarray(image)
             image = ImageTk.PhotoImage(image)
-    
+
+            frameimage = Image.fromarray(frameimage)
+            frameimage = ImageTk.PhotoImage(frameimage)
+
             # if the panel is not None, we need to initialize it
-            if self.panel is None:
-                self.panel = tk.Label(image=image)
-                self.panel.image = image
-                self.panel.pack(side="left", padx=10, pady=10)
+            if self.panel1 is None:
+                self.panel1 = tk.Label(image=frameimage)
+                self.panel1.image = frameimage
+                self.panel1.pack(side="right", padx=10, pady=10)
     
             # otherwise, simply update the panel
             else:
-                self.panel.configure(image=image)
-                self.panel.image = image
+                self.panel1.configure(image=frameimage)
+                self.panel1.image = frameimage
 
-                image = self.frame1
+                image = readFrame
                 self.ProcessCam(image, customer)
     
     def ProcessCam(self,image, customer):
@@ -551,7 +568,7 @@ class LoginFrame(tk.Frame):
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
                     text = ""
-                    self.processValidation(key, value, line, image, image1)
+                    self.processValidation(key, value, line, image, text)
                     angleSame = 1
                     r = 1
                     break
@@ -574,7 +591,7 @@ class LoginFrame(tk.Frame):
                         if sub_index >-1:
                             text = ""
                             line = self.Reverse(line)
-                            self.processValidation(key, value, line, image, image1)
+                            self.processValidation(key, value, line, image, text)
                             r = 1
                             break
                     if r == 1:
@@ -608,7 +625,7 @@ class LoginFrame(tk.Frame):
         
         return 0
 
-    def processValidation(self, key, value, line, image, image1):
+    def processValidation(self, key, value, line, image, text):
             valid = str(value).replace("'",'"')
             datacollectionValidation =json.loads(str(valid))
             calib_result_pickle = Conveyor.getScan()
@@ -664,6 +681,19 @@ class LoginFrame(tk.Frame):
                         mdict1 = {"customer": str(customer)}
                         dict.update(mdict1)
                         if (str(customer) == "FRONTIERC0"):
+                            sub_index = str(key.replace('"', "")).find("NVG")
+                            if sub_index >-1:
+                                print(text)
+                                accessCode = self.findAccessCode(text.replace("UL",""))
+                                if(accessCode != "0"):
+                                    c = c+1
+                                    mdict1 = {str("address"+str(c)): accessCode}
+                                    dict.update(mdict1)
+                                else:
+                                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
+                                    Conveyor().enableLight("RED")
+                                    open(get_correct_path("static/uploads/_status.txt"), "w").write("NVG Failed for access Code: Try to  \n position the box in  0 or 180 degree and click Restart")
+
                             rtype = open(get_correct_path("static/uploads/_rtype.txt")).readline().strip("\n")
                             if rtype != "":
                                 if rtype == "Field Return":
@@ -687,6 +717,24 @@ class LoginFrame(tk.Frame):
                         start = time.time()
                         print(start)
 
+    def findAccessCode(self, text):
+        text = str(" ".join(text.split()))
+        print(text)
+        findNvg = text.split("DAC")
+        print("================")
+        print(findNvg)
+        if(len(findNvg)<1):
+            return "0"
+
+        if(len(findNvg)>1):
+            findNvg = findNvg[1].split(" ")
+            if(len(findNvg)<2):
+                return "0"
+            else:
+                return findNvg[1]
+
+        return "0"
+
 
 
 class Arp(tk.Tk):
@@ -704,8 +752,11 @@ class Arp(tk.Tk):
 
         container = tk.Frame(self)
         container.pack(side='top')
+        
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
+
+        
 
         self.frames = {}
         for F in (HomeFrame,ScanFrame, LoginFrame):
@@ -766,7 +817,7 @@ if __name__ == "__main__":
     vs .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
     vs .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
     vs.set(cv2.CAP_PROP_AUTOFOCUS, 0) 
-    vs1  = cv2.VideoCapture(Config.CAMERA_NO)
+    vs1  = cv2.VideoCapture(0)
     vs1 .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
     vs1 .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
     vs1 .set(cv2.CAP_PROP_AUTOFOCUS, 0) 
