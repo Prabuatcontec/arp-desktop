@@ -546,6 +546,13 @@ class LoginFrame(tk.Frame):
 
     def Reverse(self, lst):
         return [ele for ele in reversed(lst)]
+    
+    def check_if_string_is_int(self,string1):
+        for character in string1:
+            if not character.isdigit():
+                return "0"
+        else:
+            return "1"
         
 
     def processImage(self, line, image, image1):
@@ -576,9 +583,27 @@ class LoginFrame(tk.Frame):
                 sub_index = str("".join(text.split())).find(key.replace('"', ""))
                 if sub_index >-1:
                     print(90)
+                    barcodes = pyzbar.decode(image)
+                    sub_index = str(key.replace('"', "")).find("NVG")
+                    if sub_index >-1 and len(line)<2:
+                        #line = []
+                        sn = self.findSN(text)
+                        mac = self.findMac(text)
+                        intCheck = self.check_if_string_is_int(line[0])
+                        if intCheck == "0":
+                            line.append(sn)
+                        if intCheck == "1":
+                            line.append(mac)
+                        print("--------------------------Line-----------------------")
+                        print(line)
+                        
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
-                    self.processValidation(key, value, line, image, text)
+                    fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                    cv2.imwrite(get_correct_path("static/processingImg/An111Bfrrot1boxER_%s.png") % fillenameImage, image)
+                    
+                     
+                    self.processValidation(key, value, serials, line, text)
                     text = ""
                     angleSame = 1
                     r = 1
@@ -591,10 +616,6 @@ class LoginFrame(tk.Frame):
                     
                     img = self.rotateBound(image, x)
 
-                    # gmt = time.gmtime()
-                    # ts = calendar.timegm(gmt)
-                    # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                    # cv2.imwrite(get_correct_path("static/processingImg/An111Bfrrot1boxER_%s.png") % fillenameImage, image)
                     
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                     print("".join(text.split()).encode('utf8'))
@@ -602,8 +623,28 @@ class LoginFrame(tk.Frame):
                     for key, value in models.items():
                         sub_index = str("".join(text.split())).find(key.replace('"', ""))
                         if sub_index >-1:
+                            serials = []
+                            gmt = time.gmtime()
+                            ts = calendar.timegm(gmt)
+                            fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                            cv2.imwrite(get_correct_path("static/processingImg/An111Bfrrot1boxER_%s.png") % fillenameImage, image)
+                            
+                            sub_index = str(key.replace('"', "")).find("NVG")
+                            if sub_index >-1 and len(line)<2:
+                                
+                                sn = self.findSN(text)
+                                mac = self.findMac(text)
+                                intCheck = self.check_if_string_is_int(line[0])
+                                if intCheck == "0":
+                                    line.append(sn)
+                                if intCheck == "1":
+                                    line.append(mac)
+                                print("--------------------------Line-----------------------")
+                                print(line)
+
                             line = self.Reverse(line)
-                            self.processValidation(key, value, line, image, text)
+                            print(line)
+                            self.processValidation(key, value, line, img, text)
                             text = ""
                             r = 1
                             break
@@ -744,6 +785,45 @@ class LoginFrame(tk.Frame):
                 return "0"
             else:
                 return findNvg[0]
+        return "0"
+
+
+    def findSN(self, text):
+        text = str(" ".join(text.split()))
+        findNvg = text.split("SN")
+       
+        if(len(findNvg)<2):
+            return "0"
+
+        if(len(findNvg)>1):
+            findNvg = re.findall("\d+", findNvg[1])
+            if(len(findNvg[0])>14):
+                return findNvg[0]
+            else:
+                return "0"
+        return "0"
+    
+    def findMac(self, text):
+        text = str(" ".join(text.split()))
+        findNvg = text.split("MACA")
+       
+        if(len(findNvg)<2):
+            return "0"
+        
+        print("MACA")
+        print(findNvg)
+        
+        findN = findNvg[1]
+        print("ADCsssssssssssssssssss")
+        print(findN)
+        findNs = findN.split("ADC")
+        print("ADC")
+        print(findNs)
+        
+        if(len(findNs)>0):
+            datas = re.sub(r"[^A-Z0-9]","",findNs[0])
+            return datas[-12:] 
+
         return "0"
 
 
