@@ -350,14 +350,13 @@ class LoginFrame(tk.Frame):
         while not self.stopEvent.is_set():
             customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
             if vs1 is None or not vs1.isOpened():
-                image = self.camNotAvailable("CAM 2 NOT AVAILABLE", "0")
+                image = self.camNotAvailable("CAM 1 NOT AVAILABLE", "0")
                 frameimage = image
                 readFrame = image
             else:
                 flag,readFrame = vs1.read()
                 dim = (1000, 1000)
                 self.frame1 = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
-                # flag,self.frame1 = vs1.read()
                 if flag is None:
                     print ("Failed")
                 
@@ -365,21 +364,19 @@ class LoginFrame(tk.Frame):
                     image = cv2.cvtColor(readFrame, cv2.COLOR_BGR2RGB)
                     frameimage = cv2.cvtColor(self.frame1, cv2.COLOR_BGR2RGB)
                     frameimage = self.alertProcess(frameimage)
-                    
                 else:
                     image = self.camNotAvailable("CONTEC ARP", "1")
                     frameimage = image
                     readFrame = image
 
-
             image = self.getImgArray(image)
             frameimage = self.getImgArray(frameimage)
-
+    
             # if the panel is not None, we need to initialize it
             if self.panel1 is None:
                 self.panel1 = tk.Label(image=frameimage)
                 self.panel1.image = frameimage
-                self.panel1.pack(side="right", padx=10, pady=10)
+                self.panel1.pack(side="left", padx=10, pady=10)
     
             # otherwise, simply update the panel
             else:
@@ -474,7 +471,7 @@ class LoginFrame(tk.Frame):
                                             else:
                                                 s9 = s9 + 1
                                                 poi = i
-                                                self.ang = [180]
+                                                self.ang = [180, 90, -90]
                                                 break
                                     
                                     if (len(an) == i):
@@ -594,8 +591,10 @@ class LoginFrame(tk.Frame):
                     
                     img = self.rotateBound(image, x)
 
-                    gmt = time.gmtime()
-                    ts = calendar.timegm(gmt)
+                    # gmt = time.gmtime()
+                    # ts = calendar.timegm(gmt)
+                    # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                    # cv2.imwrite(get_correct_path("static/processingImg/An111Bfrrot1boxER_%s.png") % fillenameImage, image)
                     
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                     print("".join(text.split()).encode('utf8'))
@@ -736,7 +735,7 @@ class LoginFrame(tk.Frame):
         findNvg = text.split("DAC")
         print("================")
         print(findNvg)
-        if(len(findNvg)<1):
+        if(len(findNvg)<2):
             return "0"
 
         if(len(findNvg)>1):
