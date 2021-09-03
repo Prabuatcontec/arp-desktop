@@ -578,8 +578,8 @@ class LoginFrame(tk.Frame):
                     print(90)
                     gmt = time.gmtime()
                     ts = calendar.timegm(gmt)
-                    text = ""
                     self.processValidation(key, value, line, image, text)
+                    text = ""
                     angleSame = 1
                     r = 1
                     break
@@ -602,9 +602,9 @@ class LoginFrame(tk.Frame):
                     for key, value in models.items():
                         sub_index = str("".join(text.split())).find(key.replace('"', ""))
                         if sub_index >-1:
-                            text = ""
                             line = self.Reverse(line)
                             self.processValidation(key, value, line, image, text)
+                            text = ""
                             r = 1
                             break
                     if r == 1:
@@ -693,6 +693,7 @@ class LoginFrame(tk.Frame):
                         dict.update(mdict1)
                         mdict1 = {"customer": str(customer)}
                         dict.update(mdict1)
+                        failedAccessCode = "1"
                         if (str(customer) == "FRONTIERC0"):
                             sub_index = str(key.replace('"', "")).find("NVG")
                             if sub_index >-1:
@@ -702,6 +703,7 @@ class LoginFrame(tk.Frame):
                                     mdict1 = {str("address"+str(c)): accessCode}
                                     dict.update(mdict1)
                                 else:
+                                    failedAccessCode = "0"
                                     open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
                                     Conveyor().enableLight("RED")
                                     open(get_correct_path("static/uploads/_status.txt"), "w").write("NVG Failed for access Code: Try to  \n position the box in  0 or 180 degree and click Restart")
@@ -717,34 +719,31 @@ class LoginFrame(tk.Frame):
                                 c = c+1
                                 mdict1 = {str("address"+str(c)): type}
                                 dict.update(mdict1)
-                        
-                        line = str(dict).replace("'",'"')
-                        Deepblu().postScannedSerial(line)
-                        print('success')
-                        Conveyor().enableLight("GREEN")
-                        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
-                        open(get_correct_path("static/uploads/_status.txt"), "w").write("")
-                        open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
-                        Conveyor().callConveyor()
-                        start = time.time()
-                        print(start)
+                        if failedAccessCode == "1":
+                            line = str(dict).replace("'",'"')
+                            Deepblu().postScannedSerial(line)
+                            print('success')
+                            Conveyor().enableLight("GREEN")
+                            open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+                            open(get_correct_path("static/uploads/_status.txt"), "w").write("")
+                            open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
+                            Conveyor().callConveyor()
+                            start = time.time()
+                            print(start)
 
     def findAccessCode(self, text):
         text = str(" ".join(text.split()))
-        print(text)
         findNvg = text.split("DAC")
-        print("================")
-        print(findNvg)
+       
         if(len(findNvg)<2):
             return "0"
 
         if(len(findNvg)>1):
-            findNvg = findNvg[1].split(" ")
-            if(len(findNvg)<2):
+            findNvg = re.findall("\d+", findNvg[1])
+            if(len(findNvg[0])<10):
                 return "0"
             else:
-                return findNvg[1]
-
+                return findNvg[0]
         return "0"
 
 
