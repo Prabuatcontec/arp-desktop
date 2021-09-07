@@ -191,6 +191,7 @@ class ScanFrame(tk.Frame):
                 palletDetail = response.json()
                 Deepblu().printPalletTag(palletDetail)
                 Conveyor.resetLastScan("", "", "")
+                open(get_correct_path("static/uploads/_cam.txt"), "w").write("")
                 
 
         
@@ -249,7 +250,8 @@ class LoginFrame(tk.Frame):
 
         
         #vs = VideoStream(0)
-        self.cam = None
+        self.cam = ""
+        open(get_correct_path("static/uploads/_cam.txt"), "w").write("")
         self.stopEvent = threading.Event()
         self.thread = threading.Thread(target=self.videoLoop, args=())
         self.thread.start()
@@ -298,7 +300,9 @@ class LoginFrame(tk.Frame):
         stats = []
         start = timer()
         while not self.stopEvent.is_set():
-            if self.cam == None or self.cam == "1":
+            self.cam = open(get_correct_path("static/uploads/_cam.txt")).readline().strip("\n")
+            if self.cam == "" or self.cam == "0":
+                print(self.cam)
                 customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
                 if vs is None or not vs.isOpened():
                     image = self.camNotAvailable("CAM 1 NOT AVAILABLE", "0")
@@ -356,8 +360,10 @@ class LoginFrame(tk.Frame):
     def videoLoopOne(self):
         stats = []
         start = timer()
+        self.cam = open(get_correct_path("static/uploads/_cam.txt")).readline().strip("\n")
         while not self.stopEvent.is_set():
-            if self.cam == None or self.cam == "1":
+            if self.cam == "" or self.cam == "1":
+                print(self.cam)
                 customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
                 if vs1 is None or not vs1.isOpened():
                     image = self.camNotAvailable("CAM 1 NOT AVAILABLE", "0")
@@ -784,7 +790,7 @@ class LoginFrame(tk.Frame):
                                 Deepblu().postScannedSerial(line)
                                 open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "a").write(str(dataLine)+"\n")
                                 print('success')
-                                self.cam = cam
+                                open(get_correct_path("static/uploads/_cam.txt"), "w").write(cam)
                                 Conveyor().enableLight("GREEN")
                                 open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
                                 open(get_correct_path("static/uploads/_status.txt"), "w").write("")
@@ -802,10 +808,13 @@ class LoginFrame(tk.Frame):
 
         if(len(findNvg)>1):
             findNvg = re.findall("\d+", findNvg[1])
-            if(len(findNvg[0])<10):
-                return "0"
+            if len(findNvg)>0:
+                if(len(findNvg[0])<10):
+                    return "0"
+                else:
+                    return findNvg[0]
             else:
-                return findNvg[0]
+                return "0"
         return "0"
 
 
@@ -931,7 +940,7 @@ if __name__ == "__main__":
     vs .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
     vs .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
     vs.set(cv2.CAP_PROP_AUTOFOCUS, 0) 
-    vs1  = cv2.VideoCapture(0)
+    vs1  = cv2.VideoCapture(4)
     vs1 .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
     vs1 .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
     vs1 .set(cv2.CAP_PROP_AUTOFOCUS, 0) 
