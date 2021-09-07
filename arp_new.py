@@ -27,6 +27,7 @@ from modelunitvalidation import ModelValidation
 from tkinter.messagebox import askokcancel, showinfo, WARNING
 import socket
 from datetime import datetime 
+from tkinter import ttk  
 
 class HomeFrame(tk.Frame):
     def __init__(self, parent, controller):
@@ -55,6 +56,12 @@ class ScanFrame(tk.Frame):
         frame_eb_data.grid(row=0, column=1, sticky='nsew', padx=1, pady=1)
         lab_eb_data = tk.Label(frame_eb_data, background='#DDD4EF', textvariable=controller.loginName)
         lab_eb_data.grid(row=0, column=1)
+
+        frame_eb_model = tk.Frame(self, width=100, height=10)
+        frame_eb_model.grid(row=0, column=3, sticky='nsew', padx=1, pady=1)
+        lab_eb_model = tk.Label(frame_eb_model, background='#DDD4EF', textvariable=controller.modelName)
+        lab_eb_model.grid(row=0, column=3)
+        
 
         frame_but_one = tk.Frame(self, width=240, height=10)
         frame_but_one.grid(row=4, column=1, padx=1, pady=1, sticky='nsew')
@@ -156,6 +163,7 @@ class ScanFrame(tk.Frame):
             calib_result_pickle = Conveyor.getScan()
             model = calib_result_pickle["model"]
             if model != "":
+                self.controller.modelName = model
                 response = Deepblu().getPalletId(model)
                 if response.status_code != 200:
                     self.controller.loginResult.set("Deepblu Pallet Falied!")
@@ -224,21 +232,32 @@ class LoginFrame(tk.Frame):
 
        
         
-        frame_video = tk.Frame(self, width=1400, height=1800, colormap="new")
+        frame_video = tk.Frame(self, colormap="new")
         frame_video.grid(row=3, column=0, padx=1, pady=1, sticky='e')
+        frame_video1 = tk.Frame(self, colormap="new")
+        frame_video1.grid(row=3, column=1, padx=1, pady=1, sticky='e')
         
         self.stopEvent = None
         self.frame = frame_video
+        self.frame1 = frame_video1
 
-        tk.Label(self.frame, text='').pack()
+        l1 = tk.Label(self.frame, text='')
+        l1.grid(row=0, column=0, sticky='w')
+
+        l1 = tk.Label(self.frame1, text='')
+        l1.grid(row=0, column=0, sticky='w')
 
         
         #vs = VideoStream(0)
-               
+        self.cam = None
         self.stopEvent = threading.Event()
         self.thread = threading.Thread(target=self.videoLoop, args=())
         self.thread.start()
+        self.thread = threading.Thread(target=self.videoLoopOne, args=())
+        self.thread.start()
         self.panel = None
+        self.panel1 = None
+        
         self.p = []
         self.ang = []
 
@@ -269,50 +288,125 @@ class LoginFrame(tk.Frame):
         M[0, 2] += (nW / 2) - cX
         M[1, 2] += (nH / 2) - cY
         return cv2.warpAffine(image, M, (nW, nH))
+
+    def getImgArray(self, image):
+        image = Image.fromarray(image)
+        image = ImageTk.PhotoImage(image)
+        return image
     
     def videoLoop(self):
         stats = []
         start = timer()
         while not self.stopEvent.is_set():
-            flag,self.frame = vs.read()
-            if flag is None:
-                print ("Failed")
-            customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
-            
-            if(customer != ""):
-                image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-                _status = open(get_correct_path("static/uploads/_status.txt")).read()
-                y0, dy = 50, 50
-                sub_index = _status.find("New")
-                if sub_index >-1:
-                    colr = (255, 165, 0)
+            if self.cam == None or self.cam == "1":
+                customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
+                if vs is None or not vs.isOpened():
+                    image = self.camNotAvailable("CAM 1 NOT AVAILABLE", "0")
+                    frameimage = image
+                    readFrame = image
                 else:
-                    colr = (255, 0, 0)
+                    flag,readFrame = vs.read()
+                    dim = (1000, 1000)
+                    self.frame = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
+                    if flag is None:
+                        print ("Failed")
+                    
+                    if(customer != ""):
+                        image = cv2.cvtColor(readFrame, cv2.COLOR_BGR2RGB)
+                        frameimage = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+                        frameimage = self.alertProcess(frameimage)
+                    else:
+                        image = self.camNotAvailable("CONTEC ARP", "1")
+                        frameimage = image
+                        readFrame = image
 
-                if _status != "":
-                    for i, line in enumerate(_status.split('\n')):
-                        y = y0 + i*dy
-                        cv2.putText(image, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1.5, colr, 8)
-            else:
-                image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
-                cv2.putText(image, "CONTEC ARP", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 3, 255, 8)
+                image = self.getImgArray(image)
+                frameimage = self.getImgArray(frameimage)
+        
+                # if the panel is not None, we need to initialize it
+                if self.panel is None:
+                    self.panel = tk.Label(image=frameimage)
+                    self.panel.image = frameimage
+                    self.panel.pack(side="left", padx=10, pady=10)
+        
+                # otherwise, simply update the panel
+                else:
+                    self.panel.configure(image=frameimage)
+                    self.panel.image = frameimage
 
-            image = Image.fromarray(image)
-            image = ImageTk.PhotoImage(image)
+                image = readFrame
+                self.ProcessCam(image, customer, "0")
+
+    def alertProcess(self, frameimage):
+        _status = open(get_correct_path("static/uploads/_status.txt")).read()
+        y0, dy = 50, 50
+        sub_index = _status.find("New")
+        if sub_index >-1:
+            colr = (255, 165, 0)
+        else:
+            colr = (255, 0, 0)
+
+        if _status != "":
+            for i, line in enumerate(_status.split('\n')):
+                y = y0 + i*dy
+                cv2.putText(frameimage, line.replace('\n', ""), (50, y), cv2.FONT_HERSHEY_SIMPLEX, 1, colr, 5)
+        
+        return frameimage
+        
+    def videoLoopOne(self):
+        stats = []
+        start = timer()
+        while not self.stopEvent.is_set():
+            if self.cam == None or self.cam == "1":
+                customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
+                if vs1 is None or not vs1.isOpened():
+                    image = self.camNotAvailable("CAM 1 NOT AVAILABLE", "0")
+                    frameimage = image
+                    readFrame = image
+                else:
+                    flag,readFrame = vs1.read()
+                    dim = (1000, 1000)
+                    self.frame1 = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
+                    if flag is None:
+                        print ("Failed")
+                    
+                    if(customer != ""):
+                        image = cv2.cvtColor(readFrame, cv2.COLOR_BGR2RGB)
+                        frameimage = cv2.cvtColor(self.frame1, cv2.COLOR_BGR2RGB)
+                        frameimage = self.alertProcess(frameimage)
+                    else:
+                        image = self.camNotAvailable("CONTEC ARP", "1")
+                        frameimage = image
+                        readFrame = image
+
+                image = self.getImgArray(image)
+                frameimage = self.getImgArray(frameimage)
+        
+                # if the panel is not None, we need to initialize it
+                if self.panel1 is None:
+                    self.panel1 = tk.Label(image=frameimage)
+                    self.panel1.image = frameimage
+                    self.panel1.pack(side="left", padx=10, pady=10)
+        
+                # otherwise, simply update the panel
+                else:
+                    self.panel1.configure(image=frameimage)
+                    self.panel1.image = frameimage
+
+                image = readFrame
+                self.ProcessCam(image, customer, "1")
     
-            # if the panel is not None, we need to initialize it
-            if self.panel is None:
-                self.panel = tk.Label(image=image)
-                self.panel.image = image
-                self.panel.pack(side="left", padx=10, pady=10)
-    
-            # otherwise, simply update the panel
-            else:
-                self.panel.configure(image=image)
-                self.panel.image = image
+    def camNotAvailable(self, alert, imgId):
+        if imgId == "0":
+            image = cv2.imread(get_correct_path("static/uploads/cam.png"))
+        else:
+            image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
+        image = cv2.resize(image, (1000,1000), interpolation = cv2.INTER_AREA)
+        cv2.putText(image, alert, (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, 255, 5)
+        return image
 
-                image = self.frame
-                if image is not None:
+    def ProcessCam(self,image, customer, cam):
+        if image is not None:
                     if(customer != ""):
                         s9 = 1
                         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -382,12 +476,12 @@ class LoginFrame(tk.Frame):
                                                 if (len(serials)>0):
                                                     s9 = s9 + 1
                                                     poi = i
-                                                    self.ang = [180, 90, -90]
+                                                    self.ang = [180, -90, 90]
                                                     break
                                             else:
                                                 s9 = s9 + 1
                                                 poi = i
-                                                self.ang = [180]
+                                                self.ang = [180, -90, 90]
                                                 break
                                     
                                     if (len(an) == i):
@@ -403,10 +497,10 @@ class LoginFrame(tk.Frame):
                                 s = 1
                             if (s > 1):
                                 open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
-                                gmt = time.gmtime()
-                                ts = calendar.timegm(gmt)
-                                fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                                cv2.imwrite(get_correct_path("static/processingImg/111Bfrrot1boxER_%s.png") % fillenameImage, image)
+                                # gmt = time.gmtime()
+                                # ts = calendar.timegm(gmt)
+                                # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                                # cv2.imwrite(get_correct_path("static/processingImg/111Bfrrot1boxER_%s.png") % fillenameImage, image)
                                 r = open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "r")
                                 r = str(r.read())
                                 rev = self.Reverse(serials)
@@ -448,9 +542,9 @@ class LoginFrame(tk.Frame):
                                                             t = image
 
                                                         po = 1
-                                                        self.processImage(serials, t, image)
+                                                        self.processImage(serials, t, image, cam)
                                                         break
-                                                self.processImage(serials, t, image)
+                                                self.processImage(serials, t, image, cam)
                                             else:
                                                 open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
 
@@ -462,9 +556,16 @@ class LoginFrame(tk.Frame):
 
     def Reverse(self, lst):
         return [ele for ele in reversed(lst)]
+    
+    def check_if_string_is_int(self,string1):
+        for character in string1:
+            if not character.isdigit():
+                return "0"
+        else:
+            return "1"
         
 
-    def processImage(self, line, image, image1):
+    def processImage(self, line, image, image1, cam):
         
         r = open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "r")
         r = str(r.read())
@@ -492,9 +593,26 @@ class LoginFrame(tk.Frame):
                 sub_index = str("".join(text.split())).find(key.replace('"', ""))
                 if sub_index >-1:
                     print(90)
-                    gmt = time.gmtime()
-                    ts = calendar.timegm(gmt)
-                    self.processValidation(key, value, line, image, text)
+                    sub_index = str(key.replace('"', "")).find("NVG")
+                    if sub_index >-1 and len(line)<2:
+                        #line = []
+                        sn = self.findSN(text)
+                        mac = self.findMac(text)
+                        intCheck = self.check_if_string_is_int(line[0])
+                        if intCheck == "0":
+                            line.append(sn)
+                        if intCheck == "1":
+                            line.append(mac)
+                        print("--------------------------Line-----------------------")
+                        print(line)
+                        
+                    # gmt = time.gmtime()
+                    # ts = calendar.timegm(gmt)
+                    # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                    # cv2.imwrite(get_correct_path("static/processingImg/An111Bfrrot1boxER_%s.png") % fillenameImage, image)
+                    
+                     
+                    self.processValidation(key, value, line, image, text, cam)
                     text = ""
                     angleSame = 1
                     r = 1
@@ -506,18 +624,33 @@ class LoginFrame(tk.Frame):
                     print (x)
                     
                     img = self.rotateBound(image, x)
-
-                    gmt = time.gmtime()
-                    ts = calendar.timegm(gmt)
-                    
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                     print("".join(text.split()).encode('utf8'))
                     
                     for key, value in models.items():
                         sub_index = str("".join(text.split())).find(key.replace('"', ""))
                         if sub_index >-1:
+                            # gmt = time.gmtime()
+                            # ts = calendar.timegm(gmt)
+                            # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                            # cv2.imwrite(get_correct_path("static/processingImg/An111Bfrrot1boxER_%s.png") % fillenameImage, image)
+                            
+                            sub_index = str(key.replace('"', "")).find("NVG")
+                            if sub_index >-1 and len(line)<2:
+                                
+                                sn = self.findSN(text)
+                                mac = self.findMac(text)
+                                intCheck = self.check_if_string_is_int(line[0])
+                                if intCheck == "0":
+                                    line.append(sn)
+                                if intCheck == "1":
+                                    line.append(mac)
+                                print("--------------------------Line-----------------------")
+                                print(line)
+
                             line = self.Reverse(line)
-                            self.processValidation(key, value, line, image, text)
+                            print(line)
+                            self.processValidation(key, value, line, img, text, cam)
                             text = ""
                             r = 1
                             break
@@ -552,7 +685,7 @@ class LoginFrame(tk.Frame):
         
         return 0
 
-    def processValidation(self, key, value, line, image, text):
+    def processValidation(self, key, value, line, image, text, cam):
             valid = str(value).replace("'",'"')
             datacollectionValidation =json.loads(str(valid))
             calib_result_pickle = Conveyor.getScan()
@@ -601,27 +734,33 @@ class LoginFrame(tk.Frame):
 
                     if(p == 0):
                         customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
-                        open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "a").write(str(line)+"\n")
+
+                        dataLine = line
+                        
                         
                         mdict1 = {"model": str(datacollectionValidation["model"])}
                         dict.update(mdict1)
                         mdict1 = {"customer": str(customer)}
                         dict.update(mdict1)
+                        mdict1 = {"stationId": str(Config.STATION_ID)}
+                        dict.update(mdict1)
+                        user = open(get_correct_path("static/uploads/_login.txt")).readline().strip("\n")
+                        mdict1 = {"adduser": str(user)}
+                        dict.update(mdict1)
+                        failedAccessCode = "1"
                         if (str(customer) == "FRONTIERC0"):
                             sub_index = str(key.replace('"', "")).find("NVG")
                             if sub_index >-1:
-                                print(text)
                                 accessCode = self.findAccessCode(text.replace("UL",""))
                                 if(accessCode != "0"):
                                     c = c+1
                                     mdict1 = {str("address"+str(c)): accessCode}
                                     dict.update(mdict1)
                                 else:
+                                    failedAccessCode = "0"
                                     open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
                                     Conveyor().enableLight("RED")
                                     open(get_correct_path("static/uploads/_status.txt"), "w").write("NVG Failed for access Code: Try to  \n position the box in  0 or 180 degree and click Restart")
-                                    
-
 
                             rtype = open(get_correct_path("static/uploads/_rtype.txt")).readline().strip("\n")
                             if rtype != "":
@@ -634,33 +773,80 @@ class LoginFrame(tk.Frame):
                                 c = c+1
                                 mdict1 = {str("address"+str(c)): type}
                                 dict.update(mdict1)
-                        
-                        line = str(dict).replace("'",'"')
-                        Deepblu().postScannedSerial(line)
-                        print('success')
-                        Conveyor().enableLight("GREEN")
-                        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
-                        open(get_correct_path("static/uploads/_status.txt"), "w").write("")
-                        open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
-                        Conveyor().callConveyor()
-                        start = time.time()
-                        print(start)
+                        if failedAccessCode == "1":
+                            line = str(dict).replace("'",'"')
+                            r = open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "r")
+                            r = str(r.read())
+                            rev = self.Reverse(dataLine)
+                            if(r.find(str(dataLine)) !=-1 or r.find(str(rev)) != -1):
+                                open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+                            else:
+                                Deepblu().postScannedSerial(line)
+                                open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "a").write(str(dataLine)+"\n")
+                                print('success')
+                                self.cam = cam
+                                Conveyor().enableLight("GREEN")
+                                open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+                                open(get_correct_path("static/uploads/_status.txt"), "w").write("")
+                                open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
+                                Conveyor().callConveyor()
+                                start = time.time()
+                                print(start)
+
     def findAccessCode(self, text):
         text = str(" ".join(text.split()))
-        print(text)
         findNvg = text.split("DAC")
-        print("================")
-        print(findNvg)
-        if(len(findNvg)<1):
+       
+        if(len(findNvg)<2):
             return "0"
-        
-        findNvg = findNvg[1].split(" ")
-        if(len(findNvg)<1):
-            return "0"
-        else:
-            return findNvg[1]
-        
+
+        if(len(findNvg)>1):
+            findNvg = re.findall("\d+", findNvg[1])
+            if(len(findNvg[0])<10):
+                return "0"
+            else:
+                return findNvg[0]
         return "0"
+
+
+    def findSN(self, text):
+        text = str(" ".join(text.split()))
+        findNvg = text.split("SN")
+       
+        if(len(findNvg)<2):
+            return "0"
+
+        if(len(findNvg)>1):
+            findNvg = re.findall("\d+", findNvg[1])
+            if(len(findNvg[0])>14):
+                return findNvg[0]
+            else:
+                return "0"
+        return "0"
+    
+    def findMac(self, text):
+        text = str(" ".join(text.split()))
+        findNvg = text.split("MACA")
+       
+        if(len(findNvg)<2):
+            return "0"
+        
+        print("MACA")
+        print(findNvg)
+        
+        findN = findNvg[1]
+        print("ADCsssssssssssssssssss")
+        print(findN)
+        findNs = findN.split("ADC")
+        print("ADC")
+        print(findNs)
+        
+        if(len(findNs)>0):
+            datas = re.sub(r"[^A-Z0-9]","",findNs[0])
+            return datas[-12:] 
+
+        return "0"
+
 
 
 class Arp(tk.Tk):
@@ -671,6 +857,7 @@ class Arp(tk.Tk):
         self.title('CONTEC ARP')
         # Moved StringVar()'s to the main class
         self.loginName = tk.StringVar()
+        self.modelName = tk.StringVar()
         self.loginResult = tk.StringVar()
         self.logoutButton = tk.StringVar()
         self.updatePalletId = tk.StringVar()
@@ -678,8 +865,11 @@ class Arp(tk.Tk):
 
         container = tk.Frame(self)
         container.pack(side='top')
+        
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
+
+        
 
         self.frames = {}
         for F in (HomeFrame,ScanFrame, LoginFrame):
@@ -720,6 +910,7 @@ def Close():
         app.destroy()
         resetScanData()
         vs.release()
+        vs1.release()
 
 def resetScanData():
     open(get_correct_path("static/uploads/_customer.txt"), "w").write("")
@@ -735,11 +926,15 @@ def disable_event():
     pass
 
 if __name__ == "__main__":
-    global vs
+    global vs,vs1
     vs  = cv2.VideoCapture(Config.CAMERA_NO)
     vs .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
     vs .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
     vs.set(cv2.CAP_PROP_AUTOFOCUS, 0) 
+    vs1  = cv2.VideoCapture(0)
+    vs1 .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
+    vs1 .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
+    vs1 .set(cv2.CAP_PROP_AUTOFOCUS, 0) 
     app = Arp()
     app.protocol("WM_DELETE_WINDOW", disable_event)
     app.mainloop()

@@ -8,7 +8,8 @@ import socket
 class Deepblu(object):
 
     def getPalletId(self,model):
-        response = requests.get(Config.DEEPBLU_URL + '/autoreceive/pallet/latest?model='+model,
+        user = open(get_correct_path("static/uploads/_login.txt")).readline().strip("\n")
+        response = requests.get(Config.DEEPBLU_URL + '/autoreceive/pallet/latest?model='+model+'&stationId='+Config.STATION_ID+'&addUser='+user,
                                             headers={'Content-Type': 'application/json', 
                                             'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
                                             )
