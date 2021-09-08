@@ -510,6 +510,9 @@ class LoginFrame(tk.Frame):
                                 r = open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "r")
                                 r = str(r.read())
                                 rev = self.Reverse(serials)
+                                if(r.find(str(serials)) !=-1 or r.find(str(rev)) != -1):
+                                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+                                    serials = []
 
                                 str1 = " " 
                                 if str(str1.join(serials)) == open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
