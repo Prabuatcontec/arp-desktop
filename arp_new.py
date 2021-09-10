@@ -411,12 +411,25 @@ class LoginFrame(tk.Frame):
         image = cv2.resize(image, (1000,1000), interpolation = cv2.INTER_AREA)
         cv2.putText(image, alert, (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, 255, 5)
         return image
+    
+    def variance_of_laplacian(self, image):
+        # compute the Laplacian of the image and then return the focus
+        # measure, which is simply the variance of the Laplacian
+        return cv2.Laplacian(image, cv2.CV_64F).var()
 
     def ProcessCam(self,image, customer, cam):
         if image is not None:
                     if(customer != ""):
                         s9 = 1
                         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+                        fm = self.variance_of_laplacian(gray)
+                        
+                        # if the focus measure is less than the supplied threshold,
+                        # then the image should be considered "blurry"
+                        if fm < 100.0:
+                            return 1
+
                         thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY   + cv2.THRESH_OTSU)[1]
                         #image = thresh
                         contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2:]
