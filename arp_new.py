@@ -510,6 +510,9 @@ class LoginFrame(tk.Frame):
                                 r = open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "r")
                                 r = str(r.read())
                                 rev = self.Reverse(serials)
+                                if(r.find(str(serials)) !=-1 or r.find(str(rev)) != -1):
+                                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+                                    serials = []
 
                                 str1 = " " 
                                 if str(str1.join(serials)) == open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
@@ -827,8 +830,11 @@ class LoginFrame(tk.Frame):
 
         if(len(findNvg)>1):
             findNvg = re.findall("\d+", findNvg[1])
-            if(len(findNvg[0])>14):
-                return findNvg[0]
+            if len(findNvg)>0:
+                if(len(findNvg[0])>14):
+                    return findNvg[0]
+                else:
+                    return "0"
             else:
                 return "0"
         return "0"
@@ -840,15 +846,8 @@ class LoginFrame(tk.Frame):
         if(len(findNvg)<2):
             return "0"
         
-        print("MACA")
-        print(findNvg)
-        
         findN = findNvg[1]
-        print("ADCsssssssssssssssssss")
-        print(findN)
         findNs = findN.split("ADC")
-        print("ADC")
-        print(findNs)
         
         if(len(findNs)>0):
             datas = re.sub(r"[^A-Z0-9]","",findNs[0])
