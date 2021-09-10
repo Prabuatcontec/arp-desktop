@@ -192,6 +192,7 @@ class ScanFrame(tk.Frame):
                 Deepblu().printPalletTag(palletDetail)
                 Conveyor.resetLastScan("", "", "")
                 open(get_correct_path("static/uploads/_cam.txt"), "w").write("")
+                open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write("")
                 
 
         
@@ -671,7 +672,7 @@ class LoginFrame(tk.Frame):
                 if str(str1.join(line)) != open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
                     open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
                     open(get_correct_path("static/uploads/_lastFail.txt"), "w").write(str(str1.join(line)))
-                    Conveyor().closeConveyor()
+                    #Conveyor().closeConveyor()
                     Conveyor().enableLight("RED")
                     open(get_correct_path("static/uploads/_status.txt"), "w").write("Unit OCR Failed : Try to position the box in \n 0 or 180 degree and click Restart")
                     
@@ -703,7 +704,7 @@ class LoginFrame(tk.Frame):
             if model != "":
                 if model != str(datacollectionValidation["model"]):
                     open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
-                    Conveyor().closeConveyor()
+                    #Conveyor().closeConveyor()
                     Conveyor().enableLight("RED")
                     open(get_correct_path("static/uploads/_status.txt"), "w").write("New Model "+datacollectionValidation["model"]+" found, '\n' Close "+model+" old model pallet and Click Restart '\n' or replace model and Click Restart!")
                     oldModel = 1
@@ -722,7 +723,7 @@ class LoginFrame(tk.Frame):
                     if str(str1.join(line)) != open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):
                         open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
                         open(get_correct_path("static/uploads/_lastFail.txt"), "w").write(str(str1.join(line)))
-                        Conveyor().closeConveyor()
+                        #Conveyor().closeConveyor()
                         Conveyor().enableLight("RED")
                         open(get_correct_path("static/uploads/_status.txt"), "w").write("Unit Validation Failed: Try to position the box in \n 0 or 180 degree and click Restart")
                         
@@ -790,17 +791,20 @@ class LoginFrame(tk.Frame):
                             if(r.find(str(dataLine)) !=-1 or r.find(str(rev)) != -1):
                                 open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
                             else:
-                                Deepblu().postScannedSerial(line)
-                                open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "a").write(str(dataLine)+"\n")
-                                print('success')
-                                open(get_correct_path("static/uploads/_cam.txt"), "w").write(cam)
-                                Conveyor().enableLight("GREEN")
-                                open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
-                                open(get_correct_path("static/uploads/_status.txt"), "w").write("")
-                                open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
-                                Conveyor().callConveyor()
-                                start = time.time()
-                                print(start)
+                                response = Deepblu().postScannedSerial(line)
+                                if response.status_code == 200:
+                                    open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "a").write(str(dataLine)+"\n")
+                                    print('success')
+                                    open(get_correct_path("static/uploads/_cam.txt"), "w").write(cam)
+                                    #Conveyor().enableLight("GREEN")
+                                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+                                    open(get_correct_path("static/uploads/_status.txt"), "w").write("")
+                                    open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
+                                    Conveyor().callConveyor()
+                                    start = time.time()
+                                    print(start)
+                                else:
+                                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
 
     def findAccessCode(self, text):
         text = str(" ".join(text.split()))

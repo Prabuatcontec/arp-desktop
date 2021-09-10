@@ -69,23 +69,16 @@ class Conveyor(object):
         )
 
     def callConveyor(self):
-#         {
-
-# "convone":"off",
-
-#   "convtwo":"off",
-
-#   "convcam":"off",
-
-#   "convonespd":"off",
-
-#   "convtwospd":"off",
-
-#   "light":"off"
-
-# }
-        requests.post(
-            Config.API_MOTOR_URL + 'devices/3', data=json.dumps({"convcam":"ON", "convone":"ON","light":"GREEN"}),
+        res1 = requests.post(
+            Config.API_MOTOR_URL + 'devices/3', data=json.dumps({"state": "ON"}),
+            headers={'Content-Type': 'application/json'}
+        )
+        res1 = requests.post(
+            Config.API_MOTOR_URL + 'devices/1', data=json.dumps({"state": "ON"}),
+            headers={'Content-Type': 'application/json'}
+        )
+        res1 = requests.post(
+            Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "HIGH"}),
             headers={'Content-Type': 'application/json'}
         )
         return 1
