@@ -303,7 +303,7 @@ class LoginFrame(tk.Frame):
         while not self.stopEvent.is_set():
             self.cam = open(get_correct_path("static/uploads/_cam.txt")).readline().strip("\n")
             if self.cam == "" or self.cam == "0":
-                print(self.cam)
+                #print(self.cam)
                 customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
                 if vs is None or not vs.isOpened():
                     image = self.camNotAvailable("CAM 1 NOT AVAILABLE", "0")
@@ -364,7 +364,7 @@ class LoginFrame(tk.Frame):
         self.cam = open(get_correct_path("static/uploads/_cam.txt")).readline().strip("\n")
         while not self.stopEvent.is_set():
             if self.cam == "" or self.cam == "1":
-                print(self.cam)
+                #print(self.cam)
                 customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
                 if vs1 is None or not vs1.isOpened():
                     image = self.camNotAvailable("CAM 1 NOT AVAILABLE", "0")
@@ -423,12 +423,12 @@ class LoginFrame(tk.Frame):
                         s9 = 1
                         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-                        fm = self.variance_of_laplacian(gray)
+                        # fm = self.variance_of_laplacian(gray)
                         
-                        # if the focus measure is less than the supplied threshold,
-                        # then the image should be considered "blurry"
-                        if fm < 100.0:
-                            return 1
+                        # # if the focus measure is less than the supplied threshold,
+                        # # then the image should be considered "blurry"
+                        # if fm < 100.0:
+                        #     return 1
 
                         thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY   + cv2.THRESH_OTSU)[1]
                         #image = thresh
@@ -511,6 +511,7 @@ class LoginFrame(tk.Frame):
                         
                         if s9 > 1 :
                             start = time.time()
+                            print("Start")
                             print(start)
                             s = 2
                             if open(get_correct_path("static/uploads/_serialUpdate.txt")).readline().strip("\n") == "1":
@@ -813,6 +814,7 @@ class LoginFrame(tk.Frame):
                                     open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
                                     open(get_correct_path("static/uploads/_status.txt"), "w").write("")
                                     open(get_correct_path("static/uploads/_lastFail.txt"), "w").write("")
+                                    print("call Con")
                                     Conveyor().callConveyor()
                                     start = time.time()
                                     print(start)
@@ -955,11 +957,11 @@ if __name__ == "__main__":
     vs  = cv2.VideoCapture(Config.CAMERA_NO)
     vs .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
     vs .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
-    #vs.set(cv2.CAP_PROP_AUTOFOCUS, 0) 
+    vs.set(cv2.CAP_PROP_AUTOFOCUS, 0) 
     vs1  = cv2.VideoCapture(4)
     vs1 .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
     vs1 .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
-    #vs1 .set(cv2.CAP_PROP_AUTOFOCUS, 0) 
+    vs1 .set(cv2.CAP_PROP_AUTOFOCUS, 0) 
     app = Arp()
     app.protocol("WM_DELETE_WINDOW", disable_event)
     app.mainloop()

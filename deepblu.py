@@ -44,11 +44,11 @@ class Deepblu(object):
             print("Error with the connection")
 
     def postScannedSerial(self, line):
-        requests.post(Config.DEEPBLU_URL + '/autoreceive/automation', line,
+        response = requests.post(Config.DEEPBLU_URL + '/autoreceive/automation', line,
                                             headers={'Content-Type': 'application/json', 
                                             'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
                                             )
-        return 1
+        return response
 
         
 def get_correct_path(relative_path):
