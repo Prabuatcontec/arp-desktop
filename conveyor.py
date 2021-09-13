@@ -38,7 +38,7 @@ class Conveyor(object):
                 headers={'Content-Type': 'application/json'}
             )
             res1 = requests.post(
-                Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "HIGH"}),
+                Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "MED"}),
                 headers={'Content-Type': 'application/json'}
             )
             res1 = requests.post(
@@ -78,7 +78,7 @@ class Conveyor(object):
             headers={'Content-Type': 'application/json'}
         )
         res1 = requests.post(
-            Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "HIGH"}),
+            Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "MED"}),
             headers={'Content-Type': 'application/json'}
         )
         return 1

@@ -496,12 +496,12 @@ class LoginFrame(tk.Frame):
                                                 if (len(serials)>0):
                                                     s9 = s9 + 1
                                                     poi = i
-                                                    self.ang = [180, -90, 90]
+                                                    self.ang = [180, 90, -90]
                                                     break
                                             else:
                                                 s9 = s9 + 1
                                                 poi = i
-                                                self.ang = [180, -90, 90]
+                                                self.ang = [180, 90, -90]
                                                 break
                                     
                                     if (len(an) == i):
@@ -537,7 +537,6 @@ class LoginFrame(tk.Frame):
                                     serials = []
 
                                 str1 = " " 
-                                print("Fail Data")
                                 print(str(str1.join(serials)))
                                 print(open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"))
                                 if str(str1.join(serials)) == open(get_correct_path("static/uploads/_lastFail.txt")).readline().strip("\n"):

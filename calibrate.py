@@ -222,7 +222,7 @@ class PageTwo(tk.Frame):
         open("static/uploads/_cap.txt", "w").write("0")
         open("static/uploads/_ready.txt", "w").write("0")
         #self.vs = VideoStream(0)
-        self.vs  = cv2.VideoCapture(Config.CAMERA_NO)
+        self.vs  = cv2.VideoCapture(4)
         self.vs .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
         self.vs .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
         self.vs.set(cv2.CAP_PROP_AUTOFOCUS, 0)        
