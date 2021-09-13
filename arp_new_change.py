@@ -675,7 +675,9 @@ class LoginFrame(tk.Frame):
             print(lo)
             for x in lo:
                 print (x)
-                
+                validateDuplicate = self.checkDuplicate(line, rev)
+                if validateDuplicate == 1:
+                    break
                 img = self.rotateBound(image, x)
                 text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                 print("".join(text.split()).encode('utf8'))
