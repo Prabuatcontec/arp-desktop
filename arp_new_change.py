@@ -311,7 +311,7 @@ class LoginFrame(tk.Frame):
                     readFrame = image
                 else:
                     flag,readFrame = vs.read()
-                    dim = (1000, 1000)
+                    dim = (800, 800)
                     self.frame = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
                     if flag is None:
                         print ("Failed")
@@ -372,7 +372,7 @@ class LoginFrame(tk.Frame):
                     readFrame = image
                 else:
                     flag,readFrame = vs1.read()
-                    dim = (1000, 1000)
+                    dim = (800, 800)
                     self.frame1 = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
                     if flag is None:
                         print ("Failed")
@@ -420,6 +420,12 @@ class LoginFrame(tk.Frame):
     def ProcessCam(self,image, customer, cam):
         if image is not None:
                     if(customer != ""):
+                        if cam == "1":
+                            #camera1  roate and read the barcode
+                            self.ang = [-90, 90,  180]
+                            image = self.rotateBound(image, 90)
+                        else:
+                            self.ang = [180, 90, -90]
                         s9 = 1
                         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -496,12 +502,11 @@ class LoginFrame(tk.Frame):
                                                 if (len(serials)>0):
                                                     s9 = s9 + 1
                                                     poi = i
-                                                    self.ang = [180, 90, -90]
+                                                    
                                                     break
                                             else:
                                                 s9 = s9 + 1
                                                 poi = i
-                                                self.ang = [180, 90, -90]
                                                 break
                                     
                                     if (len(an) == i):
@@ -641,7 +646,11 @@ class LoginFrame(tk.Frame):
             if keystored != "" and valuestored !="":
                 key = keystored
                 value = valuestored
-
+            # gmt = time.gmtime()
+            # ts = calendar.timegm(gmt)
+            # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+            # cv2.imwrite(get_correct_path("static/processingImg/An111Bfrrot1boxER_%s.png") % fillenameImage, image)
+            
             sub_index = str("".join(text.split())).find(key.replace('"', ""))
             if sub_index >-1:
                 print(90)
@@ -658,10 +667,6 @@ class LoginFrame(tk.Frame):
                     print("--------------------------Line-----------------------")
                     print(line)
                     
-                # gmt = time.gmtime()
-                # ts = calendar.timegm(gmt)
-                # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                # cv2.imwrite(get_correct_path("static/processingImg/An111Bfrrot1boxER_%s.png") % fillenameImage, image)
                 
                     
                 self.processValidation(key, value, line, image, text, cam)
@@ -680,14 +685,14 @@ class LoginFrame(tk.Frame):
                 img = self.rotateBound(image, x)
                 text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
                 print("".join(text.split()).encode('utf8'))
+                # gmt = time.gmtime()
+                # ts = calendar.timegm(gmt)
+                # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                # cv2.imwrite(get_correct_path("static/processingImg/An111Bfrrot1boxER_%s.png") % fillenameImage, img)
                 
                 for key, value in models.items():
                     sub_index = str("".join(text.split())).find(key.replace('"', ""))
                     if sub_index >-1:
-                        # gmt = time.gmtime()
-                        # ts = calendar.timegm(gmt)
-                        # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                        # cv2.imwrite(get_correct_path("static/processingImg/An111Bfrrot1boxER_%s.png") % fillenameImage, image)
                         
                         sub_index = str(key.replace('"', "")).find("NVG")
                         if sub_index >-1 and len(line)<2:
@@ -838,9 +843,9 @@ class LoginFrame(tk.Frame):
                             if str(str1.join(dataLine)) == open(get_correct_path("static/uploads/_goodDataAvailable.txt")).readline().strip("\n"):
                                 open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
                                 open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write(str(str1.join(dataLine)))
-                                print("Fail")
+                                #print("Fail")
                             else:
-                                print("TRY")
+                                #print("TRY")
                                 open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write(str(str1.join(dataLine)))
                                 response = Deepblu().postScannedSerial(line)
                                 if response.status_code == 200:
@@ -878,12 +883,17 @@ class LoginFrame(tk.Frame):
     def findSN(self, text):
         text = str(" ".join(text.split()))
         findNvg = text.split("SN")
-       
+        print("SN")
+        print(findNvg)
         if(len(findNvg)<2):
             return "0"
 
         if(len(findNvg)>1):
+            print("SN1")
+            print(findNvg[1])
             findNvg = re.findall("\d+", findNvg[1])
+            print("SN12")
+            print(findNvg)
             if len(findNvg)>0:
                 if(len(findNvg[0])>14):
                     return findNvg[0]
@@ -993,7 +1003,7 @@ if __name__ == "__main__":
     vs .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
     vs .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
     vs.set(cv2.CAP_PROP_AUTOFOCUS, 0) 
-    vs1  = cv2.VideoCapture(4)
+    vs1  = cv2.VideoCapture(Config.CAMERA_NO_TWO)
     vs1 .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
     vs1 .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
     vs1 .set(cv2.CAP_PROP_AUTOFOCUS, 0) 
