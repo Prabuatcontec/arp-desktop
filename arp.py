@@ -423,7 +423,7 @@ class LoginFrame(tk.Frame):
 
     def ProcessCam(self,image, customer, cam):
         if image is not None:
-            image = cv2.imread("static/processingImg/101_3747.JPG")
+            #image = cv2.imread("static/processingImg/101_3747.JPG")
             if(customer != ""):
                 if cam == "1":
                     #camera1  roate and read the barcode
@@ -687,7 +687,7 @@ class LoginFrame(tk.Frame):
                     key = keystored
                     value = valuestored
                 self.processValidation(key, value, line, image, "BHR4", cam, barcodeData)
-                r == 1
+                r = 1
         else:
             validation = open(get_correct_path("static/uploads/_validation.txt"), 'r').read()
             text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
@@ -909,7 +909,9 @@ class LoginFrame(tk.Frame):
                                 #print("TRY")
                                 open(get_correct_path("static/uploads/_goodDataAvailable.txt"), "w").write(str(str1.join(dataLine)))
                                 response = Deepblu().postScannedSerial(line)
-                                if response.status_code == 200:
+                                
+                                print(response.status_code)
+                                if response.status_code == 201:
                                     print("con start")
                                     start = time.time()
                                     print(start)
@@ -924,10 +926,21 @@ class LoginFrame(tk.Frame):
                                 else:
                                     result = response.json()
                                     resultType = result['type']
+                                    print(resultType)
+                                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
                                     if resultType == 3:
                                         Conveyor().enableLight("RED")
+                                        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
                                         open(get_correct_path("static/uploads/_status.txt"), "w").write("Deepblu Failed : Serial "+line[0]+" is already received 3 times")
-                                    open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+                                    else:
+                                        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+                                    if resultType == 1:
+                                        print("in me")
+                                        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("1")
+                                        open(get_correct_path("static/uploads/_status.txt"), "w").write("Deepblu Failed : already")
+                                    else:
+                                        open(get_correct_path("static/uploads/_serialUpdate.txt"), "w").write("0")
+                                    
 
     def findAccessCode(self, text):
         text = str(" ".join(text.split()))
@@ -1002,6 +1015,7 @@ class Arp(tk.Tk):
         self.logoutButton = tk.StringVar()
         self.updatePalletId = tk.StringVar()
         open(get_correct_path("static/uploads/_login.txt"), "w").write("")
+        resetScanData()
 
         container = tk.Frame(self)
         container.pack(side='top')
