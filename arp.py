@@ -662,7 +662,7 @@ class LoginFrame(tk.Frame):
         
 
     def processImage(self, line, image, image1, cam, barcodeType):
-
+        barcodeData = line
         if barcodeType == 'QRCODE':
             line = self.getBhr4Serials(line[0])
         rev = self.Reverse(line)
@@ -686,7 +686,7 @@ class LoginFrame(tk.Frame):
                 if keystored != "" and valuestored !="":
                     key = keystored
                     value = valuestored
-                self.processValidation(key, value, line, image, "BHR4", cam)
+                self.processValidation(key, value, line, image, "BHR4", cam, barcodeData)
                 r == 1
         else:
             validation = open(get_correct_path("static/uploads/_validation.txt"), 'r').read()
@@ -726,7 +726,7 @@ class LoginFrame(tk.Frame):
                         
                     
                         
-                    self.processValidation(key, value, line, image, text, cam)
+                    self.processValidation(key, value, line, image, text, cam, barcodeData)
                     text = ""
                     angleSame = 1
                     r = 1
@@ -766,7 +766,7 @@ class LoginFrame(tk.Frame):
 
                             line = self.Reverse(line)
                             #print(line)
-                            self.processValidation(key, value, line, img, text, cam)
+                            self.processValidation(key, value, line, img, text, cam, barcodeData)
                             text = ""
                             r = 1
                             break
@@ -801,7 +801,8 @@ class LoginFrame(tk.Frame):
         
         return 0
 
-    def processValidation(self, key, value, line, image, text, cam):
+    def processValidation(self, key, value, line, image, text, cam, barcodeData):
+            dataLine = barcodeData
             #print(value)
             valid = str(value).replace("'",'"')
             datacollectionValidation =json.loads(str(valid))
@@ -856,7 +857,7 @@ class LoginFrame(tk.Frame):
 
                     if(p == 0):
                         customer = open(get_correct_path("static/uploads/_customer.txt")).readline().strip("\n")
-                        dataLine = line
+                        
                         mdict1 = {"model": str(datacollectionValidation["model"])}
                         dict.update(mdict1)
                         mdict1 = {"customer": str(customer)}
@@ -896,7 +897,7 @@ class LoginFrame(tk.Frame):
                                 dict.update(mdict1)
                         if failedAccessCode == "1":
                             line = str(dict).replace("'",'"')
-                            #print(line)
+                            print(line)
                             str1 = " " 
                             #print(str(str1.join(dataLine)))
                             #print(open(get_correct_path("static/uploads/_goodDataAvailable.txt")).readline().strip("\n"))
