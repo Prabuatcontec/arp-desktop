@@ -52,7 +52,7 @@ class ScanFrame(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         global on, frame, lbx
-        frame_eb_data = tk.Frame(self, width=1000, height=10)
+        frame_eb_data = tk.Frame(self, width=100, height=10)
         frame_eb_data.grid(row=0, column=0, sticky='nsew', padx=1, pady=1)
         lab_eb_data = tk.Label(frame_eb_data, foreground="#810541" ,  textvariable=controller.loginName)
         lab_eb_data.grid(row=0, column=0)
@@ -60,7 +60,10 @@ class ScanFrame(tk.Frame):
         entry_nombre_fld1c.grid(row=0, column=1, sticky='w')
 
         entry_nombre_fld1c.config(textvariable=controller.updatePalletId, relief='flat')
-        entry_nombre_fld1c.grid(row=0, column=2)
+        entry_nombre_fld1c.grid(row=0, column=6)
+
+        b_ebdata = tk.Button(frame_eb_data, text="Close Pallet", width=10, height=2, background='#D10000',  command=self.ClosePallet)
+        b_ebdata.grid(row=2, column=1, pady=20)
 
         frame_but_one = tk.Frame(self, width=240, height=10)
         frame_but_one.grid(row=0, column=1, padx=20, pady=1, sticky='nsew')
@@ -89,8 +92,23 @@ class ScanFrame(tk.Frame):
         lab_eb_model = tk.Label(frame_eb_model, foreground='#C32148', textvariable=self.controller.palletSerialCount, font=(None, 20))
         lab_eb_model.grid(row=0, column=1)
 
+        frame_eb_data = tk.Frame(self, width=100, height=10)
+        frame_eb_data.grid(row=0, column=6, sticky='nsew', padx=1, pady=1)
+
+        entry_nombre_fld1c = tk.Entry(frame_eb_data)
+        entry_nombre_fld1c.grid(row=0, column=6, sticky='w')
+
+        entry_nombre_fld1c.config(textvariable=controller.palletMaxCount, relief='flat')
+        entry_nombre_fld1c.grid(row=0, column=6)
+
+        # frame_but_one = tk.Frame(self, width=240, height=10)
+        # frame_but_one.grid(row=0, column=7, padx=20, pady=1, sticky='nsew')
+
+        # b5 = tk.Button(frame_but_one, bg='#18A558', text='Update Pallet Count', height=2, command=self.removeStatus)
+        # b5.grid(row=0, column=1, padx=20, pady=1, sticky='w')
+
         frame_but_right = tk.Frame(self, width=240, height=10)
-        frame_but_right.grid(row=0, column=6, padx=20, pady=1, sticky='nsew')
+        frame_but_right.grid(row=0, column=7, padx=20, pady=1, sticky='nsew')
         b_ebdata = tk.Button(frame_but_right, text="Logout", width=10, height=2, background='#FFA500',  command=lambda: controller.show_frame(HomeFrame))
         b_ebdata.grid(row=0, column=0, padx = 100)
         b_ebdata = tk.Button(frame_but_right, text="Close", width=10, height=2, background='#D10000',  command=Close)
@@ -98,14 +116,14 @@ class ScanFrame(tk.Frame):
 
         self.model = tk.StringVar()
         frame = tk.Frame(self, width=240, height=10)
-        frame.grid(row=1, column=0, padx=20, pady=1, sticky='nsew')
+        frame.grid(row=2, column=0, padx=1, pady=20, sticky='nsew')
 
         frame._grid_info = frame.grid_info()
         frame.grid_remove()
         somechoices = ["Field Return", "Customer Return", "Technical Support Return"]
         popupMenu1 = tk.OptionMenu(frame, self.model, *somechoices)
         self.model.set("Customer Return")
-        popupMenu1.grid(row=1, column=0)
+        popupMenu1.grid(row=2, column=2)
         self.model.trace('w', self.ReturnTypeSelect)
 
         self.customerSelect = tk.StringVar()
@@ -117,12 +135,11 @@ class ScanFrame(tk.Frame):
         self.customerSelect.set("Pick a Customer")
 
         popupMenu = tk.OptionMenu(frame_eb_data, self.customerSelect, *somechoices)
-        popupMenu.grid(row=1, column=0)
+        popupMenu.grid(row=2, column=0, pady=20)
 
         self.customerSelect.trace('w', self.chooseCustomer)
 
-        b_ebdata = tk.Button(frame_eb_data, text="Close Pallet", width=10, height=2, background='#D10000',  command=self.ClosePallet)
-        b_ebdata.grid(row=1, column=2)
+        
 
 
        
@@ -149,6 +166,7 @@ class ScanFrame(tk.Frame):
         self.controller.modelNameTit.set("Model:")
         self.controller.modelName.set("None")
         self.controller.palletSerialCountTit.set("Scanned:")
+        self.controller.palletMaxCount.set(0)
         
         #vs = VideoStream(0)
         self.cam = ""
@@ -307,9 +325,13 @@ class ScanFrame(tk.Frame):
 
     def ProcessCam(self,image, customer, cam):
         if image is not None:
-            image = cv2.imread("static/processingImg/1.png")
+            #image = cv2.imread("static/processingImg/1.png")
             if(customer != ""):
-                print(cam)
+                if self.controller.palletMaxCount.get() == self.scannedcount and self.controller.palletMaxCount.get() > 0:
+                    Conveyor().enableLight("RED")
+                    self.scanned = ""
+                    self._serialUpdate = 1
+                    self._status = "Pallet Max Count reached"
                 if cam == "1":
                     #camera1  roate and read the barcode
                     self.ang = [-90, 90,  180]
@@ -797,6 +819,12 @@ class ScanFrame(tk.Frame):
                                     self._lastFail = ""
                                     self.scannedcount = self.scannedcount + 1
                                     self.controller.palletSerialCount.set(self.scannedcount)
+                                    if self.controller.palletMaxCount.get() == self.scannedcount:
+                                        Conveyor().enableLight("RED")
+                                        self.scanned = ""
+                                        self._serialUpdate = 1
+                                        self._status = "Pallet Max Count reached"
+
                                     start = time.time()
                                     print(start)
                                 else:
@@ -889,6 +917,7 @@ class ScanFrame(tk.Frame):
         self._status = ""
         self._lastFail = ""
         self._serialUpdate = ""
+        self.cam = ""
         Conveyor().enableLight("OFF")
 
     def closeConv(self):
@@ -951,7 +980,7 @@ class ScanFrame(tk.Frame):
                 self._goodDataAvailable = ""
                 self._lastFail = ""
                 self._status = ""
-                self._validation = ""
+                self.cam = ""
                 self.scannedcount = 0
                 self.controller.palletSerialCount.set(self.scannedcount)
                 self.controller.modelName.set("NONE")
@@ -1033,6 +1062,7 @@ class Arp(tk.Tk):
         self.palletSerialCountTit = tk.StringVar()
         self.logoutButton = tk.StringVar()
         self.updatePalletId = tk.StringVar()
+        self.palletMaxCount = tk.StringVar()
         open(get_correct_path("static/uploads/_login.txt"), "w").write("")
         resetScanData()
 

@@ -38,6 +38,7 @@ class Deepblu(object):
         try:           
             mysocket.connect((host, port)) #connecting to host
             mysocket.send(palletTag.encode('ascii'))#using bytes
+            mysocket.send(palletTag.encode('ascii'))#using bytes
             mysocket.close () #closing connection
             print("Label")
         except:
