@@ -109,10 +109,15 @@ class ScanFrame(tk.Frame):
 
         frame_but_right = tk.Frame(self, width=240, height=10)
         frame_but_right.grid(row=0, column=7, padx=20, pady=1, sticky='nsew')
-        b_ebdata = tk.Button(frame_but_right, text="Logout", width=10, height=2, background='#FFA500',  command=lambda: controller.show_frame(HomeFrame))
+        b_ebdata = tk.Button(frame_but_right, text="Logout", width=10, height=2, background='#FFA500',  command=lambda: controller.show_frame(LoginFrame))
         b_ebdata.grid(row=0, column=0, padx = 100)
+        b_ebdata = tk.Button(frame_but_right, text="Manual", width=10, height=2, background='#D10000',  command=manualRun)
+        b_ebdata.grid(row=0, column=1, padx = 20)
         b_ebdata = tk.Button(frame_but_right, text="Close", width=10, height=2, background='#D10000',  command=Close)
-        b_ebdata.grid(row=0, column=1, padx = 100)
+        b_ebdata.grid(row=0, column=2, padx = 20)
+
+
+        
 
         self.model = tk.StringVar()
         frame = tk.Frame(self, width=240, height=10)
@@ -216,7 +221,7 @@ class ScanFrame(tk.Frame):
     def videoLoop(self):
         while not self.stopEvent.is_set():
             
-            if self.cam == "" or self.cam == "0" and self._serialUpdate == 0:
+            if self.cam == "" or self.cam == "0":
                 
                 #print(self.cam)
                 customer = self._customer
@@ -281,7 +286,7 @@ class ScanFrame(tk.Frame):
     def videoLoopOne(self):
         while not self.stopEvent.is_set():
             
-            if self.cam == "" or self.cam == "1" and self._serialUpdate == 0:
+            if self.cam == "" or self.cam == "1":
                 #print(self.cam)
                 customer = self._customer
                 if self.vs1 is None or not self.vs1.isOpened():
@@ -383,7 +388,7 @@ class ScanFrame(tk.Frame):
                         x,y,w,h = cv2.boundingRect(c)
                         
                         serials = []
-                        print(time.time())
+                        #print(time.time())
                         if self._fullImage == 0:
                             self._isFullImage = 0
                             barcodes = pyzbar.decode(image)
@@ -394,8 +399,8 @@ class ScanFrame(tk.Frame):
                                 image = self.rotateBound(image, x)
                                 barcodesFull = pyzbar.decode(image)
                                 barcodes = barcodesFull
-                                print("====================123================================")
-                                print(time.time())
+                                #print("====================123================================")
+                                #print(time.time())
                                 # gmt = time.gmtime()
                                 # ts = calendar.timegm(gmt)
                                 # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
@@ -450,8 +455,8 @@ class ScanFrame(tk.Frame):
                             barcodeType = barcode.type
                             if(detect_special_characer(barcodeData) == True):
                                 serials.append(barcodeData)
-                        print("======+++++++++++++++++++++++++++++==============================================")
-                        print(serials)
+                        #print("======+++++++++++++++++++++++++++++==============================================")
+                        #print(serials)
                         if len(serials)>0:
                                 self.processImage(serials, image, image, cam, barcodeType)
                         else :
@@ -803,32 +808,7 @@ class ScanFrame(tk.Frame):
                                 self._goodDataAvailable = str(str1.join(dataLine))
                             else:
                                 self._goodDataAvailable = str(str1.join(dataLine))
-                                print("con start")
-                                start = time.time()
-                                print(start)
-                                Conveyor().callConveyor()
-                                print('success')
-                                self._fullImage = 1
-                                if self._isFullImage == 1:
-                                    self._isFullImage = 1
-                                else:
-                                    self._isFullImage = 2
-                                self.scanned = ""
-                                self.cam = cam
-                                self._serialUpdate = 0
-                                self._status = ""
-                                self._lastFail = ""
-                                self.scannedcount = self.scannedcount + 1
-                                self.controller.palletSerialCount.set(self.scannedcount)
-                                if self.controller.palletMaxCount.get() == self.scannedcount:
-                                    Conveyor().enableLight("RED")
-                                    self.scanned = ""
-                                    self._serialUpdate = 1
-                                    self._status = "Pallet Max Count reached"
-
-                                start = time.time()
-                                print(start)
-                                return 1
+                                
                                 response = Deepblu().postScannedSerial(line)
                                 print(response.json())
                                 if response.status_code == 201:
@@ -866,14 +846,14 @@ class ScanFrame(tk.Frame):
                                         Conveyor().enableLight("RED")
                                         self.scanned = ""
                                         self._serialUpdate = 1
-                                        self._status = "Deepblu Failed : Serial "+line[0]+" is already received 3 times"
+                                        self._status = "Deepblu Failed : Serial   is already received 3 times"
                                     else:
                                         self._serialUpdate = 0
                                     if resultType == 1:
                                         Conveyor().enableLight("RED")
                                         self.scanned = ""
                                         self._serialUpdate = 1
-                                        self._status = "Deepblu Failed : Serial "+line[0]+" is already in Deepblu"
+                                        self._status = "Deepblu Failed : Serial   is already in Deepblu"
                                     else:
                                         self._serialUpdate = 0
 
@@ -956,12 +936,13 @@ class ScanFrame(tk.Frame):
     def chooseCustomer(self,*args):
         resetScanData()
         self._customer = self.customerSelect.get()
-        
+        open(get_correct_path("static/uploads/_customer.txt"), "w").write(self._customer)
         postData = {}
         for value in Connection().getModels(self.customerSelect.get()):
            appData = {value[1]:value[2]}
            postData.update(appData)
         self._validation = json.dumps(postData)
+        open(get_correct_path("static/uploads/_validation.txt"), "w").write(self._validation)
         if (self.customerSelect.get() == "FRONTIERC0"):
             frame.grid(**frame._grid_info)
         else:
@@ -1043,11 +1024,9 @@ class LoginFrame(tk.Frame):
         
         b5 = tk.Button(frame_buttons, text='Login', width=10, height=2, background='#59981A',  command= self.login)
         b5.grid(row=0, column=0, padx=1, pady=1, sticky='w')
-        b6 = tk.Button(frame_buttons, text='Back', width=10, height=2, background='#FFA500',  command=lambda: controller.show_frame(HomeFrame))
-        b6.grid(row=0, column=1, padx=1, pady=1, sticky='w')
         
         b_ebdata = tk.Button(frame_buttons, text="Close", width=10, height=2, background='#D10000',  command=Close)
-        b_ebdata.grid(row=2,padx=1, pady=3, column=0)
+        b_ebdata.grid(row=0,column=1,padx=1, pady=1)
 
         
 
@@ -1107,12 +1086,12 @@ class Arp(tk.Tk):
         
 
         self.frames = {}
-        for F in (HomeFrame,ScanFrame, LoginFrame):
+        for F in (LoginFrame, HomeFrame,ScanFrame, ):
             frame = F(container, self)
             self.frames[F] = frame
             #frame.configure(background='lightgrey')
             frame.grid(row=0, column=0, sticky='nswe')
-        self.show_frame(HomeFrame)
+        self.show_frame(LoginFrame)
 
 
     def show_frame(self, cont):
@@ -1158,6 +1137,179 @@ def resetScanData():
     
 def disable_event():
     pass
+
+
+class MyDialog:
+    def __init__(self, parent):
+        top = self.top = tk.Toplevel(parent)
+        self.top.geometry("%dx%d%+d%+d" % (500, 300, 10, 50))
+        postData = {}
+        self._customer = open(get_correct_path("static/uploads/_customer.txt"), 'r').read()
+        for value in Connection().getModels(self._customer):
+            appData = {value[1]:value[2]}
+            postData.update(appData)
+        _customerModels = json.dumps(postData)
+
+        self._validation = open(get_correct_path("static/uploads/_validation.txt"), 'r').read()
+
+        self._validation =  json.loads(self._validation)
+
+        self.model = tk.StringVar()
+        self.dc = tk.StringVar()
+        frameme = tk.Frame(top, width=340, height=30)
+        frameme.grid(row=2, column=0, padx=1, pady=20, sticky='nsew')
+        frameme.pack()
+        somechoices = json.loads(_customerModels)
+        popupMenu1 = tk.OptionMenu(frameme, self.model, *somechoices)
+        self.model.trace('w', self.chooseModel)
+
+        calib_result_pickle = Conveyor.getScan()
+        model = calib_result_pickle["model"]
+        value = calib_result_pickle["value"]
+        if model != "":
+            self.model.set(model)
+            self.dc.set(value)
+        else:
+            self.model.set("Select Model")
+        popupMenu1.grid(row=2, column=2)
+
+        self.serials = []
+        self.cnt = 0
+        self.scannedValue = ""
+        self.selectedKey = ""
+        self.selectedValue = ""
+        
+        self.myLabel = tk.Label(top, text='Scan label')
+        self.myLabel.pack()
+        self.sv = tk.StringVar()
+        self.svLab = tk.StringVar()
+        self.svLab.set("")
+        self.sv.trace("w",  self.scanData)
+        self.myEntryBox = tk.Entry(top, textvariable = self.sv)
+        self.myEntryBox.focus()
+        #self.myEntryBox.bind ("<Return">,scanData)
+        #self.myEntryBox.bind('<Change>', (lambda _: self.scanData(self.myEntryBox)))
+        self.myEntryBox.pack()
+
+        self.myEntryLabel = tk.Label(top, textvariable=self.svLab)
+        self.myEntryLabel.pack()
+
+        self.closeButton = tk.Button(top, text='Close', command=self.ClosePopup)
+        self.closeButton.pack()
+
+        
+        threading.Thread(target=self.scannedValueAdded, daemon=True).start()
+
+        
+    def chooseModel(self,*args):
+        if (self.model.get() != "Select Model"):
+            self.selectedKey = self.model.get()
+            print(self.selectedKey)
+            
+            for key, value in self._validation.items():
+                if self.selectedKey == key:
+                    self.selectedValue = value
+                    break
+            
+            print(self.selectedValue)
+            self.dc.set(self.selectedValue)
+            
+            print(self.dc.get())
+        
+
+    def send(self):
+        global username
+        username = self.myEntryBox.get()
+        self.top.destroy()
+    
+    def ClosePopup(self):
+        self.top.destroy()
+
+    def duplicateremove(self, x):
+      return list(dict.fromkeys(x))
+    
+    def scanData(self, *args):
+        self.scannedValue = self.myEntryBox.get()
+        self.cnt = time.time()
+    
+    def scannedValueAdded(self):
+        while True:
+            lo=threading.Lock()
+            lo.acquire()
+            if(time.time() - self.cnt>.5 and self.cnt>0 and self.scannedValue!=""):
+                self.cnt=0
+                self.serials.append(self.scannedValue)
+                self.serials = self.duplicateremove(self.serials)
+                self.sv.set("")
+                print(self.serials)
+            if len(self.serials) > 0:
+                self.svLab.set(str(self.serials))
+                if str(self.dc.get()) != "":
+                    datacollectionValidation =json.loads(str(self.dc.get()))
+                    if len(datacollectionValidation['data']) == len(self.serials):
+                        self.postManualData(self.serials,  datacollectionValidation)
+            time.sleep(.5)
+            lo.release()
+
+    def postManualData(self, line, datacollectionValidation):
+        self.serials = []
+        valid = ModelValidation().validate(
+                        datacollectionValidation["data"], line)
+        if valid == '0':
+            for c in range(len(line)):
+                newline = line[c].replace("\n","").replace(" ","")
+                postData = {}
+                if(c == 0):
+                    appData = {"serial": newline}
+                    postData.update(appData)
+                else:
+                    appData = {str("address"+str(c)): newline}
+                    postData.update(appData)
+
+            
+            customer = self._customer
+            
+            appData = {"model": str(datacollectionValidation['model'])}
+            postData.update(appData)
+            appData = {"customer": str(customer)}
+            postData.update(appData)
+            appData = {"stationId": str(Config.STATION_ID)}
+            postData.update(appData)
+            user = open(get_correct_path("static/uploads/_login.txt")).readline().strip("\n")
+            appData = {"adduser": str(user)}
+            postData.update(appData)
+            appData = {"source": "DeTrash"}
+            postData.update(appData)
+            if (str(customer) == "FRONTIERC0"):
+                rtype = open(get_correct_path("static/uploads/_rtype.txt")).readline().strip("\n")
+                if rtype != "":
+                    if rtype == "Field Return":
+                        type = "F"
+                    if rtype == "Customer Return":
+                        type = "C"
+                    if rtype == "Technical Support Return":
+                        type = "T"
+                    c = c+1
+                    appData = {str("address"+str(c)): type}
+                    postData.update(appData)
+                line = str(postData).replace("'",'"')
+                response = Deepblu().postScannedSerial(line)
+
+            if response.status_code == 201:
+                self.svLab.set("Posted!!!")
+            else:
+                result = response.json()
+                resultType = result['type']
+                
+                if resultType == 3:
+                    self.svLab.set("Deepblu Failed : Serial is already received 3 times")
+        else:
+            self.svLab.set("Datacollection Validation Fails")
+
+def manualRun():
+    inputDialog = MyDialog(app)
+    app.wait_window(inputDialog.top)
+    #print('Username: ', username)
 
 if __name__ == "__main__":
     global vs,vs1,lastScan
