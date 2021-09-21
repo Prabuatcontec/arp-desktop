@@ -327,11 +327,12 @@ class ScanFrame(tk.Frame):
         if image is not None:
             #image = cv2.imread("static/processingImg/1.png")
             if(customer != ""):
-                if self.controller.palletMaxCount.get() == self.scannedcount and self.controller.palletMaxCount.get() > 0:
+                if int(self.controller.palletMaxCount.get()) == int(self.scannedcount) and int(self.controller.palletMaxCount.get()) > 0:
                     Conveyor().enableLight("RED")
                     self.scanned = ""
                     self._serialUpdate = 1
                     self._status = "Pallet Max Count reached"
+                    return 1
                 if cam == "1":
                     #camera1  roate and read the barcode
                     self.ang = [-90, 90,  180]
@@ -365,15 +366,15 @@ class ScanFrame(tk.Frame):
                             if(int(cv2.contourArea(c))  == an[0]):
                                 
                                 #serialC = "1"
-                                print('self')
-                                print(self._serialC)
+                                #print('self')
+                                #print(self._serialC)
                                 if(self._serialC == 0 ):
                                     time.sleep(2)
                                     self._serialC = 1
                                 else:
                                     self._serialC = 0
 
-                                    print(cv2.contourArea(c))
+                                    #print(cv2.contourArea(c))
                                     rect = cv2.minAreaRect(c)
                                     box = np.int0(cv2.boxPoints(rect))
                                     [vx,vy,x,y] = box
@@ -385,7 +386,7 @@ class ScanFrame(tk.Frame):
                                     x,y,w,h = cv2.boundingRect(c)
                                     
                                     barcodes = pyzbar.decode(image)
-                                    print(barcodes)
+                                    #print(barcodes)
 
                                     serials = []
                                     for barcode in barcodes:
@@ -492,7 +493,7 @@ class ScanFrame(tk.Frame):
     def getQRCodeSerials(self, value):
         
         splitSerial = value.split(";")
-        print(splitSerial)
+        #print(splitSerial)
         serials = []
         isExist = str("".join(value)).find("\n")
         if isExist >-1:
@@ -583,14 +584,14 @@ class ScanFrame(tk.Frame):
 
         r = 0
         if barcodeType == 'QRCODE':
-            print(barcodeType)
+            #print(barcodeType)
             validation = open(get_correct_path("static/uploads/_bhr4.txt"), 'r').read()
             strVal = str(validation)
             models = json.loads(strVal)
-            print(models)
+            #print(models)
             for key, value in models.items():
-                print(key)
-                print(value)
+                #print(key)
+                #print(value)
                 calib_result_pickle = Conveyor.getScan()
                 keystored = calib_result_pickle["key"]
                 valuestored = calib_result_pickle["value"]
@@ -602,7 +603,7 @@ class ScanFrame(tk.Frame):
         else:
             validation = self._validation
             text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-            print("".join(text.split()).encode('utf8'))
+            #print("".join(text.split()).encode('utf8'))
             strVal = str(validation)
             models = json.loads(strVal)
             angleSame = 0
@@ -646,7 +647,7 @@ class ScanFrame(tk.Frame):
                         break
                     img = self.rotateBound(image, x)
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                    print("".join(text.split()).encode('utf8'))
+                    #print("".join(text.split()).encode('utf8'))
                     # gmt = time.gmtime()
                     # ts = calendar.timegm(gmt)
                     # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
