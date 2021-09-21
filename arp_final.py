@@ -161,12 +161,24 @@ class ScanFrame(tk.Frame):
         self._lastFail = ""
         self._status = ""
         self._validation = ""
+        self._fullImage = 0
+        self._isFullImage = 0
+        self.failedCount = 0
         self.scannedcount = 0
         self.controller.palletSerialCount.set(self.scannedcount)
         self.controller.modelNameTit.set("Model:")
         self.controller.modelName.set("None")
         self.controller.palletSerialCountTit.set("Scanned:")
         self.controller.palletMaxCount.set(0)
+
+        self.vs  = cv2.VideoCapture(Config.CAMERA_NO)
+        self.vs.set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
+        self.vs.set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
+        self.vs.set(cv2.CAP_PROP_AUTOFOCUS, 0) 
+        self.vs1  = cv2.VideoCapture(Config.CAMERA_NO_TWO)
+        self.vs1.set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
+        self.vs1.set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
+        self.vs1.set(cv2.CAP_PROP_AUTOFOCUS, 0) 
         
         #vs = VideoStream(0)
         self.cam = ""
@@ -202,20 +214,21 @@ class ScanFrame(tk.Frame):
         return image
     
     def videoLoop(self):
-        stats = []
-        start = timer()
         while not self.stopEvent.is_set():
-            if self.cam == "" or self.cam == "0":
+            
+            if self.cam == "" or self.cam == "0" and self._serialUpdate == 0:
+                
                 #print(self.cam)
                 customer = self._customer
-                if vs is None or not vs.isOpened():
+                if self.vs is None or not self.vs.isOpened():
                     image = self.camNotAvailable("CAM 1 NOT AVAILABLE", "0")
                     frameimage = image
                     readFrame = image
                 else:
-                    flag,readFrame = vs.read()
-                    dim = (800, 800)
+                    flag,readFrame = self.vs.read()
+                    dim = Config.CAMERA_FRAME_LEN
                     self.frame = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
+                    
                     if flag is None:
                         print ("Failed")
                     
@@ -266,19 +279,18 @@ class ScanFrame(tk.Frame):
         return frameimage
         
     def videoLoopOne(self):
-        stats = []
-        start = timer()
         while not self.stopEvent.is_set():
-            if self.cam == "" or self.cam == "1":
+            
+            if self.cam == "" or self.cam == "1" and self._serialUpdate == 0:
                 #print(self.cam)
                 customer = self._customer
-                if vs1 is None or not vs1.isOpened():
-                    image = self.camNotAvailable("CAM 1 NOT AVAILABLE", "0")
+                if self.vs1 is None or not self.vs1.isOpened():
+                    image = self.camNotAvailable("CAM 2 NOT AVAILABLE", "0")
                     frameimage = image
                     readFrame = image
                 else:
-                    flag,readFrame = vs1.read()
-                    dim = (800, 800)
+                    flag,readFrame = self.vs1.read()
+                    dim = Config.CAMERA_FRAME_LEN
                     self.frame1 = cv2.resize(readFrame, dim, interpolation = cv2.INTER_AREA)
                     if flag is None:
                         print ("Failed")
@@ -314,7 +326,7 @@ class ScanFrame(tk.Frame):
             image = cv2.imread(get_correct_path("static/uploads/cam.png"))
         else:
             image = cv2.imread(get_correct_path("static/uploads/customer1.jpg"))
-        image = cv2.resize(image, (1000,1000), interpolation = cv2.INTER_AREA)
+        image = cv2.resize(image, Config.CAMERA_FRAME_LEN, interpolation = cv2.INTER_AREA)
         cv2.putText(image, alert, (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, 255, 5)
         return image
     
@@ -325,7 +337,7 @@ class ScanFrame(tk.Frame):
 
     def ProcessCam(self,image, customer, cam):
         if image is not None:
-            #image = cv2.imread("static/processingImg/1.png")
+            #image = cv2.imread("5.png")
             if(customer != ""):
                 if self.controller.palletMaxCount.get() == self.scannedcount and self.controller.palletMaxCount.get() > 0:
                     Conveyor().enableLight("RED")
@@ -334,149 +346,119 @@ class ScanFrame(tk.Frame):
                     self._status = "Pallet Max Count reached"
                 if cam == "1":
                     #camera1  roate and read the barcode
-                    self.ang = [-90, 90,  180]
+                    self.ang = [-90, 180]
                     image = self.rotateBound(image, 90)
                 else:
                     self.ang = [180, 90, -90]
-                s9 = 1
-                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                self._serialUpdate = 1
+                #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-                thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY   + cv2.THRESH_OTSU)[1]
-                #image = thresh
-                contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2:]
-                cnt = contours
-                s = 1
+                #thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY   + cv2.THRESH_OTSU)[1]
 
-                an = []
-                for c in cnt:
-                    if(cv2.contourArea(c)  > 100000):
-                        an.append(int(cv2.contourArea(c)))
-                an.sort(reverse = True)
-                i = len(an)
-                poi = 0
-                po = 0
-                barcodeType = None
-                if len(an)>0:
-                    
-                    for c in cnt:
-                        if(cv2.contourArea(c)  > 100000):
-                            #print(cv2.contourArea(c))
-                            i = i - 1
-                            if(int(cv2.contourArea(c))  == an[0]):
+                sensitivity = 100
+                lower_white = np.array([0,0,255-sensitivity])
+                upper_white = np.array([255,sensitivity,255])
+                hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+
+                # Threshold the HSV image
+                mask = cv2.inRange(hsv, lower_white, upper_white)
+                # Remove noise
+                kernel_erode = np.ones((4,4), np.uint8)
+                eroded_mask = cv2.erode(mask, kernel_erode, iterations=1)
+                kernel_dilate = np.ones((6,6),np.uint8)
+                dilated_mask = cv2.dilate(eroded_mask, kernel_dilate, iterations=1)
+                # Find the different contours
+                contours, hierarchy = cv2.findContours(dilated_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[-2:]
+                contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
+                #print(contours)
+                for c in contours:
+                    if(cv2.contourArea(c)  > 50000):
+                        rect = cv2.minAreaRect(c)
+                        box = np.int0(cv2.boxPoints(rect))
+                        [vx,vy,x,y] = box
+                        self.p = []
+                        self.p.append([x[0],x[1]+1])
+                        self.p.append([x[0]-1,vy[0]])
+                        self.p.append([y[0],y[1]])
+                        x,y,w,h = cv2.boundingRect(c)
+                        
+                        serials = []
+                        print(time.time())
+                        if self._fullImage == 0:
+                            self._isFullImage = 0
+                            barcodes = pyzbar.decode(image)
+                            #print(barcodes)
+                            barcodesFull = pyzbar.decode(image)
+                            if len(barcodes) < 1:
+                                x = self.getAngel()
+                                image = self.rotateBound(image, x)
+                                barcodesFull = pyzbar.decode(image)
+                                barcodes = barcodesFull
+                                print("====================123================================")
+                                print(time.time())
+                                # gmt = time.gmtime()
+                                # ts = calendar.timegm(gmt)
+                                # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                                # cv2.imwrite(get_correct_path("static/processingImg/111An111Bfrrot1boxER_%s.png") % fillenameImage, image)
                                 
-                                #serialC = "1"
-                                print('self')
-                                print(self._serialC)
-                                if(self._serialC == 0 ):
-                                    time.sleep(2)
-                                    self._serialC = 1
+
+                            if len(barcodes) > 0:
+                                t = image[y:y+h,x:x+w]
+                                # gmt = time.gmtime()
+                                # ts = calendar.timegm(gmt)
+                                # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                                # cv2.imwrite(get_correct_path("static/processingImg/111An111Bfrrot1boxER_%s.png") % fillenameImage, t)
+                                
+                                barcodesCrop = pyzbar.decode(t)
+                                print("====================================================")
+                                print(barcodesCrop)
+                                if (len(barcodesFull) == len(barcodesCrop)):
+                                    image = t
+                                    barcodes = barcodesCrop
+                                    print("======================124==============================")
+                                    self._isFullImage = 1
                                 else:
-                                    self._serialC = 0
-
-                                    print(cv2.contourArea(c))
-                                    rect = cv2.minAreaRect(c)
-                                    box = np.int0(cv2.boxPoints(rect))
-                                    [vx,vy,x,y] = box
-                    
-                                    self.p = []
-                                    self.p.append([x[0],x[1]+1])
-                                    self.p.append([x[0]-1,vy[0]])
-                                    self.p.append([y[0],y[1]])
-                                    x,y,w,h = cv2.boundingRect(c)
-                                    
-                                    barcodes = pyzbar.decode(image)
-                                    print(barcodes)
-
-                                    serials = []
-                                    for barcode in barcodes:
-                                        barcodeData = barcode.data.decode("utf-8")
-                                        barcodeType = barcode.type
-                                        if(detect_special_characer(barcodeData) == True):
-                                            serials.append(barcodeData)
-
-                                    if len(serials)<1:
-                                        x = self.getAngel()
-                                        #print(x)
-
-                                        image = self.rotateBound(image, x)
-                                        barcodes = pyzbar.decode(image)
-                                        
-                                        
-                                        serials = []
-                                        for barcode in barcodes:
-                                            barcodeData = barcode.data.decode("utf-8")
-                                            barcodeType = barcode.type
-                                            if(detect_special_characer(barcodeData) == True):
-                                                serials.append(barcodeData)
-
-                                        if (len(serials)>0):
-                                            s9 = s9 + 1
-                                            
-                                            break
-                                    else:
-                                        s9 = s9 + 1
-                                        break
+                                    barcodes = barcodesFull
+                                    print("====================127================================")
                             
-                            if (len(an) == i):
-                                break
-                            if po == 1:
-                                break
+                            
+                        if self._fullImage > 0:
+                            if self._isFullImage == 1:
+                                barcodes = pyzbar.decode(image)
+                                if len(barcodes) < 1:
+                                    x = self.getAngel()
+                                    image = self.rotateBound(image, x)
+                                    barcodes = pyzbar.decode(image)
+                                    print("===================125=================================")
+                            else: 
+                                image = image[y:y+h,x:x+w]
+                                barcodes = pyzbar.decode(image)
+                                if len(barcodes) < 1:
+                                    x = self.getAngel()
+                                    image = self.rotateBound(image, x)
+                                    barcodes = pyzbar.decode(image)
+                                    print("======================126==============================")
+                        
 
-                
-                if s9 > 1 :
-                    start = time.time()
-                    print("Start")
-                    print(start)
-                    s = 2
-                    if self._serialUpdate == 1:
-                        s = 1
-                    if (s > 1):
-                        self._serialUpdate = 1
                         # gmt = time.gmtime()
                         # ts = calendar.timegm(gmt)
                         # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                        # cv2.imwrite(get_correct_path("static/processingImg/111Bfrrot1boxER_%s.png") % fillenameImage, image)
-                        rev = self.Reverse(serials)
-                        
-                        validateDuplicate = self.checkDuplicate(serials, rev)
-                        if validateDuplicate == 1:
-                            return 1
-                        if len(serials) > 0:
-                                #print(serials)
-                                if s > 1:
-                                    
-                                    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                                    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY   + cv2.THRESH_OTSU)[1]
-                                    contourse,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2:]
-                                    cnte = contourse
-                                    an1 = []
-                                    for c1 in cnte:
-                                        if(cv2.contourArea(c1)  >100000):
-                                            an1.append(int(cv2.contourArea(c1)))
-                                    
-                                    an1.sort(reverse = True)
-                                    
-                                    for c2 in cnte:
-                                        #print(cv2.contourArea(c))
-                                        if(int(cv2.contourArea(c2))  == an1[0]):
-                                            x,y,w,h = cv2.boundingRect(c2)
-                                            t = image[y:y+h,x:x+w]
-                                            barcodes = pyzbar.decode(t)
-
-                                            if (len(barcodes)<1):
-                                                t = image
-                                            
-                                            po = 1
-                                            break
-
-                                    self.processImage(serials, t, image, cam, barcodeType)
-                                else:
-                                    self._serialUpdate = 0
-
-                        else:
+                        # cv2.imwrite(get_correct_path("static/processingImg/111An111Bfrrot1boxER_%s.png") % fillenameImage, image)
+                        serials = []
+                        for barcode in barcodes:
+                            barcodeData = barcode.data.decode("utf-8")
+                            barcodeType = barcode.type
+                            if(detect_special_characer(barcodeData) == True):
+                                serials.append(barcodeData)
+                        print("======+++++++++++++++++++++++++++++==============================================")
+                        print(serials)
+                        if len(serials)>0:
+                                self.processImage(serials, image, image, cam, barcodeType)
+                        else :
                             self._serialUpdate = 0
-                else:
-                    self._serialUpdate = 0
+                    else :
+                        self._serialUpdate = 0
+
 
 
     def Reverse(self, lst):
@@ -602,7 +584,7 @@ class ScanFrame(tk.Frame):
         else:
             validation = self._validation
             text = pytesseract.image_to_string(Image.fromarray(image),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-            print("".join(text.split()).encode('utf8'))
+            #print("".join(text.split()).encode('utf8'))
             strVal = str(validation)
             models = json.loads(strVal)
             angleSame = 0
@@ -611,12 +593,9 @@ class ScanFrame(tk.Frame):
                 calib_result_pickle = Conveyor.getScan()
                 keystored = calib_result_pickle["key"]
                 valuestored = calib_result_pickle["value"]
-                
                 if keystored != "" and valuestored !="":
                     key = keystored
                     value = valuestored
-
-                #print(key)
                 
                 isExist = str("".join(text.split())).find(key.replace('"', ""))
                 if isExist >-1:
@@ -646,7 +625,7 @@ class ScanFrame(tk.Frame):
                         break
                     img = self.rotateBound(image, x)
                     text = pytesseract.image_to_string(Image.fromarray(img),lang='eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-')
-                    print("".join(text.split()).encode('utf8'))
+                    # print("".join(text.split()).encode('utf8'))
                     # gmt = time.gmtime()
                     # ts = calendar.timegm(gmt)
                     # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
@@ -678,15 +657,19 @@ class ScanFrame(tk.Frame):
                     if r == 1:
                         break
             
-        if r == 0:#
+        if r == 0:
             str1 = " " 
             if str(str1.join(line)) != self._lastFail:
-                self.scanned = ""
-                self._serialUpdate = 1
-                self._lastFail = str(str1.join(line))
-                Conveyor().enableLight("RED")
-                self._status = "Unit OCR Failed : Try to position the box in \n 0 or 180 degree and click Restart"
-                
+                if self.failedCount > 0 :
+                    self.scanned = ""
+                    self._serialUpdate = 1
+                    self.failedCount = 0
+                    self._lastFail = str(str1.join(line))
+                    Conveyor().enableLight("RED")
+                    self._status = "Unit OCR Failed : Try to position the box in \n 0 or 180 degree and click Restart"
+                else:
+                    self.failedCount = 1
+                    self._serialUpdate = 0                
 
     def gradiant(self,p1,p2):
         cal =  (p1[1]-p2[1])/(p2[0]-p1[0])
@@ -716,12 +699,17 @@ class ScanFrame(tk.Frame):
             oldModel = 0
             if model != "":
                 if model != str(datacollectionValidation["model"]):
-                    self.scanned = ""
-                    self._serialUpdate = 1
-                    #Conveyor().closeConveyor()
-                    Conveyor().enableLight("RED")
-                    self._status = "New Model "+datacollectionValidation["model"]+" found, '\n' Close "+model+" old model pallet and Click Restart '\n' or replace model and Click Restart!"
-                    oldModel = 1
+                    if self.failedCount>0:
+                        self.scanned = ""
+                        self._serialUpdate = 1
+                        self.failedCount = 0
+                        self._serialUpdate = 1 
+                        Conveyor().enableLight("RED")
+                        self._status = "New Model "+datacollectionValidation["model"]+" found, '\n' Close "+model+" old model pallet and Click Restart '\n' or replace model and Click Restart!"
+                        oldModel = 1
+                    else:
+                        self.failedCount = 1
+                        self._serialUpdate = 0   
             
 
             if oldModel == 0:
@@ -735,11 +723,16 @@ class ScanFrame(tk.Frame):
                 if valid !='0':
                     str1 = " " 
                     if str(str1.join(line)) != self._lastFail:
-                        self.scanned = ""
-                        self._serialUpdate = 1
-                        self._lastFail = str(str1.join(line))
-                        Conveyor().enableLight("RED")
-                        self._status = "Unit Validation Failed: Try to position the box in \n 0 or 180 degree and click Restart"
+                        if self.failedCount > 0:
+                            self.failedCount = 0
+                            self.scanned = ""
+                            self._serialUpdate = 1
+                            self._lastFail = str(str1.join(line))
+                            Conveyor().enableLight("RED")
+                            self._status = "Unit Validation Failed: Try to position the box in \n 0 or 180 degree and click Restart"
+                        else:
+                            self.failedCount = 1
+                            self._serialUpdate = 0      
                         
                     return 1
 
@@ -780,12 +773,15 @@ class ScanFrame(tk.Frame):
                                     appData = {str("address"+str(c)): accessCode}
                                     postData.update(appData)
                                 else:
-                                    failedAccessCode = "0"
-                                    self.scanned = ""
-                                    self._serialUpdate = 1
-                                    Conveyor().enableLight("RED")
-                                    self._status = "NVG Failed for access Code: Try to  \n position the box in  0 or 180 degree and click Restart"
-                                    
+                                    if self.failedCount> 0:
+                                        failedAccessCode = "0"
+                                        self.scanned = ""
+                                        self._serialUpdate = 1
+                                        Conveyor().enableLight("RED")
+                                        self._status = "NVG Failed for access Code: Try to  \n position the box in  0 or 180 degree and click Restart"
+                                    else:
+                                        self.failedCount = 1
+                                        self._serialUpdate = 0 
 
                             rtype = open(get_correct_path("static/uploads/_rtype.txt")).readline().strip("\n")
                             if rtype != "":
@@ -807,14 +803,45 @@ class ScanFrame(tk.Frame):
                                 self._goodDataAvailable = str(str1.join(dataLine))
                             else:
                                 self._goodDataAvailable = str(str1.join(dataLine))
+                                print("con start")
+                                start = time.time()
+                                print(start)
+                                Conveyor().callConveyor()
+                                print('success')
+                                self._fullImage = 1
+                                if self._isFullImage == 1:
+                                    self._isFullImage = 1
+                                else:
+                                    self._isFullImage = 2
+                                self.scanned = ""
+                                self.cam = cam
+                                self._serialUpdate = 0
+                                self._status = ""
+                                self._lastFail = ""
+                                self.scannedcount = self.scannedcount + 1
+                                self.controller.palletSerialCount.set(self.scannedcount)
+                                if self.controller.palletMaxCount.get() == self.scannedcount:
+                                    Conveyor().enableLight("RED")
+                                    self.scanned = ""
+                                    self._serialUpdate = 1
+                                    self._status = "Pallet Max Count reached"
+
+                                start = time.time()
+                                print(start)
+                                return 1
                                 response = Deepblu().postScannedSerial(line)
-                                print(response.status_code)
+                                print(response.json())
                                 if response.status_code == 201:
                                     print("con start")
                                     start = time.time()
                                     print(start)
                                     Conveyor().callConveyor()
                                     print('success')
+                                    self._fullImage = 1
+                                    if self._isFullImage == 1:
+                                        self._isFullImage = 1
+                                    else:
+                                        self._isFullImage = 2
                                     self.scanned = ""
                                     self.cam = cam
                                     self._serialUpdate = 0
@@ -984,6 +1011,8 @@ class ScanFrame(tk.Frame):
                 self._lastFail = ""
                 self._status = ""
                 self.cam = ""
+                self._fullImage = 0
+                self._isFullImage = 0
                 self.scannedcount = 0
                 self.controller.palletSerialCount.set(self.scannedcount)
                 self.controller.modelName.set("NONE")
@@ -1115,8 +1144,7 @@ def Close():
     if answer:
         app.destroy()
         resetScanData()
-        vs.release()
-        vs1.release()
+        
 
 def resetScanData():
     open(get_correct_path("static/uploads/_customer.txt"), "w").write("")
@@ -1133,14 +1161,7 @@ def disable_event():
 
 if __name__ == "__main__":
     global vs,vs1,lastScan
-    vs  = cv2.VideoCapture(Config.CAMERA_NO)
-    vs .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
-    vs .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
-    vs.set(cv2.CAP_PROP_AUTOFOCUS, 0) 
-    vs1  = cv2.VideoCapture(Config.CAMERA_NO_TWO)
-    vs1 .set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_WIDTH)
-    vs1 .set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_HEIGHT)
-    vs1 .set(cv2.CAP_PROP_AUTOFOCUS, 0) 
+    
     app = Arp()
     app.protocol("WM_DELETE_WINDOW", disable_event)
     app.mainloop()
