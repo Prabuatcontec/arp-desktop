@@ -367,6 +367,7 @@ class ScanFrame(tk.Frame):
                     self.scanned = ""
                     self._serialUpdate = 1
                     self._status = "Pallet Max Count reached"
+                    return 1
                 if cam == "1":
                     #camera1  roate and read the barcode
                     self.ang = [-90, 180]
