@@ -362,7 +362,7 @@ class ScanFrame(tk.Frame):
         if image is not None:
             #image = cv2.imread("5.png")
             if(customer != ""):
-                if self.controller.palletMaxCount.get() == self.scannedcount and self.controller.palletMaxCount.get() > 0:
+                int(self.controller.palletMaxCount.get()) == int(self.scannedcount) and int(self.controller.palletMaxCount.get()):
                     Conveyor().enableLight("RED")
                     self.scanned = ""
                     self._serialUpdate = 1
