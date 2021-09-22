@@ -325,10 +325,7 @@ class ScanFrame(tk.Frame):
                     lengthCnt = len(datacollectionValidation['data'])
                     if isExist >-1:
                         lengthCnt = 3
-                    print(lengthCnt)
-                    print(len(self.serials))
                     if lengthCnt == len(self.serials):
-                        print("postmanual1")
                         self.postManualData(self.serials,  datacollectionValidation)
             time.sleep(.5)
             lo.release()
@@ -336,32 +333,28 @@ class ScanFrame(tk.Frame):
 
     # Manual Post to deepblu #
     def postManualData(self, line, datacollectionValidation):
-        print("postmanual2")
         isExist = str(datacollectionValidation['model']).find("NVG")
         accsLine = ""
         if isExist >-1:
             accsLine = line[2]
             line.pop()
         
-        print(line)
+        
         self.serials = []
         validDc = ModelValidation().validate(
                         datacollectionValidation["data"], line)
-        print("postmanual3")
         if validDc == '0':
-            print(validDc)
+            postData = {}
             for c in range(len(line)):
-                print('c')
-                print(c)
-                print(line[c])
                 newline = line[c].replace("\n","").replace(" ","")
-                postData = {}
+                
                 if(c == 0):
                     appData = {"serial": newline}
                     postData.update(appData)
                 else:
                     appData = {str("address"+str(c)): newline}
                     postData.update(appData)
+
 
             
             customer = self._customer
@@ -395,9 +388,7 @@ class ScanFrame(tk.Frame):
                     appData = {str("address"+str(c)): type}
                     postData.update(appData)
             line = str(postData).replace("'",'"')
-            print(postData)
             response = Deepblu().postScannedSerial(line)
-            print(response.status_code)
             if response.status_code == 201:
                 self.outputDisplay.set("Posted!!!")
                 Conveyor().callConveyor()
@@ -1044,7 +1035,6 @@ class ScanFrame(tk.Frame):
                             else:
                                 self._goodDataAvailable = str(str1.join(dataLine))
                                 response = Deepblu().postScannedSerial(line)
-                                print(response.status_code)
                                 if response.status_code == 201:
                                     start = time.time()
                                     print(start)
