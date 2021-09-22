@@ -76,7 +76,9 @@ class ScanFrame(tk.Frame):
 
         # Pallet 
         entryNombreEntry = tk.Entry(frameEntryData)
+        entryNombreEntry.config(textvariable=controller.updatePalletId, relief='flat')
         entryNombreEntry.grid(row=0, column=1, sticky='w')
+        
 
         # Close Pallet Button #
         buttonEntryData = tk.Button(frameEntryData, text="Close Pallet", width=10, height=2, background='#D10000',  command=self.ClosePallet)
@@ -125,18 +127,6 @@ class ScanFrame(tk.Frame):
         buttonEntryData = tk.Button(frameButRight, text="Close", width=10, height=2, background='#D10000',  command=self.Close)
         buttonEntryData.grid(row=0, column=2, padx = 10)
 
-        
-
-
-       
-        # # Pallet Name Dispaly #
-        # entryNombreEntry.config(textvariable=controller.updatePalletId, relief='flat')
-        # entryNombreEntry.grid(row=0, column=6)
-
-        
-
-        
-        
         # Maximum Pallet Count #
         frameEntryData = tk.Frame(self, width=100, height=10)
         frameEntryData.grid(row=0, column=5, sticky='nsew', padx=1, pady=1)
@@ -230,7 +220,7 @@ class ScanFrame(tk.Frame):
                 postData.update(appData)
             _customerModels = json.dumps(postData)
 
-            self._validation =  json.loads(self._validation)
+            #self._validation =  json.loads(self._validation)
 
             self.model = tk.StringVar()
             self.dc = tk.StringVar()
@@ -289,8 +279,11 @@ class ScanFrame(tk.Frame):
     def chooseModel(self,*args):
         if (self.model.get() != "Select Model"):
             self.selectedKey = self.model.get()
+
+            strVal = str(self._validation)
+            models = json.loads(strVal)
             
-            for key, value in self._validation.items():
+            for key, value in models.items():
                 if self.selectedKey == key:
                     self.selectedValue = value
                     break
@@ -327,7 +320,15 @@ class ScanFrame(tk.Frame):
                 self.outputDisplay.set(str(self.serials))
                 if str(self.dc.get()) != "":
                     datacollectionValidation =json.loads(str(self.dc.get()))
-                    if len(datacollectionValidation['data']) == len(self.serials):
+                    isExist = str(datacollectionValidation['model']).find("NVG")
+
+                    lengthCnt = len(datacollectionValidation['data'])
+                    if isExist >-1:
+                        lengthCnt = 3
+                    print(lengthCnt)
+                    print(len(self.serials))
+                    if lengthCnt == len(self.serials):
+                        print("postmanual1")
                         self.postManualData(self.serials,  datacollectionValidation)
             time.sleep(.5)
             lo.release()
@@ -335,11 +336,24 @@ class ScanFrame(tk.Frame):
 
     # Manual Post to deepblu #
     def postManualData(self, line, datacollectionValidation):
+        print("postmanual2")
+        isExist = str(datacollectionValidation['model']).find("NVG")
+        accsLine = ""
+        if isExist >-1:
+            accsLine = line[2]
+            line.pop()
+        
+        print(line)
         self.serials = []
         validDc = ModelValidation().validate(
                         datacollectionValidation["data"], line)
+        print("postmanual3")
         if validDc == '0':
+            print(validDc)
             for c in range(len(line)):
+                print('c')
+                print(c)
+                print(line[c])
                 newline = line[c].replace("\n","").replace(" ","")
                 postData = {}
                 if(c == 0):
@@ -364,6 +378,11 @@ class ScanFrame(tk.Frame):
             appData = {"source": "DeTrash"}
             postData.update(appData)
             if (str(customer) == "FRONTIERC0"):
+
+                if accsLine != "":
+                    c = c+1
+                    appData = {str("address"+str(c)): accsLine}
+                    postData.update(appData)
                 rtype = self._rType
                 if rtype != "":
                     if rtype == "Field Return":
@@ -375,13 +394,23 @@ class ScanFrame(tk.Frame):
                     c = c+1
                     appData = {str("address"+str(c)): type}
                     postData.update(appData)
-                line = str(postData).replace("'",'"')
-                response = Deepblu().postScannedSerial(line)
-
+            line = str(postData).replace("'",'"')
+            print(postData)
+            response = Deepblu().postScannedSerial(line)
+            print(response.status_code)
             if response.status_code == 201:
                 self.outputDisplay.set("Posted!!!")
+                Conveyor().callConveyor()
+                print('success')
+                self.scanned = ""
+                self._serialUpdate = 0
+                self._status = ""
+                self._lastFail = ""
+                self.scannedcount = self.scannedcount + 1
+                self.controller.palletSerialCount.set(self.scannedcount)
             else:
                 result = response.json()
+                print(result)
                 resultType = result['type']
                 
                 if resultType == 3:
