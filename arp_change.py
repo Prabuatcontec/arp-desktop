@@ -47,90 +47,7 @@ class ScanFrame(tk.Frame):
         frameEntryData = tk.Frame(self, width=100, height=10)
         frameEntryData.grid(row=0, column=0, sticky='nsew', padx=1, pady=1)
 
-        # Login Name Display #
-        labData = tk.Label(frameEntryData, foreground="#810541" ,  textvariable=controller.loginName)
-        labData.grid(row=0, column=0)
-        entryNombreEntry = tk.Entry(frameEntryData)
-        entryNombreEntry.grid(row=0, column=1, sticky='w')
-
-        # Pallet Name Dispaly #
-        entryNombreEntry.config(textvariable=controller.updatePalletId, relief='flat')
-        entryNombreEntry.grid(row=0, column=6)
-
-        # Close Pallet Button #
-        buttonEntryData = tk.Button(frameEntryData, text="Close Pallet", width=10, height=2, background='#D10000',  command=self.ClosePallet)
-        buttonEntryData.grid(row=2, column=1, pady=20)
-
-        
-        frameButtonOne = tk.Frame(self, width=240, height=10)
-        frameButtonOne.grid(row=0, column=1, padx=20, pady=1, sticky='nsew')
-
-        # Restart Button #
-        restartButton = tk.Button(frameButtonOne, bg='#18A558', text='Restart', height=2, command=self.removeStatus)
-        restartButton.grid(row=0, column=1, padx=20, pady=1, sticky='w')
-
-        # Model Name Title #
-        frameEntryModel = tk.Frame(self, width=100, height=10)
-        frameEntryModel.grid(row=0, column=2, sticky='nsew', padx=20, pady=1)
-        frameEntryModel = tk.Label(frameEntryModel, foreground='#C32148', textvariable=self.controller.modelNameTitle, font=(None, 15))
-        frameEntryModel.grid(row=0, column=1)
-
-        # Model Name Display #
-        frameEntryModel = tk.Frame(self, width=100, height=10)
-        frameEntryModel.grid(row=0, column=3, sticky='nsew', padx=2, pady=1)
-        frameEntryModel = tk.Label(frameEntryModel, foreground='#C32148', textvariable=self.controller.modelName, font=(None, 20))
-        frameEntryModel.grid(row=0, column=1)
-
-        # Pallet Scanned Count Title #
-        frameEntryModel = tk.Frame(self, width=100, height=10)
-        frameEntryModel.grid(row=0, column=4, sticky='nsew', padx=20, pady=1)
-        frameEntryModel = tk.Label(frameEntryModel, foreground='#C32148', textvariable=self.controller.palletSerialCountTitle, font=(None, 15))
-        frameEntryModel.grid(row=0, column=1)
-
-        # Pallet Scanned Count #
-        frameEntryModel = tk.Frame(self, width=100, height=10)
-        frameEntryModel.grid(row=0, column=5, sticky='nsew', padx=2, pady=1)
-        frameEntryModel = tk.Label(frameEntryModel, foreground='#C32148', textvariable=self.controller.palletSerialCount, font=(None, 20))
-        frameEntryModel.grid(row=0, column=1)
-        
-        # Maximum Pallet Count #
-        frameEntryData = tk.Frame(self, width=100, height=10)
-        frameEntryData.grid(row=0, column=6, sticky='nsew', padx=1, pady=1)
-
-        entryNombreEntry = tk.Entry(frameEntryData)
-        entryNombreEntry.grid(row=0, column=6, sticky='w')
-        
-        entryNombreEntry.config(textvariable=controller.palletMaxCount, relief='flat')
-        entryNombreEntry.grid(row=0, column=6)
-
-        # Logout #
-        frameButRight = tk.Frame(self, width=240, height=10)
-        frameButRight.grid(row=0, column=7, padx=20, pady=1, sticky='nsew')
-        buttonEntryData = tk.Button(frameButRight, text="Logout", width=10, height=2, background='#FFA500',  command=lambda: controller.show_frame(LoginFrame))
-        buttonEntryData.grid(row=0, column=0, padx = 100)
-
-        # Manual Scan Button #
-        buttonEntryData = tk.Button(frameButRight, text="Manual", width=10, height=2, background='#D10000',  command=self.loadPopup)
-        buttonEntryData.grid(row=0, column=1, padx = 20)
-
-        # Close Button #
-        buttonEntryData = tk.Button(frameButRight, text="Close", width=10, height=2, background='#D10000',  command=self.Close)
-        buttonEntryData.grid(row=0, column=2, padx = 20)
-
-        # Return Type #
-        self.returnType = tk.StringVar()
-        frame = tk.Frame(self, width=240, height=10)
-        frame.grid(row=2, column=0, padx=1, pady=20, sticky='nsew')
-
-        frame._grid_info = frame.grid_info()
-        frame.grid_remove()
-        somechoices = ["Field Return", "Customer Return", "Technical Support Return"]
-        popupMenu1 = tk.OptionMenu(frame, self.returnType, *somechoices)
-        self.returnType.set("Customer Return")
-        popupMenu1.grid(row=2, column=2)
-        self.returnType.trace('w', self.returnTypeSelect)
-
-        # Select Customer #
+         # Select Customer #
         self.customerSelect = tk.StringVar()
         somechoices = []
         for value in Connection().getCustomer():
@@ -140,9 +57,101 @@ class ScanFrame(tk.Frame):
         self.customerSelect.set("Pick a Customer")
 
         popupMenu = tk.OptionMenu(frameEntryData, self.customerSelect, *somechoices)
-        popupMenu.grid(row=2, column=0, pady=20)
+        popupMenu.grid(row=0, column=0)
 
         self.customerSelect.trace('w', self.chooseCustomer)
+
+        # Return Type #
+        self.returnType = tk.StringVar()
+        frame = tk.Frame(self, width=240, height=10)
+        frame.grid(row=1, column=0, pady=3, sticky='nsew')
+
+        frame._grid_info = frame.grid_info()
+        frame.grid_remove()
+        somechoices = ["Field Return", "Customer Return", "Technical Support Return"]
+        popupMenu1 = tk.OptionMenu(frame, self.returnType, *somechoices)
+        self.returnType.set("Customer Return")
+        popupMenu1.grid(row=0, column=0, pady=3)
+        self.returnType.trace('w', self.returnTypeSelect)
+
+        # Pallet 
+        entryNombreEntry = tk.Entry(frameEntryData)
+        entryNombreEntry.grid(row=0, column=1, sticky='w')
+
+        # Close Pallet Button #
+        buttonEntryData = tk.Button(frameEntryData, text="Close Pallet", width=10, height=2, background='#D10000',  command=self.ClosePallet)
+        buttonEntryData.grid(row=1, column=1, pady=3)
+
+        # Pallet Scanned Count Title #
+        frameEntryModelFrame = tk.Frame(self, width=100, height=10)
+        frameEntryModelFrame.grid(row=0, column=2, sticky='nsew', padx=20, pady=1)
+        frameEntryModel = tk.Label(frameEntryModelFrame, foreground='#C32148', textvariable=self.controller.palletSerialCountTitle, font=(None, 12))
+        frameEntryModel.grid(row=0, column=0)
+
+        # Pallet Scanned Count #
+        frameEntryModel = tk.Label(frameEntryModelFrame, foreground='#C32148', textvariable=self.controller.palletSerialCount, font=(None, 15))
+        frameEntryModel.grid(row=0, column=1)
+
+        frameEntryModel = tk.Label(frameEntryModelFrame, foreground='#C32100', textvariable=self.controller.modelNameTitle, font=(None, 12))
+        frameEntryModel.grid(row=0, column=2)
+        frameEntryModel = tk.Label(frameEntryModelFrame, foreground='#C32100', textvariable=self.controller.modelName, font=(None, 15))
+        frameEntryModel.grid(row=0, column=3)
+
+        # Restart Button #
+        frameButtonOne = tk.Frame(self, width=100, height=10)
+        frameButtonOne.grid(row=1, column=3, sticky='nsew', padx=3)
+        restartButton = tk.Button(frameButtonOne, bg='#18A558', text='Restart', height=2, command=self.removeStatus)
+        restartButton.grid(row=0, column=0)
+        
+
+        frameEntryData = tk.Frame(self, width=100, height=10)
+        frameEntryData.grid(row=0, column=4, sticky='nsew', padx=1, pady=1)
+        # Login Name Display #
+        labData = tk.Label(frameEntryData, foreground="#810541" ,  textvariable=controller.loginName, font=(None, 20))
+        labData.grid(row=0, column=0)
+
+        # Logout #
+        frameButRight = tk.Frame(self, width=240, height=10)
+        frameButRight.grid(row=0, column=6, padx=20, pady=1, sticky='nsew')
+
+        # Manual Scan Button #
+        buttonEntryData = tk.Button(frameButRight, text="Manual", width=10, height=2, background='#D10000',  command=self.loadPopup)
+        buttonEntryData.grid(row=0, column=0, padx = 10)
+
+        buttonEntryData = tk.Button(frameButRight, text="Logout", width=10, height=2, background='#FFA500',  command=lambda: controller.show_frame(LoginFrame))
+        buttonEntryData.grid(row=0, column=1)
+
+        # Close Button #
+        buttonEntryData = tk.Button(frameButRight, text="Close", width=10, height=2, background='#D10000',  command=self.Close)
+        buttonEntryData.grid(row=0, column=2, padx = 10)
+
+        
+
+
+       
+        # # Pallet Name Dispaly #
+        # entryNombreEntry.config(textvariable=controller.updatePalletId, relief='flat')
+        # entryNombreEntry.grid(row=0, column=6)
+
+        
+
+        
+        
+        # Maximum Pallet Count #
+        frameEntryData = tk.Frame(self, width=100, height=10)
+        frameEntryData.grid(row=0, column=5, sticky='nsew', padx=1, pady=1)
+
+        labData = tk.Label(frameEntryData, foreground="#C32100" ,  text="Max Count:")
+        labData.grid(row=0, column=0)
+
+        entryNombreEntry = tk.Entry(frameEntryData)
+        entryNombreEntry.grid(row=0, column=1, sticky='w')
+        
+        entryNombreEntry.config(textvariable=controller.palletMaxCount, relief='flat')
+        entryNombreEntry.grid(row=0, column=1)
+
+        
+
 
         # Video Frame #
         frameVideo = tk.Frame(self, colormap="new")
@@ -190,7 +199,7 @@ class ScanFrame(tk.Frame):
         
         self.p = []
         self.ang = []
-        
+
     # Close button on scan screen #
     def Close(self):
         answer = askokcancel(
@@ -206,67 +215,74 @@ class ScanFrame(tk.Frame):
     
     # Manual Popup #
     def loadPopup(self):
-        top = self.top = tk.Toplevel(self)
-        self.top.geometry("%dx%d%+d%+d" % (500, 300, 10, 50))
-        postData = {}
-        for value in Connection().getModels(self._customer):
-            appData = {value[1]:value[2]}
-            postData.update(appData)
-        _customerModels = json.dumps(postData)
-
-        self._validation =  json.loads(self._validation)
-
-        self.model = tk.StringVar()
-        self.dc = tk.StringVar()
-        frameme = tk.Frame(top, width=340, height=30)
-        frameme.grid(row=2, column=0, padx=1, pady=20, sticky='nsew')
-        frameme.pack()
-        somechoices = json.loads(_customerModels)
-        popupMenu1 = tk.OptionMenu(frameme, self.model, *somechoices)
-        self.model.trace('w', self.chooseModel)
-
-        modelDataDetail = Conveyor.getScan()
-        model = modelDataDetail["model"]
-        value = modelDataDetail["value"]
-        if model != "":
-            self.model.set(model)
-            self.dc.set(value)
-        else:
-            self.model.set("Select Model")
-        popupMenu1.grid(row=2, column=2)
-
-        self.serials = []
-        self.cnt = 0
-        self.scannedValue = ""
-        self.selectedKey = ""
-        self.selectedValue = ""
         
-        self.myLabel = tk.Label(top, text='Scan label')
-        self.myLabel.pack(pady=4)
-        self.sv = tk.StringVar()
-        self.outputDisplay = tk.StringVar()
-        self.outputDisplay.set("")
-        self.sv.trace("w",  self.scanData)
-        self.myEntryBox = tk.Entry(top, textvariable = self.sv)
-        self.myEntryBox.focus()
-        self.myEntryBox.pack()
+        if self._customer == "":
+            showinfo(
+                title='Select Customer',
+                message='Choose Customer before try Manual',
+            icon=WARNING)
+        else :
+            top = self.top = tk.Toplevel(self)
+            self.top.geometry("%dx%d%+d%+d" % (500, 300, 10, 50))
+            postData = {}
+            for value in Connection().getModels(self._customer):
+                appData = {value[1]:value[2]}
+                postData.update(appData)
+            _customerModels = json.dumps(postData)
 
-        self.myEntryLabel = tk.Label(top, textvariable=self.outputDisplay)
-        self.myEntryLabel.pack(pady=40)
+            self._validation =  json.loads(self._validation)
 
-        self.closeButton = tk.Button(top, text='Close', command=self.ClosePopup)
-        self.closeButton.pack()
+            self.model = tk.StringVar()
+            self.dc = tk.StringVar()
+            frameme = tk.Frame(top, width=340, height=30)
+            frameme.grid(row=2, column=0, padx=1, pady=20, sticky='nsew')
+            frameme.pack()
+            somechoices = json.loads(_customerModels)
+            popupMenu1 = tk.OptionMenu(frameme, self.model, *somechoices)
+            self.model.trace('w', self.chooseModel)
 
-        # Manual Serial Entry #
-        self.smyLabelAcc = tk.Label(top, text='')
-        self.smyLabelAcc.pack(padx=6, pady=40)
-        self.myLabelAcc = tk.Label(top, text='Manual Entry')
-        self.myLabelAcc.pack()
-        self.myEntryBoxacc = tk.Entry(top)
-        self.myEntryBoxacc.pack()
+            modelDataDetail = Conveyor.getScan()
+            model = modelDataDetail["model"]
+            value = modelDataDetail["value"]
+            if model != "":
+                self.model.set(model)
+                self.dc.set(value)
+            else:
+                self.model.set("Select Model")
+            popupMenu1.grid(row=2, column=2)
 
-        
-        threading.Thread(target=self.scannedValueAdded, daemon=True).start()
+            self.serials = []
+            self.cnt = 0
+            self.scannedValue = ""
+            self.selectedKey = ""
+            self.selectedValue = ""
+            
+            self.myLabel = tk.Label(top, text='Scan label')
+            self.myLabel.pack(pady=4)
+            self.sv = tk.StringVar()
+            self.outputDisplay = tk.StringVar()
+            self.outputDisplay.set("")
+            self.sv.trace("w",  self.scanData)
+            self.myEntryBox = tk.Entry(top, textvariable = self.sv)
+            self.myEntryBox.focus()
+            self.myEntryBox.pack()
+
+            self.myEntryLabel = tk.Label(top, textvariable=self.outputDisplay)
+            self.myEntryLabel.pack(pady=20)
+
+            self.closeButton = tk.Button(top, text='Close', command=self.ClosePopup)
+            self.closeButton.pack()
+
+            # Manual Serial Entry #
+            self.smyLabelAcc = tk.Label(top, text='')
+            self.smyLabelAcc.pack(padx=6, pady=2)
+            self.myLabelAcc = tk.Label(top, text='Manual Entry')
+            self.myLabelAcc.pack()
+            self.myEntryBoxacc = tk.Entry(top)
+            self.myEntryBoxacc.pack()
+
+            
+            threading.Thread(target=self.scannedValueAdded, daemon=True).start()
        
 
     # Choose Model #
@@ -280,6 +296,7 @@ class ScanFrame(tk.Frame):
                     break
             
             self.serials = []
+            self.outputDisplay.set("")
             self.dc.set(self.selectedValue)
         
  
