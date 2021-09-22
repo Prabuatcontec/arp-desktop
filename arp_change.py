@@ -1011,6 +1011,7 @@ class ScanFrame(tk.Frame):
                                         self._failedCount = 0
                                         Conveyor().enableLight("RED")
                                         self._status = "NVG Failed for access Code: Try to  \n position the box in  0 or 180 degree and click Restart"
+                                        return 1
                                     else:
                                         self._failedCount = 1
                                     
