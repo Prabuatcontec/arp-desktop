@@ -155,6 +155,7 @@ class ScanFrame(tk.Frame):
         frame_video1.grid(row=3, column=1, padx=20, pady=1, sticky='e')
         
         self.stopEvent = None
+        self.stopEventOne = None
         self.frame = frame_video
         self.frame1 = frame_video1
 
@@ -187,11 +188,12 @@ class ScanFrame(tk.Frame):
         
         #vs = VideoStream(0)
         self.cam = ""
-        self.stopEvent = threading.Event()
-        self.thread = threading.Thread(target=self.videoLoop, args=())
+        self.stopEvent = True
+        self.stopEventOne = True
+        self.thread = threading.Thread(target=self.videoCheck, args=())
         self.thread.start()
-        self.thread = threading.Thread(target=self.videoLoopOne, args=())
-        self.thread.start()
+        # self.thread = threading.Thread(target=self.videoLoopOne, args=())
+        # self.thread.start()
         self.panel = None
         self.panel1 = None
         
@@ -217,12 +219,21 @@ class ScanFrame(tk.Frame):
         image = Image.fromarray(image)
         image = ImageTk.PhotoImage(image)
         return image
+
+    def videoCheck(self):
+        while True:
+            if self.cam == "" or self.cam == "0":
+                self.videoLoop()
+            if self.cam == "" or self.cam == "1":
+                self.videoLoopOne()
     
     def videoLoop(self):
-        while not self.stopEvent.is_set():
+        while self.stopEvent == True:
             
             if self.cam == "" or self.cam == "0":
-                
+                print("Cam 0")
+                start = time.time()
+                print(start)
                 #print(self.cam)
                 customer = self._customer
                 if self.vs is None or not self.vs.isOpened():
@@ -262,6 +273,8 @@ class ScanFrame(tk.Frame):
 
                 image = readFrame
                 self.ProcessCam(image, customer, "0")
+                self.stopEvent = False
+                self.stopEventOne = True
 
     def alertProcess(self, frameimage):
         _status = self._status
@@ -284,9 +297,12 @@ class ScanFrame(tk.Frame):
         return frameimage
         
     def videoLoopOne(self):
-        while not self.stopEvent.is_set():
+        while self.stopEventOne == True:
             
             if self.cam == "" or self.cam == "1":
+                print("Cam 1")
+                start = time.time()
+                print(start)
                 #print(self.cam)
                 customer = self._customer
                 if self.vs1 is None or not self.vs1.isOpened():
@@ -325,6 +341,8 @@ class ScanFrame(tk.Frame):
 
                 image = readFrame
                 self.ProcessCam(image, customer, "1")
+                self.stopEvent = True
+                self.stopEventOne = False
     
     def camNotAvailable(self, alert, imgId):
         if imgId == "0":
@@ -344,11 +362,12 @@ class ScanFrame(tk.Frame):
         if image is not None:
             #image = cv2.imread("5.png")
             if(customer != ""):
-                if self.controller.palletMaxCount.get() == self.scannedcount and self.controller.palletMaxCount.get() > 0:
+                int(self.controller.palletMaxCount.get()) == int(self.scannedcount) and int(self.controller.palletMaxCount.get()):
                     Conveyor().enableLight("RED")
                     self.scanned = ""
                     self._serialUpdate = 1
                     self._status = "Pallet Max Count reached"
+                    return 1
                 if cam == "1":
                     #camera1  roate and read the barcode
                     self.ang = [-90, 180]
