@@ -838,7 +838,7 @@ class ScanFrame(tk.Frame):
                 
                 isExist = str("".join(text.split())).find(key.replace('"', ""))
                 if isExist >-1:
-                    print(90)
+                    #print(90)
                     isExist = str(key.replace('"', "")).find("NVG")
                     if isExist >-1 and len(line)<2:
                         sn = self.findSN(text)
