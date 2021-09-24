@@ -227,6 +227,8 @@ class ScanFrame(tk.Frame):
             if self.top != None:
                 self.top.destroy()
             top = self.top = tk.Toplevel(self)
+            img = tk.Image("photo", file=getCorrectPath("static/uploads/manual.png"))
+            top.tk.call('wm','iconphoto',top._w, img)
             self.top.geometry("%dx%d%+d%+d" % (500, 400, 10, 50))
             postData = {}
             for value in Connection().getModels(self._customer):
@@ -1279,7 +1281,6 @@ class Arp(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-
         self.title('CONTEC ARP')
         # Moved StringVar()'s to the main class
         self.loginName = tk.StringVar()
@@ -1352,6 +1353,8 @@ if __name__ == "__main__":
     global vs,vs1,lastScan
     app = Arp()
     app.protocol("WM_DELETE_WINDOW", disable_event)
+    img = tk.Image("photo", file=getCorrectPath("static/uploads/auto.png"))
+    app.tk.call('wm','iconphoto',app._w, img)
     app.mainloop()
     MAINTENANCE_INTERVAL = .1
     
