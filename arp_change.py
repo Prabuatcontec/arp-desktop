@@ -21,6 +21,9 @@ from tkinter.ttk import Progressbar
 import requests
 from modelunitvalidation import ModelValidation
 from tkinter.messagebox import askokcancel, showinfo, WARNING
+#import newrelic
+#import newrelic.agent
+
 
 class HomeFrame(tk.Frame):
     def __init__(self, parent, controller):
@@ -185,11 +188,20 @@ class ScanFrame(tk.Frame):
         self.thread.start()
         self.panel = None
         self.panel1 = None
+        self.top = None
         self._rType = "Customer Return"
         
         self.p = []
         self.ang = []
+        #self.bg_task()
 
+    # @newrelic.agent.background_task() 
+    # def bg_task(self):
+    #     # do some type of work in this background task...
+    #     application = newrelic.agent.application()
+    #     #application = newrelic.agent.register_application(timeout=10)
+    #     result = newrelic.agent.record_custom_event('ArpDetrash', {'pallet':'ARP1213133123'}, application)
+    #     print(result)
     # Close button on scan screen #
     def Close(self):
         answer = askokcancel(
@@ -212,8 +224,10 @@ class ScanFrame(tk.Frame):
                 message='Choose Customer before try Manual',
             icon=WARNING)
         else :
+            if self.top != None:
+                self.top.destroy()
             top = self.top = tk.Toplevel(self)
-            self.top.geometry("%dx%d%+d%+d" % (500, 300, 10, 50))
+            self.top.geometry("%dx%d%+d%+d" % (500, 400, 10, 50))
             postData = {}
             for value in Connection().getModels(self._customer):
                 appData = {value[1]:value[2]}
@@ -239,7 +253,8 @@ class ScanFrame(tk.Frame):
                 self.dc.set(value)
             else:
                 self.model.set("Select Model")
-            popupMenu1.grid(row=2, column=2)
+            popupMenu1.grid(row=2, column=2,
+               ipady=6)
 
             self.serials = []
             self.cnt = 0
@@ -253,14 +268,16 @@ class ScanFrame(tk.Frame):
             self.outputDisplay = tk.StringVar()
             self.outputDisplay.set("")
             self.sv.trace("w",  self.scanData)
-            self.myEntryBox = tk.Entry(top, textvariable = self.sv)
+            self.myEntryBox = tk.Entry(top, textvariable = self.sv, font=(None, 20))
+
             self.myEntryBox.focus()
-            self.myEntryBox.pack()
+            self.myEntryBox.pack(
+               ipady=8)
 
-            self.myEntryLabel = tk.Label(top, textvariable=self.outputDisplay)
-            self.myEntryLabel.pack(pady=20)
+            self.myEntryLabel = tk.Label(top, height=2, textvariable=self.outputDisplay)
+            self.myEntryLabel.pack(pady=2)
 
-            self.closeButton = tk.Button(top, text='Close', command=self.ClosePopup)
+            self.closeButton = tk.Button(top, height=2, text='Close', command=self.ClosePopup)
             self.closeButton.pack()
 
             # Manual Serial Entry #
@@ -268,8 +285,9 @@ class ScanFrame(tk.Frame):
             self.smyLabelAcc.pack(padx=6, pady=2)
             self.myLabelAcc = tk.Label(top, text='Manual Entry')
             self.myLabelAcc.pack()
-            self.myEntryBoxacc = tk.Entry(top)
-            self.myEntryBoxacc.pack()
+            self.myEntryBoxacc = tk.Entry(top, font=(None, 20))
+            self.myEntryBoxacc.pack(
+               ipady=8)
 
             
             threading.Thread(target=self.scannedValueAdded, daemon=True).start()
@@ -596,7 +614,7 @@ class ScanFrame(tk.Frame):
                             i = i - 1
                             if(int(cv2.contourArea(c))  == an[0]):
                                 if(self._serialC == 0 ):
-                                    time.sleep(.1)
+                                    #time.sleep(.1)
                                     self._serialC = 1
                                 else:
                                     self._serialC = 0
@@ -1004,16 +1022,12 @@ class ScanFrame(tk.Frame):
                                     appData = {str("address"+str(c)): accessCode}
                                     postData.update(appData)
                                 else:
-                                    if self._failedCount > 0 :
-                                        failedAccessCode = "0"
-                                        self.scanned = ""
-                                        self._serialUpdate = 1
-                                        self._failedCount = 0
-                                        Conveyor().enableLight("RED")
-                                        self._status = "NVG Failed for access Code: Try to  \n position the box in  0 or 180 degree and click Restart"
-                                        return 1
-                                    else:
-                                        self._failedCount = 1
+                                    failedAccessCode = "0"
+                                    self.scanned = ""
+                                    self._serialUpdate = 1
+                                    Conveyor().enableLight("RED")
+                                    self._status = "NVG Failed for access Code: Try to  \n position the box in  0 or 180 degree and click Restart"
+                                    return 1
                                     
 
                             rtype = self._rType
@@ -1334,9 +1348,11 @@ def disable_event():
     pass
 
 if __name__ == "__main__":
+    #newrelic.agent.initialize('newrelic.ini')
     global vs,vs1,lastScan
     app = Arp()
     app.protocol("WM_DELETE_WINDOW", disable_event)
     app.mainloop()
     MAINTENANCE_INTERVAL = .1
+    
 
