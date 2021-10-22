@@ -1151,8 +1151,7 @@ class ScanFrame(tk.Frame):
     def removeStatus(self):
         self._status = ""
         self._lastFail = ""
-        self._serialUpdate = ""
-        self.cam = ""
+        self._serialUpdate = 0
         Conveyor().enableLight("OFF")
 
     # Select Customer #
