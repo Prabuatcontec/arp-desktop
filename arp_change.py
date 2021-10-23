@@ -852,8 +852,10 @@ class ScanFrame(tk.Frame):
                 valuestored = modelDataDetail["value"]
                 
                 if keystored != "" and valuestored !="":
-                    key = keystored
-                    value = valuestored
+                    findNvg = keystored.split("NVG448B")
+                    if(len(findNvg)<=1):
+                        key = keystored
+                        value = valuestored
 
                 
                 isExist = str("".join(text.split())).find(key.replace('"', ""))
