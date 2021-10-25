@@ -674,10 +674,10 @@ class ScanFrame(tk.Frame):
                         s = 1
                     if (s > 1):
                         self._serialUpdate = 1
-                        # gmt = time.gmtime()
-                        # ts = calendar.timegm(gmt)
-                        # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                        # cv2.imwrite(getCorrectPath("static/processingImg/111Bfrrot1boxER_%s.png") % fillenameImage, image)
+                        gmt = time.gmtime()
+                        ts = calendar.timegm(gmt)
+                        fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                        cv2.imwrite(getCorrectPath("static/processingImg/111Bfrrot1boxER_%s.png") % fillenameImage, image)
                         rev = self.Reverse(serials)
                         
                         validateDuplicate = self.checkDuplicate(serials, rev)
@@ -1140,7 +1140,7 @@ class ScanFrame(tk.Frame):
         findNs = findN.split("ADC")
         
         if(len(findNs)>0):
-            datas = re.sub(r"[^A-Z0-9]","",findNs[0])
+            datas = re.sub(r"[^A-F0-9]","",findNs[0])
             return datas[-12:] 
 
         return "0"
