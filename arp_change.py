@@ -6,6 +6,8 @@ from numpy.lib import math
 import cv2
 import numpy as np
 from pyzbar import pyzbar
+import calendar
+import random
 import time
 import re
 import os
@@ -580,6 +582,9 @@ class ScanFrame(tk.Frame):
         if image is not None:
             #image = cv2.imread("static/processingImg/1.png")
             if(customer != ""):
+                if self.controller.palletMaxCount.get() == "" or self.controller.palletMaxCount.get() == null:
+                    self.controller.palletMaxCount.set(0)
+                    
                 if int(self.controller.palletMaxCount.get()) == int(self.scannedcount) and int(self.controller.palletMaxCount.get()) > 0:
                     Conveyor().enableLight("RED")
                     self.scanned = ""
@@ -674,10 +679,10 @@ class ScanFrame(tk.Frame):
                         s = 1
                     if (s > 1):
                         self._serialUpdate = 1
-                        gmt = time.gmtime()
-                        ts = calendar.timegm(gmt)
-                        fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
-                        cv2.imwrite(getCorrectPath("static/processingImg/111Bfrrot1boxER_%s.png") % fillenameImage, image)
+                        # gmt = time.gmtime()
+                        # ts = calendar.timegm(gmt)
+                        # fillenameImage = str(str(ts)+'-'+str(random.randint(100000,999999)))
+                        # cv2.imwrite(getCorrectPath("static/processingImg/111Bfrrot1boxER_%s.png") % fillenameImage, image)
                         rev = self.Reverse(serials)
                         
                         validateDuplicate = self.checkDuplicate(serials, rev)
