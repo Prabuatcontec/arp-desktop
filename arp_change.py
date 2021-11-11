@@ -582,7 +582,7 @@ class ScanFrame(tk.Frame):
         if image is not None:
             #image = cv2.imread("static/processingImg/1.png")
             if(customer != ""):
-                if self.controller.palletMaxCount.get() == "" or self.controller.palletMaxCount.get() == null:
+                if self.controller.palletMaxCount.get() == "":
                     self.controller.palletMaxCount.set(0)
                     
                 if int(self.controller.palletMaxCount.get()) == int(self.scannedcount) and int(self.controller.palletMaxCount.get()) > 0:

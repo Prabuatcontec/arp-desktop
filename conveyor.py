@@ -77,10 +77,6 @@ class Conveyor(object):
             Config.API_MOTOR_URL + 'devices/1', data=json.dumps({"state": "ON"}),
             headers={'Content-Type': 'application/json'}
         )
-        res1 = requests.post(
-            Config.API_MOTOR_URL + 'devices/1', data=json.dumps({ "spd": "MED"}),
-            headers={'Content-Type': 'application/json'}
-        )
         return 1
 
     def closeConveyor(self):
@@ -93,6 +89,20 @@ class Conveyor(object):
             headers={'Content-Type': 'application/json'}
         )
         return 1
+
+    # def callContinuesConveyor(self):
+    #     res1 = requests.post(
+    #         Config.API_MOTOR_URL + 'devices/5', data=json.dumps({
+    #             "convtwo":"ON",
+    #             "convtwospd":"HIGH",
+    #             "convcam":"ON",
+    #             "convone":"ON",
+    #             "convonespd":"MED",
+    #             "light":"GREEN",
+    #                     }),
+    #         headers={'Content-Type': 'application/json'}
+    #     )
+    #     return 1
 
     def enableLight(self, state):
         return 1

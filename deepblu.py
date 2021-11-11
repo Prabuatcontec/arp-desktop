@@ -45,7 +45,7 @@ class Deepblu(object):
             print("Error with the connection")
 
     def postScannedSerial(self, line):
-        response = requests.post(Config.DEEPBLU_URL + '/autoreceive/automation', line,
+        response = requests.post(Config.DEEPBLU_URL + '/autoreceive/automationdata', line,
                                             headers={'Content-Type': 'application/json', 
                                             'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
                                             )

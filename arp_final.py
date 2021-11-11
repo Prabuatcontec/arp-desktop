@@ -222,6 +222,7 @@ class ScanFrame(tk.Frame):
 
     def videoCheck(self):
         while True:
+            print(time.time())
             if self.cam == "" or self.cam == "0":
                 self.videoLoop()
             if self.cam == "" or self.cam == "1":
@@ -229,7 +230,7 @@ class ScanFrame(tk.Frame):
     
     def videoLoop(self):
         while self.stopEvent == True:
-            
+            print("my cam 1" + self.cam)
             if self.cam == "" or self.cam == "0":
                 print("Cam 0")
                 start = time.time()
@@ -298,7 +299,7 @@ class ScanFrame(tk.Frame):
         
     def videoLoopOne(self):
         while self.stopEventOne == True:
-            
+            print("my cam" + self.cam)
             if self.cam == "" or self.cam == "1":
                 print("Cam 1")
                 start = time.time()
@@ -362,7 +363,7 @@ class ScanFrame(tk.Frame):
         if image is not None:
             #image = cv2.imread("5.png")
             if(customer != ""):
-                int(self.controller.palletMaxCount.get()) == int(self.scannedcount) and int(self.controller.palletMaxCount.get()):
+                if int(self.controller.palletMaxCount.get()) == int(self.scannedcount) and int(self.controller.palletMaxCount.get()):
                     Conveyor().enableLight("RED")
                     self.scanned = ""
                     self._serialUpdate = 1
@@ -827,54 +828,80 @@ class ScanFrame(tk.Frame):
                                 self._goodDataAvailable = str(str1.join(dataLine))
                             else:
                                 self._goodDataAvailable = str(str1.join(dataLine))
-                                
-                                response = Deepblu().postScannedSerial(line)
-                                print(response.json())
-                                if response.status_code == 201:
-                                    print("con start")
-                                    start = time.time()
-                                    print(start)
-                                    Conveyor().callConveyor()
-                                    print('success')
-                                    self._fullImage = 1
-                                    if self._isFullImage == 1:
-                                        self._isFullImage = 1
-                                    else:
-                                        self._isFullImage = 2
-                                    self.scanned = ""
-                                    self.cam = cam
-                                    self._serialUpdate = 0
-                                    self._status = ""
-                                    self._lastFail = ""
-                                    self.scannedcount = self.scannedcount + 1
-                                    self.controller.palletSerialCount.set(self.scannedcount)
-                                    if self.controller.palletMaxCount.get() == self.scannedcount:
-                                        Conveyor().enableLight("RED")
-                                        self.scanned = ""
-                                        self._serialUpdate = 1
-                                        self._status = "Pallet Max Count reached"
-
-                                    start = time.time()
-                                    print(start)
+                                print("con start")
+                                start = time.time()
+                                print(start)
+                                Conveyor().callConveyor()
+                                print('success')
+                                self._fullImage = 1
+                                if self._isFullImage == 1:
+                                    self._isFullImage = 1
                                 else:
-                                    result = response.json()
-                                    resultType = result['type']
-                                    print(resultType)
-                                    self._serialUpdate = 0
-                                    if resultType == 3:
-                                        Conveyor().enableLight("RED")
-                                        self.scanned = ""
-                                        self._serialUpdate = 1
-                                        self._status = "Deepblu Failed : Serial   is already received 3 times"
-                                    else:
-                                        self._serialUpdate = 0
-                                    if resultType == 1:
-                                        Conveyor().enableLight("RED")
-                                        self.scanned = ""
-                                        self._serialUpdate = 1
-                                        self._status = "Deepblu Failed : Serial   is already in Deepblu"
-                                    else:
-                                        self._serialUpdate = 0
+                                    self._isFullImage = 2
+                                self.scanned = ""
+                                self.cam = cam
+                                print(self.cam)
+                                self._serialUpdate = 0
+                                self._status = ""
+                                self._lastFail = ""
+                                self.scannedcount = self.scannedcount + 1
+                                self.controller.palletSerialCount.set(self.scannedcount)
+                                if self.controller.palletMaxCount.get() == self.scannedcount:
+                                    Conveyor().enableLight("RED")
+                                    self.scanned = ""
+                                    self._serialUpdate = 1
+                                    self._status = "Pallet Max Count reached"
+
+                                start = time.time()
+                                print(start)
+                                # return 1
+                                # response = Deepblu().postScannedSerial(line)
+                                # print(response.json())
+                                # if response.status_code == 201:
+                                #     print("con start")
+                                #     start = time.time()
+                                #     print(start)
+                                #     Conveyor().callConveyor()
+                                #     print('success')
+                                #     self._fullImage = 1
+                                #     if self._isFullImage == 1:
+                                #         self._isFullImage = 1
+                                #     else:
+                                #         self._isFullImage = 2
+                                #     self.scanned = ""
+                                #     self.cam = cam
+                                #     self._serialUpdate = 0
+                                #     self._status = ""
+                                #     self._lastFail = ""
+                                #     self.scannedcount = self.scannedcount + 1
+                                #     self.controller.palletSerialCount.set(self.scannedcount)
+                                #     if self.controller.palletMaxCount.get() == self.scannedcount:
+                                #         Conveyor().enableLight("RED")
+                                #         self.scanned = ""
+                                #         self._serialUpdate = 1
+                                #         self._status = "Pallet Max Count reached"
+
+                                #     start = time.time()
+                                #     print(start)
+                                # else:
+                                #     result = response.json()
+                                #     resultType = result['type']
+                                #     print(resultType)
+                                #     self._serialUpdate = 0
+                                #     if resultType == 3:
+                                #         Conveyor().enableLight("RED")
+                                #         self.scanned = ""
+                                #         self._serialUpdate = 1
+                                #         self._status = "Deepblu Failed : Serial   is already received 3 times"
+                                #     else:
+                                #         self._serialUpdate = 0
+                                #     if resultType == 1:
+                                #         Conveyor().enableLight("RED")
+                                #         self.scanned = ""
+                                #         self._serialUpdate = 1
+                                #         self._status = "Deepblu Failed : Serial   is already in Deepblu"
+                                #     else:
+                                #         self._serialUpdate = 0
 
     def findAccessCode(self, text):
         text = str(" ".join(text.split()))
