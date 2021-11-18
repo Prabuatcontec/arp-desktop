@@ -50,7 +50,7 @@ class ScanFrame(tk.Canvas):
         global on, frame, lbx
         
         self.logobgimg = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/logo.png"))
+        file=getCorrectPath("assets/gray/logo.png"))
         self.logobg = self.create_image(
             0,
             0,
@@ -67,11 +67,11 @@ class ScanFrame(tk.Canvas):
         self.loginButtonReal1.place(
             x=30,
             y=30,
-            width=105.0,
-            height=90.0
+            width=110.0,
+            height=95.0
         )
         self.barDiv = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/bar.png"))
+        file=getCorrectPath("assets/gray/bar.png"))
         self.barButtonOne = tk.Button(
             image=self.barDiv,
             borderwidth=0,
@@ -81,12 +81,12 @@ class ScanFrame(tk.Canvas):
         self.barButtonOne.place(
             x=1620.0,
             y=10.0,
-            width=14.0,
-            height=120.0
+            width=12.0,
+            height=143.0
         )
 
         self.barDiv4 = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/Line.png"))
+        file=getCorrectPath("assets/gray/Line.png"))
         self.barButtonOne1 = tk.Button(
             image=self.barDiv4,
             borderwidth=0,
@@ -94,14 +94,29 @@ class ScanFrame(tk.Canvas):
             relief="flat" 
         )
         self.barButtonOne1.place(
-            x=955.0,
-            y=200.0,
-            width=14.0,
-            height=750.0
+            x=957.0,
+            y=168.0,
+            width=8.0,
+            height=900.0
+        )
+
+        self.barDiv4 = tk.PhotoImage(
+        file=getCorrectPath("assets/gray/Linex.png"))
+        self.barButtonbarDiv4 = tk.Button(
+            image=self.barDiv4,
+            borderwidth=0,
+            highlightthickness=0,
+            relief="flat" 
+        )
+        self.barButtonbarDiv4.place(
+            x=0.0,
+            y=160.0,
+            width=1850.0,
+            height=6.0
         )
 
         self.loginButton = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/Close.png"))
+        file=getCorrectPath("assets/gray/Close.png"))
         self.loginButtonReal = tk.Button(
             image=self.loginButton,
             borderwidth=0,
@@ -110,10 +125,10 @@ class ScanFrame(tk.Canvas):
             relief="flat", cursor="hand1"
         )
         self.loginButtonReal.place(
-            x=1510.0,
-            y=26.0,
-            width=95.0,
-            height=50.0
+            x=1490.0,
+            y=23.0,
+            width=86.0,
+            height=45.0
         )
 
         
@@ -126,36 +141,36 @@ class ScanFrame(tk.Canvas):
         self.barButton.place(
             x=1280.0,
             y=10.0,
-            width=14.0,
-            height=120.0
+            width=12.0,
+            height=143.0
         )
 
 
         self.palletIdPic = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/PalletEntry.png"))
+        file=getCorrectPath("assets/gray/PalletEntry.png"))
         self.palletIdPicbg = self.create_image(
-            1520.0,
-            21.0,
+            1490.0,
+            20.0,
             image=self.palletIdPic,anchor='ne'
         )
  
 
         self.palletIdEntry = tk.Entry(
             bd=0,
-            bg="#E6E6E6",
+            bg="#F7F7F7",
             fg="#5B5B52",
             highlightthickness=0,
             textvariable=controller.updatePalletId
         )
         self.palletIdEntry.place(
-            x=1342.0,
-            y=25.0,
-            width=148.0,
-            height=38.0
+            x=1345.0,
+            y=22.0,
+            width=130.0,
+            height=34.0
         )
 
         self.palletMaxCnt = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/palletmax.png"))
+        file=getCorrectPath("assets/gray/palletmax.png"))
         self.palletMaxCntbg = self.create_image(
             1481.0,
             80.0,
@@ -165,26 +180,26 @@ class ScanFrame(tk.Canvas):
 
         self.palletMaxCntEntry = tk.Entry(
             bd=0,
-            bg="#E6E6E6",
+            bg="#F7F7F7",
             fg="#5B5B52",
             highlightthickness=0,
             textvariable=controller.palletMaxCount
         )
         self.palletMaxCntEntry.place(
             x=1421.0,
-            y=83.0,
+            y=87.0,
             width=40.0,
             height=28.0
         )
 
-        self.mxtLblCnt = tk.Label(bd=0,bg='#3A7FF6',fg='#FFFFFF', textvariable="Max Cnt: ", text="Max Cnt: ", font=(None, 15))
+        self.mxtLblCnt = tk.Label(bd=0,bg='#E7EBEE',fg='#576362', textvariable="Max Cnt: ", text="Max Cnt: ", font=(None, 15))
         self.mxtLblCnt.place( x=1320.0,
-            y=82.0,
+            y=87.0,
             width=90.0,
             height=35.0)
 
         self.loginButtonManual = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/Manual.png"))
+        file=getCorrectPath("assets/gray/Manual.png"))
         self.loginButtonManualReal = tk.Button(
             image=self.loginButtonManual,
             borderwidth=0,
@@ -195,28 +210,28 @@ class ScanFrame(tk.Canvas):
         self.loginButtonManualReal.place(
             x=1480.0,
             y=80.0,
-            width=120.0,
-            height=50.0
+            width=110.0,
+            height=46.0
         )
 
         self.usernameimg = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/entry1.png"))
+        file=getCorrectPath("assets/gray/entry1.png"))
         self.usernameimgbg = self.create_image(
-            1825.0,
-            5.0,
+            1832.0,
+            4.0,
             image=self.usernameimg,anchor='ne'
         )
 
         self.usernamelog = tk.Entry(
             bd=0,
-            bg="#E6E6E6",
+            bg="#F7F7F7",
             fg="#5B5B52",
             highlightthickness=0
         )
         self.usernamelog.insert(0, 'Username')
         self.usernamelog.place(
             x=1685.0,
-            y=10.0,
+            y=9.0,
             width=125.0,
             height=30.0
         )
@@ -225,23 +240,23 @@ class ScanFrame(tk.Canvas):
 
 
         self.passwordimg = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/entry2.png"))
+        file=getCorrectPath("assets/gray/entry2.png"))
         self.passwordimgbg = self.create_image(
             1827.0,
-            50.0,
+            54.0,
             image=self.passwordimg,anchor='ne'
         )
         self.passwordlog = tk.Entry(
             bd=0,
-            bg="#E6E6E6",
+            bg="#F7F7F7",
             fg="#5B5B52",
             show='*',
             highlightthickness=0
         )
         self.passwordlog.insert(0, 'Password')
         self.passwordlog.place(
-            x=1687.0,
-            y=53.0,
+            x=1685.0,
+            y=60.0,
             width=125.0,
             height=30.0
         )
@@ -249,7 +264,7 @@ class ScanFrame(tk.Canvas):
 
 
         self.loginButtonw = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/login.png"))
+        file=getCorrectPath("assets/gray/login.png"))
         self.loginButtonReal = tk.Button(
             image=self.loginButtonw,
             borderwidth=0,
@@ -258,20 +273,20 @@ class ScanFrame(tk.Canvas):
             relief="flat", cursor="hand1"
         )
         self.loginButtonReal.place(
-            x=1665.0,
-            y=100.0,
-            width=145.0,
-            height=50.0
+            x=1680.0,
+            y=110.0,
+            width=105.0,
+            height=48.0
         )
 
-        self.mxtLblCnt = tk.Label(bd=0,bg='#3A7FF6',fg='#FFFFFF', textvariable="Count: ", text="Count: ", font=(None, 15))
+        self.mxtLblCnt = tk.Label(bd=0,bg='#E7EBEE',fg='#576362', textvariable="Count: ", text="Count: ", font=(None, 15))
         self.mxtLblCnt.place( x=1070.0,
-            y=6.0,
+            y=9.0,
             width=70.0,
             height=33.0)
 
         self.palletMaxCnts = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/palletmax.png"))
+        file=getCorrectPath("assets/gray/palletmax.png"))
         self.palletMaxCntbg = self.create_image(
             1210.0,
             5.0,
@@ -279,43 +294,43 @@ class ScanFrame(tk.Canvas):
         )
         self.palletMaxCntEntry = tk.Entry(
             bd=0,
-            bg="#E6E6E6",
+            bg="#F7F7F7",
             fg="#5B5B52",
             highlightthickness=0,
             textvariable=self.controller.palletSerialCount
         )
         self.palletMaxCntEntry.place(
-            x=1152.0,
-            y=7.0,
+            x=1156.0,
+            y=12.0,
             width=40.0,
             height=30.0
         )
 
 
-        self.mxtLblCnt = tk.Label(bd=0,bg='#3A7FF6',fg='#FFFFFF', textvariable="Model: ", text="Model: ", font=(None, 15))
+        self.mxtLblCnt = tk.Label(bd=0,bg='#E7EBEE',fg='#576362', textvariable="Model: ", text="Model: ", font=(None, 15))
         self.mxtLblCnt.place( x=1069.0,
-            y=48.0,
+            y=58.0,
             width=70.0,
             height=35.0)
 
         self.palletMaxModel = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/Model.png"))
+        file=getCorrectPath("assets/gray/Model.png"))
         self.palletMaxCntbg = self.create_image(
-            1235.0,
-            54.0,
+            1250.0,
+            58.0,
             image=self.palletMaxModel,anchor='ne'
         )
 
         self.palletMaxCntEntry = tk.Entry(
             bd=0,
-            bg="#E6E6E6",
+            bg="#F7F7F7",
             fg="#5B5B52",
             highlightthickness=0,
             textvariable=self.controller.modelName
         )
         self.palletMaxCntEntry.place(
-            x=1145.0,
-            y=60.0,
+            x=1154.0,
+            y=65.0,
             width=70.0,
             height=25.0
         )
@@ -324,7 +339,7 @@ class ScanFrame(tk.Canvas):
         
 
         self.restartButton = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/Restart.png"))
+        file=getCorrectPath("assets/gray/Restart.png"))
         self.restartButtonReal = tk.Button(
             image=self.restartButton,
             borderwidth=0,
@@ -334,16 +349,16 @@ class ScanFrame(tk.Canvas):
         )
         self.restartButtonReal.place(
             x=1100.0,
-            y=95.0,
-            width=120.0,
-            height=50.0
+            y=112.0,
+            width=110.0,
+            height=42.0
         )
 
 
          
  
         self.palletCustomerReturn = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/Return.png"))
+        file=getCorrectPath("assets/gray/Return.png"))
         
         
         # Return Type #
@@ -353,7 +368,7 @@ class ScanFrame(tk.Canvas):
         somechoices = ["Field Return", "Customer Return", "Technical Support Return"]
         self.popupMenu1 = tk.OptionMenu(self, self.returnType, *somechoices)
         self.returnType.set("Customer Return")
-        self.popupMenu1.configure(bg="#E7E7E7",fg="#5B5B52",bd=0,highlightthickness=0)
+        self.popupMenu1.configure(bg="#F7F7F7",fg="#5B5B52",bd=0,highlightthickness=0)
         self.popupMenu1.place(
             x=875.0,
             y=70.0,
@@ -363,9 +378,9 @@ class ScanFrame(tk.Canvas):
         self.returnType.trace('w', self.returnTypeSelect)
  
         # Video Frame #
-        frameVideo = tk.Frame(self, colormap="new",background="#FFFFFF")
+        frameVideo = tk.Frame(self, colormap="new",background="#747B83")
         frameVideo.grid(row=3, column=0, padx=20, pady=1, sticky='e')
-        frameVideoOne = tk.Frame(self, colormap="new",background="#FFFFFF")
+        frameVideoOne = tk.Frame(self, colormap="new",background="#747B83")
         frameVideoOne.grid(row=3, column=1, padx=20, pady=1, sticky='e')
         
         self.stopEvent = None
@@ -450,7 +465,7 @@ class ScanFrame(tk.Canvas):
 
             self.model = tk.StringVar()
             self.dc = tk.StringVar()
-            frameme = tk.Frame(top, width=340, height=30,background="#3A7FF6")
+            frameme = tk.Frame(top, width=340, height=30,background="#E7EBEE")
             frameme.grid(row=2, column=0, padx=1, pady=20, sticky='nsew')
             frameme.pack()
             somechoices = json.loads(_customerModels)
@@ -583,14 +598,14 @@ class ScanFrame(tk.Canvas):
             self.delete(self.passwordimgbg)
             self.loginName = username
 
-            self.mxtLblCnts = tk.Label(bd=0,bg='#3A7FF6',fg='#FFFFFF', textvariable=self.controller.loginName, text=self.controller.loginName, font=(None, 15))
+            self.mxtLblCnts = tk.Label(bd=0,bg='#E7EBEE',fg='#747B83', textvariable=self.controller.loginName, text=self.controller.loginName, font=(None, 15))
             self.mxtLblCnts.place( x=1707.0,
                 y=35.0,
                 width=100.0,
                 height=35.0)
             
             self.logoutButtonw = tk.PhotoImage(
-            file=getCorrectPath("assets/blue/Logout.png"))
+            file=getCorrectPath("assets/gray/Logout.png"))
             self.loginButtonReal = tk.Button(
                 image=self.logoutButtonw,
                 borderwidth=0,
@@ -601,12 +616,12 @@ class ScanFrame(tk.Canvas):
             self.loginButtonReal.place(
                 x=1667.0,
                 y=80.0,
-                width=145.0,
+                width=128.0,
                 height=50.0
             )
 
             self.profileButtonw = tk.PhotoImage(
-            file=getCorrectPath("assets/blue/Profile.png"))
+            file=getCorrectPath("assets/gray/Profile.png"))
             self.profileButtonReal = tk.Button(
                 image=self.profileButtonw,
                 borderwidth=0,
@@ -615,55 +630,55 @@ class ScanFrame(tk.Canvas):
                 relief="flat", cursor="hand1"
             )
             self.profileButtonReal.place(
-                x=1680.0,
+                x=1679.0,
                 y=30.0,
-                width=50.0,
-                height=45.0
+                width=49.0,
+                height=44.0
             )
 
 
-        self.barDiv1 = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/bar.png"))
-        self.barButtonOne = tk.Button(
-            image=self.barDiv1,
-            borderwidth=0,
-            highlightthickness=0,
-            relief="flat" 
-        )
-        self.barButtonOne.place(
-            x=1055.0,
-            y=10.0,
-            width=14.0,
-            height=120.0
-        )
+            self.barDiv1 = tk.PhotoImage(
+            file=getCorrectPath("assets/gray/bar.png"))
+            self.barButtonOne = tk.Button(
+                image=self.barDiv1,
+                borderwidth=0,
+                highlightthickness=0,
+                relief="flat" 
+            )
+            self.barButtonOne.place(
+                x=1055.0,
+                y=10.0,
+                width=12.0,
+                height=143.0
+            )
 
-        self.palletCustomer = tk.PhotoImage(
-        file=getCorrectPath("assets/blue/Customer.png"))
-        self.palletMaxCntbg = self.create_image(
-            1045.0,
-            8.0,
-            image=self.palletCustomer,anchor='ne'
-        )
+            self.palletCustomer = tk.PhotoImage(
+            file=getCorrectPath("assets/gray/Customer.png"))
+            self.palletMaxCntbg = self.create_image(
+                1025.0,
+                8.0,
+                image=self.palletCustomer,anchor='ne'
+            )
 
-        
+            
 
-        self.customerSelect = tk.StringVar()
-        somechoices = []
-        for value in Connection().getCustomer():
-           somechoices.append(value[2])
+            self.customerSelect = tk.StringVar()
+            somechoices = []
+            for value in Connection().getCustomer():
+                somechoices.append(value[2])
 
-        
-        self.customerSelect.set("Pick a Customer")
+            
+            self.customerSelect.set("Pick a Customer")
 
-        self.popupMenu = tk.OptionMenu( self, self.customerSelect, *somechoices)
-        self.popupMenu.configure(bg="#E7E7E7",fg="#5B5B52",bd=0,highlightthickness=0)
-        self.popupMenu.place(
-            x=875.0,
-            y=14.0,
-            width=160.0,
-            height=35.0
-        )
-        self.customerSelect.trace('w', self.chooseCustomer)
+            self.popupMenu = tk.OptionMenu( self, self.customerSelect, *somechoices)
+            self.popupMenu.configure(bg="#F7F7F7", background="#F7F7F7", highlightbackground="#F7F7F7",highlightcolor="#5B5B52" ,activebackground="#F7F7F7",activeforeground="#5B5B52",foreground="#5B5B52",fg="#5B5B52",bd=0,highlightthickness=0)
+            self.popupMenu.place(
+                x=875.0,
+                y=16.0,
+                width=130.0,
+                height=28.0
+            )
+            self.customerSelect.trace('w', self.chooseCustomer)
 
             
 
@@ -794,7 +809,7 @@ class ScanFrame(tk.Canvas):
                     frameimage = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
                     frameimage = self.alertProcess(frameimage)
                 else:
-                    image = self.camNotAvailable("CONTEC ARP", "1")
+                    image = self.camNotAvailable("", "1")
                     frameimage = image
                     readFrame = image
 
@@ -854,7 +869,7 @@ class ScanFrame(tk.Canvas):
                     frameimage = cv2.cvtColor(self.frame1, cv2.COLOR_BGR2RGB)
                     frameimage = self.alertProcess(frameimage)
                 else:
-                    image = self.camNotAvailable("CONTEC ARP", "1")
+                    image = self.camNotAvailable("", "1")
                     frameimage = image
                     readFrame = image
 
@@ -878,9 +893,10 @@ class ScanFrame(tk.Canvas):
     # Camera Availability Check #
     def camNotAvailable(self, alert, imgId):
         if imgId == "0":
-            image = cv2.imread(getCorrectPath("static/uploads/cam.png"))
+            image = cv2.imread(getCorrectPath("assets/gray/robo.png"))
         else:
-            image = cv2.imread(getCorrectPath("static/uploads/customer1.jpg"))
+            image = cv2.imread(getCorrectPath("assets/gray/robo.png"))
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = cv2.resize(image, Config.CAMERA_FRAME_LEN, interpolation = cv2.INTER_AREA)
         cv2.putText(image, alert, (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.5, 255, 5)
         return image
@@ -1484,15 +1500,15 @@ class ScanFrame(tk.Canvas):
             self._validation = json.dumps(postData)
             if (self.customerSelect.get() == "FRONTIERC0"):
                 self.palletMaxCntbg = self.create_image(
-                1053.0,
+                1023.0,
                 65.0,
                 image=self.palletCustomerReturn,anchor='ne'
             )
                 self.popupMenu1.place(
-                    x=885.0,
+                    x=875.0,
                     y=70.0,
-                    width=150.0,
-                    height=35.0
+                    width=138.0,
+                    height=28.0
                 )
             else:
                 self.popupMenu1.place(
@@ -1570,7 +1586,7 @@ class Arp(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        self.title('CONTEC ARP')
+        self.title('CONTEC AUTOMATION')
         # Moved StringVar()'s to the main class
         self.loginName = tk.StringVar()
         self.modelName = tk.StringVar()
@@ -1586,7 +1602,7 @@ class Arp(tk.Tk):
 
  
         container = tk.Canvas(self)
-        container.pack(side='top',fill=X,ipady =50)
+        container.pack(side='top',fill=X,ipady =55)
         
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
@@ -1597,7 +1613,7 @@ class Arp(tk.Tk):
         for F in (HomeFrame,ScanFrame):
             frame = F(container, self)
             self.frames[F] = frame
-            frame.configure(background='#3A7FF6')
+            frame.configure(background='#E7EBEE')
             frame.grid(row=0, column=0, sticky='nswe')
         self.show_frame(ScanFrame)
 
@@ -1647,7 +1663,7 @@ if __name__ == "__main__":
     app.tk.call('wm','iconphoto',app._w, img)
     #app.wm_attributes('-fullscreen', 'True')
     app.geometry("1800x1024")
-    app.configure(bg = "#FFF")
+    app.configure(bg = "#F7F7F7")
     app.mainloop()
     MAINTENANCE_INTERVAL = .1
     
