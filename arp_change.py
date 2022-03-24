@@ -1117,6 +1117,7 @@ class ScanFrame(tk.Frame):
 
     # Read the SN if it fails in barcode for NVG #
     def findSN(self, text):
+        return "0"
         text = str(" ".join(text.split()))
         findNvg = text.split("SN")
         if(len(findNvg)<2):
@@ -1135,6 +1136,7 @@ class ScanFrame(tk.Frame):
     
     # Read the Mac if it fails in barcode for NVG #
     def findMac(self, text):
+        return "0"
         text = str(" ".join(text.split()))
         findNvg = text.split("MACA")
        
