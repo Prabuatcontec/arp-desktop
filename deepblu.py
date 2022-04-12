@@ -11,14 +11,14 @@ class Deepblu(object):
         user = open(get_correct_path("static/uploads/_login.txt")).readline().strip("\n")
         response = requests.get(Config.DEEPBLU_URL + '/autoreceive/pallet/latest?model='+model+'&stationId='+Config.STATION_ID+'&addUser='+user,
                                             headers={'Content-Type': 'application/json', 
-                                            'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
+                                            'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }, verify=False
                                             )
         return response
     
     def closePallet(self):
         response = requests.patch(Config.DEEPBLU_URL + '/autoreceive/closepallet',  data=json.dumps({"palletId": open(get_correct_path("static/uploads/_palletId.txt")).readline().strip("\n")}),
                                         headers={'Content-Type': 'application/json', 
-                                        'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
+                                        'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }, verify=False
                                 )
         return response
 
@@ -47,7 +47,7 @@ class Deepblu(object):
     def postScannedSerial(self, line):
         response = requests.post(Config.DEEPBLU_URL + '/autoreceive/automationdata', line,
                                             headers={'Content-Type': 'application/json', 
-                                            'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }
+                                            'Authorization': 'Basic QVVUT1JFQ0VJVkU6YXV0b0AxMjM=' }, verify=False
                                             )
         return response
 

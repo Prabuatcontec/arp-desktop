@@ -910,7 +910,7 @@ class ScanFrame(tk.Frame):
                                     line.append(sn)
                                 if intCheck == "1":
                                     line.append(mac)
-
+                            print(line)
                             line = self.Reverse(line)
                             self.processValidation(key, value, line, text, cam, barcodeData)
                             text = ""
@@ -1117,7 +1117,7 @@ class ScanFrame(tk.Frame):
 
     # Read the SN if it fails in barcode for NVG #
     def findSN(self, text):
-        return "0"
+        #return "0"
         text = str(" ".join(text.split()))
         findNvg = text.split("SN")
         if(len(findNvg)<2):
