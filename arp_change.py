@@ -973,7 +973,7 @@ class ScanFrame(tk.Frame):
                 validDc = ModelValidation().validate(
                 datacollectionValidation["data"], line)
                 Conveyor.resetLastScan(key, value, str(datacollectionValidation["model"]))
-
+                master = 1
                 # Check 
                 if(validDc != '0'):
                     line = self.Reverse(line)
